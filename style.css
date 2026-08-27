@@ -1,19 +1,74 @@
 /* =========================================================
    화면 디자인 파일 (색깔이나 크기를 바꾸고 싶을 때 수정)
+
+   맨 위 :root 안의 색만 바꾸면 앱 전체 색이 바뀝니다.
    ========================================================= */
 
+/* ---------- 밝은 화면 색 ---------- */
 :root {
   --bg: #f4f6fb;
   --card: #ffffff;
+  --soft: #fbfcfe;         /* 입력칸·보기 배경 */
+  --track: #e1e6f0;        /* 진행 막대 바탕 */
+  --chip: #e7ebf5;         /* 보기 번호 동그라미 */
+  --selected: #eaf0ff;     /* 고른 보기 배경 */
   --text: #1f2430;
+  --text-2: #414855;       /* 해설 글자 */
   --muted: #6b7280;
   --line: #e3e7ef;
   --primary: #3b6ef6;
   --primary-dark: #2f59cc;
+  --on-primary: #ffffff;
   --correct: #12855c;
   --correct-bg: #e7f7f0;
   --wrong: #d43b4b;
   --wrong-bg: #fdecee;
+  --shadow: rgba(31, 36, 48, 0.05);
+}
+
+/* ---------- 어두운 화면 색 (휴대폰 다크 모드) ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151d;
+    --card: #1b1f2b;
+    --soft: #212636;
+    --track: #2b3143;
+    --chip: #2f3648;
+    --selected: #24304d;
+    --text: #e8ebf3;
+    --text-2: #c2c8d6;
+    --muted: #9aa3b8;
+    --line: #2c3244;
+    --primary: #6f9bff;
+    --primary-dark: #85acff;
+    --on-primary: #0f1420;
+    --correct: #58d3a4;
+    --correct-bg: #16332a;
+    --wrong: #ff8b98;
+    --wrong-bg: #3a1f26;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #12151d;
+  --card: #1b1f2b;
+  --soft: #212636;
+  --track: #2b3143;
+  --chip: #2f3648;
+  --selected: #24304d;
+  --text: #e8ebf3;
+  --text-2: #c2c8d6;
+  --muted: #9aa3b8;
+  --line: #2c3244;
+  --primary: #6f9bff;
+  --primary-dark: #85acff;
+  --on-primary: #0f1420;
+  --correct: #58d3a4;
+  --correct-bg: #16332a;
+  --wrong: #ff8b98;
+  --wrong-bg: #3a1f26;
+  --shadow: rgba(0, 0, 0, 0.35);
 }
 
 * { box-sizing: border-box; }
@@ -39,6 +94,7 @@ h1 {
   font-size: 26px;
   margin: 8px 0 4px;
   text-align: center;
+  text-wrap: balance;
 }
 
 .subtitle {
@@ -53,7 +109,7 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 20px 18px;
-  box-shadow: 0 2px 10px rgba(31, 36, 48, 0.05);
+  box-shadow: 0 2px 10px var(--shadow);
 }
 
 /* ---------- 시작 화면 ---------- */
@@ -68,17 +124,20 @@ h1 {
 .input {
   width: 100%;
   font-size: 17px;
-  padding: 14px 14px;
+  font-family: inherit;
+  padding: 14px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #fbfcfe;
+  background: var(--soft);
   color: var(--text);
 }
 
+.input::placeholder { color: var(--muted); }
+
 .input:focus {
-  outline: none;
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
   border-color: var(--primary);
-  background: #fff;
 }
 
 .hint {
@@ -120,13 +179,19 @@ h1 {
 
 .btn-primary {
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
 }
 
-.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+
+.btn:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
 
 .btn-primary:disabled {
-  background: #c3cbd9;
+  background: var(--track);
+  color: var(--muted);
   cursor: default;
 }
 
@@ -139,11 +204,12 @@ h1 {
   font-weight: 700;
   color: var(--muted);
   margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
 }
 
 .progress-bar {
   height: 8px;
-  background: #e1e6f0;
+  background: var(--track);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -186,7 +252,7 @@ h1 {
   font-size: 16px;
   font-family: inherit;
   color: var(--text);
-  background: #fbfcfe;
+  background: var(--soft);
   border: 1.5px solid var(--line);
   border-radius: 12px;
   padding: 14px;
@@ -195,11 +261,16 @@ h1 {
 
 .choice:hover:not(:disabled) { border-color: var(--primary); }
 
+.choice:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .choice-num {
   flex: 0 0 26px;
   height: 26px;
   border-radius: 50%;
-  background: #e7ebf5;
+  background: var(--chip);
   color: var(--muted);
   font-size: 14px;
   font-weight: 700;
@@ -208,23 +279,18 @@ h1 {
   justify-content: center;
 }
 
-.choice.is-correct {
-  border-color: var(--correct);
-  background: var(--correct-bg);
-  color: var(--correct);
+/* 고른 보기 */
+.choice.is-selected {
+  border-color: var(--primary);
+  background: var(--selected);
+  color: var(--primary-dark);
   font-weight: 700;
 }
 
-.choice.is-correct .choice-num { background: var(--correct); color: #fff; }
-
-.choice.is-wrong {
-  border-color: var(--wrong);
-  background: var(--wrong-bg);
-  color: var(--wrong);
-  font-weight: 700;
+.choice.is-selected .choice-num {
+  background: var(--primary);
+  color: var(--on-primary);
 }
-
-.choice.is-wrong .choice-num { background: var(--wrong); color: #fff; }
 
 .choice:disabled { cursor: default; }
 
@@ -244,6 +310,7 @@ h1 {
   color: var(--primary);
   margin: 4px 0 0;
   line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
 .result-total {
@@ -310,7 +377,7 @@ h1 {
   padding-top: 12px;
   border-top: 1px dashed var(--line);
   font-size: 14px;
-  color: #414855;
+  color: var(--text-2);
 }
 
 .all-correct {
@@ -330,15 +397,6 @@ h1 {
   .choice { font-size: 15px; padding: 13px 12px; }
 }
 
-/* 선택한 보기 표시 */
-.choice.is-selected {
-  border-color: var(--primary);
-  background: #eaf0ff;
-  color: var(--primary-dark);
-  font-weight: 700;
-}
-
-.choice.is-selected .choice-num {
-  background: var(--primary);
-  color: #fff;
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill { transition: none; }
 }
