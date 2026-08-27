@@ -1,0 +1,191 @@
+/* =========================================================
+   점수 기록 저장 파일
+
+   ▶ 지금은 학생이 쓰는 기기(브라우저)에 기록이 저장됩니다.
+     같은 기기로 다시 들어오면 자기 기록을 볼 수 있습니다.
+
+   ▶ 수파베이스(Supabase)에 모아서 쌓으려면
+     아래 SUPABASE 의 url 과 anonKey 두 칸만 채우면 됩니다.
+     (채우는 방법은 README.md 의 '점수를 수파베이스에 쌓기' 참고)
+     채우지 않으면 기기 저장만 사용합니다.
+   ========================================================= */
+
+var SUPABASE = {
+  url: "",                    /* 예) https://abcdefgh.supabase.co */
+  anonKey: "",                /* 예) eyJhbGciOi... (anon public 키) */
+  table: "quiz_attempts"      /* 기록을 쌓을 표 이름 */
+};
+
+var VocabStore = (function () {
+  'use strict';
+
+  var KEY_RECORDS = 'vocab.records';
+  var KEY_LAST = 'vocab.lastStudent';
+
+  /* ---------- 기기 저장소 다루기 ---------- */
+
+  function readAll() {
+    try {
+      var raw = window.localStorage.getItem(KEY_RECORDS);
+      var list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      return [];   /* 저장소를 못 쓰는 브라우저에서도 앱은 계속 돌아갑니다 */
+    }
+  }
+
+  function writeAll(list) {
+    try {
+      window.localStorage.setItem(KEY_RECORDS, JSON.stringify(list));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* ---------- 학생 구분 ---------- */
+
+  /* 이름·학교의 띄어쓰기와 대소문자 차이를 무시하고 같은 학생으로 봅니다 */
+  function keyOf(student) {
+    return [
+      String(student.name || '').replace(/\s+/g, '').toLowerCase(),
+      String(student.school || '').replace(/\s+/g, '').toLowerCase(),
+      String(student.phone4 || '')
+    ].join('|');
+  }
+
+  /* ---------- 수파베이스로 보내기 ---------- */
+
+  function supabaseReady() {
+    return !!(SUPABASE.url && SUPABASE.anonKey && SUPABASE.table);
+  }
+
+  function sendToSupabase(record) {
+    if (!supabaseReady()) return Promise.resolve(false);
+
+    var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/' + SUPABASE.table;
+
+    return fetch(url, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE.anonKey,
+        'Authorization': 'Bearer ' + SUPABASE.anonKey,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify([{
+        student_name: record.name,
+        school: record.school,
+        phone4: record.phone4,
+        round_title: record.roundTitle,
+        correct: record.correct,
+        total: record.total,
+        percent: record.percent,
+        items: record.items,
+        taken_at: record.savedAt
+      }])
+    }).then(function (res) {
+      return res.ok;
+    }).catch(function () {
+      return false;   /* 인터넷이 끊겼거나 설정이 틀려도 기기 저장은 남습니다 */
+    });
+  }
+
+  /* ---------- 바깥에서 쓰는 기능 ---------- */
+
+  return {
+    /* 마지막에 시험 본 학생 정보 (다음에 들어올 때 자동으로 채워 줍니다) */
+    lastStudent: function () {
+      try {
+        var raw = window.localStorage.getItem(KEY_LAST);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    },
+
+    rememberStudent: function (student) {
+      try {
+        window.localStorage.setItem(KEY_LAST, JSON.stringify({
+          name: student.name, school: student.school, phone4: student.phone4
+        }));
+      } catch (e) { /* 저장 못 해도 그냥 넘어갑니다 */ }
+    },
+
+    /* 시험 결과 한 건 저장 */
+    save: function (record) {
+      record.id = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
+      record.studentKey = keyOf(record);
+      record.sent = false;
+
+      var list = readAll();
+      list.push(record);
+      var savedOnDevice = writeAll(list);
+
+      return sendToSupabase(record).then(function (ok) {
+        if (ok) {
+          var now = readAll();
+          for (var i = now.length - 1; i >= 0; i--) {
+            if (now[i].id === record.id) { now[i].sent = true; break; }
+          }
+          writeAll(now);
+        }
+        return { savedOnDevice: savedOnDevice, sentToServer: ok };
+      });
+    },
+
+    /* 아직 서버로 못 보낸 기록을 다시 보내기 */
+    resend: function () {
+      if (!supabaseReady()) return Promise.resolve(0);
+
+      var list = readAll();
+      var waiting = list.filter(function (r) { return !r.sent; });
+      if (waiting.length === 0) return Promise.resolve(0);
+
+      return Promise.all(waiting.map(function (r) {
+        return sendToSupabase(r).then(function (ok) {
+          return ok ? r.id : null;
+        });
+      })).then(function (done) {
+        var okIds = done.filter(Boolean);
+        if (okIds.length) {
+          var now = readAll();
+          now.forEach(function (r) {
+            if (okIds.indexOf(r.id) !== -1) r.sent = true;
+          });
+          writeAll(now);
+        }
+        return okIds.length;
+      });
+    },
+
+    /* 이 학생의 기록만 최근 순으로 */
+    listFor: function (student) {
+      var key = keyOf(student);
+      return readAll()
+        .filter(function (r) { return r.studentKey === key; })
+        .sort(function (a, b) { return (a.savedAt < b.savedAt) ? 1 : -1; });
+    },
+
+    /* 이 기기에 쌓인 모든 기록 (선생님용 내려받기에 사용) */
+    all: function () {
+      return readAll().sort(function (a, b) { return (a.savedAt < b.savedAt) ? 1 : -1; });
+    },
+
+    /* 엑셀에서 열 수 있는 표 형식으로 만들기 */
+    toCsv: function () {
+      var head = ['이름', '학교', '전화뒷자리', '회차', '맞은개수', '전체문항', '정답률', '본날짜'];
+      var rows = readAll().map(function (r) {
+        return [r.name, r.school, r.phone4, r.roundTitle, r.correct, r.total, r.percent + '%', r.savedAt];
+      });
+      return [head].concat(rows).map(function (row) {
+        return row.map(function (cell) {
+          var s = String(cell == null ? '' : cell);
+          return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        }).join(',');
+      }).join('\n');
+    },
+
+    usingServer: supabaseReady
+  };
+})();

@@ -75,6 +75,9 @@
 
 * { box-sizing: border-box; }
 
+/* 숨김 처리가 항상 우선하도록 (버튼 등에 display 값이 있어도 확실히 숨겨집니다) */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   padding: 0;
@@ -555,6 +558,97 @@ h1 {
   font-weight: 700;
 }
 
+/* ---------- 학생 정보 입력 ---------- */
+
+.field + .field { margin-top: 18px; }
+
+.field-hint {
+  margin: 7px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ---------- 저장 안내 ---------- */
+
+.save-state {
+  margin: 16px 0 0;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: var(--chip);
+  color: var(--primary-dark);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.save-state.is-waiting {
+  background: var(--wrong-bg);
+  color: var(--wrong);
+}
+
+/* ---------- 내 기록 ---------- */
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+
+.history-main { min-width: 0; }
+
+.history-round {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.history-when {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.history-score {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.history-percent {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.empty-note {
+  margin: 16px 0 0;
+  padding: 22px;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  text-align: center;
+  font-size: 16px;
+  color: var(--muted);
+}
+
 /* ---------- 작은 화면(휴대폰) ---------- */
 
 @media (max-width: 380px) {
@@ -562,6 +656,8 @@ h1 {
   .result-score { font-size: 50px; }
   .choice { font-size: 17px; padding: 15px 13px; }
   .round-title { font-size: 19px; }
+  .history-round { font-size: 17px; }
+  .history-score { font-size: 20px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

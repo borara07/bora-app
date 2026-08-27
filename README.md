@@ -142,6 +142,7 @@ var QUIZ_QUESTION_LABEL = "다음 어휘의 뜻으로 알맞은 것은?";   /* �
 | `index.html` | 화면 구조 | 건드리지 않아도 됩니다 |
 | `style.css` | 색깔·글씨 크기 | 원하면 색만 바꿔도 됩니다 |
 | `app.js` | 채점·화면 전환 등 동작 | 건드리지 마세요 |
+| `storage.js` | 점수 기록 저장 | 수파베이스를 쓸 때 **두 칸만** 채웁니다 |
 | `samples/questions-english-sample.js` | 영어 어휘 예시 문제 (참고용) | 쓰지 않으면 그냥 두세요 |
 | `CLAUDE.md` | 디자인 톤 등 개발 규칙 메모 | 건드리지 않아도 됩니다 |
 
@@ -150,10 +151,76 @@ var QUIZ_QUESTION_LABEL = "다음 어휘의 뜻으로 알맞은 것은?";   /* �
 
 ---
 
-## 4. 지금 들어 있는 기능
+## 4. 점수 기록
+
+테스트를 끝내면 **이름 · 학교 · 회차 · 점수 · 정답률 · 날짜 · 문항별 정오답**이 저장됩니다.
+학생이 같은 이름·학교·전화 뒷자리로 다시 들어오면 `내 지난 기록 보기` 에서 자기 기록만 볼 수 있습니다.
+
+기록은 **학생이 쓰는 기기(브라우저)에 저장됩니다.**
+따라서 학생이 다른 휴대폰으로 들어가면 이전 기록이 보이지 않습니다.
+모든 학생 기록을 한곳에 모으려면 아래 수파베이스 설정을 해주세요.
+
+### 점수를 수파베이스에 쌓기
+
+**1단계.** 수파베이스에서 프로젝트를 만들고, `SQL Editor` 에 아래를 붙여넣어 실행합니다.
+
+```sql
+create table public.quiz_attempts (
+  id           bigint generated always as identity primary key,
+  student_name text        not null,
+  school       text        not null,
+  phone4       text        not null,
+  round_title  text        not null,
+  correct      int         not null,
+  total        int         not null,
+  percent      int         not null,
+  items        jsonb       not null,   -- 출제된 문제와 학생이 고른 답
+  taken_at     timestamptz not null,
+  created_at   timestamptz not null default now()
+);
+
+-- 앱은 기록을 '넣기만' 할 수 있고, 남의 기록을 읽지는 못하게 합니다
+alter table public.quiz_attempts enable row level security;
+
+create policy "앱에서 기록 추가만 허용"
+  on public.quiz_attempts for insert to anon with check (true);
+```
+
+**2단계.** 수파베이스 `Settings → API` 에서 **Project URL** 과 **anon public** 키를 복사합니다.
+
+**3단계.** `storage.js` 맨 위의 두 칸을 채웁니다.
+
+```js
+var SUPABASE = {
+  url: "https://여기에프로젝트주소.supabase.co",
+  anonKey: "여기에anon키",
+  table: "quiz_attempts"
+};
+```
+
+이렇게 하면 학생이 시험을 끝낼 때마다 기록이 수파베이스로 전송됩니다.
+인터넷이 끊겨 전송에 실패해도 기기에 남아 있다가, **다음에 앱을 열 때 자동으로 다시 보냅니다.**
+
+> ⚠️ **개인정보 주의**
+> 이 표에는 학생 이름·학교·학부모님 전화번호 뒷자리가 들어갑니다.
+> 위 SQL은 **넣기(insert)만 허용하고 읽기(select)는 막아 두었습니다.**
+> 학생이 남의 기록을 볼 수 없게 하려면 이 설정을 그대로 두시고,
+> 기록은 수파베이스 화면에 로그인해서 확인하세요.
+> 읽기 권한을 열면 앱에 접속한 누구나 전체 명단을 볼 수 있게 됩니다.
+
+### 기록을 엑셀로 받기
+
+`내 기록` 화면 아래 **`기록 내려받기 (선생님용)`** 버튼을 누르면
+그 기기에 저장된 기록이 CSV 파일로 내려받아집니다. 엑셀에서 바로 열립니다.
+
+---
+
+## 5. 지금 들어 있는 기능
 
 - **회차 선택 화면** (회차마다 이름·설명·문제 수 표시)
-- 학생 이름 입력 후 시작 (이름을 안 쓰면 시작되지 않습니다)
+- 학생 이름 · 학교 · 학부모님 전화번호 뒷 4자리 입력 후 시작
+  (빈칸이 있으면 무엇을 채워야 하는지 알려줍니다)
+- 지난번에 시험 본 학생이면 입력칸을 자동으로 채워 줍니다
 - 한 화면에 **한 문제씩**, 4지선다
 - 위쪽에 `3 / 10` 진행 표시와 진행 막대
 - 보기를 골라야 "다음 문제" 버튼이 켜집니다
@@ -163,5 +230,7 @@ var QUIZ_QUESTION_LABEL = "다음 어휘의 뜻으로 알맞은 것은?";   /* �
 - "이 회차 다시 풀기" / "다른 회차 고르기" 버튼
   (다시 풀면 문제와 보기 순서가 새로 섞입니다)
 - 어휘 아래 한자 표시 (`hanja` 를 비워두면 표시되지 않습니다)
+- **점수 기록 저장**과 **내 지난 기록 보기** (본 회차 수, 시험 횟수, 평균 정답률)
+- 기록 CSV 내려받기 (선생님용)
 - 연보라 계열 색과 큰 글씨로 휴대폰에서 읽기 편하게 구성
   (어두운 화면 설정에서도 잘 보입니다)
