@@ -85,10 +85,47 @@ var VocabStore = (function () {
         taken_at: record.savedAt
       }])
     }).then(function (res) {
-      return res.ok;
-    }).catch(function () {
-      return false;   /* 인터넷이 끊겼거나 설정이 틀려도 기기 저장은 남습니다 */
+      if (res.ok) return { ok: true };
+      return res.text().then(function (body) {
+        return {
+          ok: false,
+          status: res.status,
+          detail: body.slice(0, 300),
+          message: explainError(res.status, body)
+        };
+      });
+    }).catch(function (e) {
+      /* 인터넷이 끊겼거나 주소가 틀려도 기기 저장은 남습니다 */
+      return {
+        ok: false,
+        status: 0,
+        detail: String(e && e.message ? e.message : e),
+        message: '서버에 연결하지 못했습니다.\n인터넷 연결과 프로젝트 주소를 확인해주세요.'
+      };
     });
+  }
+
+  /* 서버가 돌려준 오류를 알아듣기 쉬운 말로 바꿔 줍니다 */
+  function explainError(status, body) {
+    var text = String(body || '');
+
+    if (status === 404 || /PGRST205|does not exist|Could not find the table/i.test(text)) {
+      return '수파베이스에 \'' + SUPABASE.table + '\' 표가 없습니다.\n' +
+             'SQL Editor 에서 표 만들기 명령(supabase-설정.sql)을 실행했는지 확인해주세요.';
+    }
+    if (status === 401 || /Invalid API key|JWT/i.test(text)) {
+      return '키가 올바르지 않습니다.\n' +
+             '수파베이스 API 화면에서 publishable(anon) 키를 다시 복사해주세요.';
+    }
+    if (status === 403 || /42501|row-level security/i.test(text)) {
+      return '표에 기록을 넣을 권한이 없습니다.\n' +
+             'SQL 중 policy(권한) 부분이 실행되지 않은 것 같습니다.';
+    }
+    if (status === 400 || /PGRST204|column/i.test(text)) {
+      return '보내는 내용이 표의 칸과 맞지 않습니다.\n' +
+             '표를 만들 때 SQL 일부만 실행되지 않았는지 확인해주세요.';
+    }
+    return '알 수 없는 오류입니다. (코드 ' + status + ')';
   }
 
   /* ---------- 바깥에서 쓰는 기능 ---------- */
@@ -122,7 +159,8 @@ var VocabStore = (function () {
       list.push(record);
       var savedOnDevice = writeAll(list);
 
-      return sendToSupabase(record).then(function (ok) {
+      return sendToSupabase(record).then(function (sent) {
+        var ok = sent.ok;
         if (ok) {
           var now = readAll();
           for (var i = now.length - 1; i >= 0; i--) {
@@ -130,7 +168,11 @@ var VocabStore = (function () {
           }
           writeAll(now);
         }
-        return { savedOnDevice: savedOnDevice, sentToServer: ok };
+        return {
+          savedOnDevice: savedOnDevice,
+          sentToServer: ok,
+          reason: ok ? '' : (sent.message || '')
+        };
       });
     },
 
@@ -143,8 +185,8 @@ var VocabStore = (function () {
       if (waiting.length === 0) return Promise.resolve(0);
 
       return Promise.all(waiting.map(function (r) {
-        return sendToSupabase(r).then(function (ok) {
-          return ok ? r.id : null;
+        return sendToSupabase(r).then(function (sent) {
+          return sent.ok ? r.id : null;
         });
       })).then(function (done) {
         var okIds = done.filter(Boolean);
@@ -184,6 +226,40 @@ var VocabStore = (function () {
           return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
         }).join(',');
       }).join('\n');
+    },
+
+    /* 선생님용 연결 확인: 테스트 기록 한 건을 실제로 보내 봅니다 */
+    testConnection: function () {
+      if (!supabaseReady()) {
+        return Promise.resolve({
+          ok: false,
+          message: '수파베이스 설정이 비어 있습니다.\nstorage.js 의 url 과 anonKey 를 채워주세요.'
+        });
+      }
+
+      return sendToSupabase({
+        name: '연결테스트',
+        school: '연결테스트',
+        phone4: '0000',
+        roundTitle: '연결확인',
+        correct: 1,
+        total: 1,
+        percent: 100,
+        items: [],
+        savedAt: new Date().toISOString()
+      }).then(function (sent) {
+        if (sent.ok) {
+          return {
+            ok: true,
+            message: '연결 성공!\n수파베이스 Table Editor 에 \'연결테스트\' 기록이 한 건 들어가 있습니다.\n확인하신 뒤 그 줄은 지우셔도 됩니다.'
+          };
+        }
+        return {
+          ok: false,
+          message: sent.message,
+          detail: '자세한 내용: [' + sent.status + '] ' + sent.detail
+        };
+      });
     },
 
     usingServer: supabaseReady

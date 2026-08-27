@@ -649,6 +649,42 @@ h1 {
   color: var(--muted);
 }
 
+/* ---------- 서버 연결 확인 안내 ---------- */
+
+.check-state {
+  margin: 10px 0 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--chip);
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
+}
+
+.check-state.is-ok {
+  background: var(--correct-bg);
+  color: var(--correct);
+  font-weight: 700;
+}
+
+.check-state.is-bad {
+  background: var(--wrong-bg);
+  color: var(--wrong);
+  font-weight: 700;
+}
+
+.check-detail {
+  display: block;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  word-break: break-all;
+}
+
 /* ---------- 작은 화면(휴대폰) ---------- */
 
 @media (max-width: 380px) {

@@ -437,6 +437,12 @@
       } else if (r.savedOnDevice && VocabStore.usingServer()) {
         box.textContent = '기록을 이 기기에 저장했습니다. 인터넷 연결 후 자동으로 전송됩니다.';
         box.className = 'save-state is-waiting';
+        if (r.reason) {
+          var why = document.createElement('span');
+          why.className = 'check-detail';
+          why.textContent = r.reason;
+          box.appendChild(why);
+        }
       } else if (r.savedOnDevice) {
         box.textContent = '기록이 저장되었습니다.';
       } else {
@@ -547,6 +553,27 @@
     });
   }
 
+  /* ---------- 서버 연결 확인 (선생님용) ---------- */
+
+  function checkConnection() {
+    var box = $('check-state');
+    box.hidden = false;
+    box.className = 'check-state';
+    box.textContent = '확인하는 중…';
+
+    VocabStore.testConnection().then(function (r) {
+      box.className = 'check-state ' + (r.ok ? 'is-ok' : 'is-bad');
+      box.textContent = r.message;
+
+      if (!r.ok && r.detail) {
+        var more = document.createElement('span');
+        more.className = 'check-detail';
+        more.textContent = r.detail;
+        box.appendChild(more);
+      }
+    });
+  }
+
   function downloadFile(filename, text) {
     // 아티팩트 화면에서는 전용 기능을 통해서만 파일을 건넬 수 있습니다
     if (window.claude && typeof window.claude.use === 'function') {
@@ -652,6 +679,8 @@
     });
 
     $('btn-export').addEventListener('click', exportRecords);
+
+    $('btn-check').addEventListener('click', checkConnection);
 
     // 지난번에 못 보낸 기록이 있으면 조용히 다시 보냅니다
     VocabStore.resend();
