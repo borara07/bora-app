@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>어휘 테스트</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="app">
+
+    <!-- 1. 회차 선택 화면 -->
+    <section id="screen-rounds" class="screen">
+      <h1 id="quiz-title">어휘 테스트</h1>
+      <p class="subtitle">풀고 싶은 회차를 고르세요.</p>
+
+      <div id="round-list" class="round-list"></div>
+    </section>
+
+    <!-- 2. 학생 정보 입력 화면 -->
+    <section id="screen-start" class="screen" hidden>
+      <button type="button" id="btn-back-rounds" class="btn-back">회차 다시 고르기</button>
+
+      <div class="card">
+        <p class="eyebrow">선택한 회차</p>
+        <p id="chosen-round" class="chosen-round">01회</p>
+        <p id="chosen-detail" class="chosen-detail"></p>
+      </div>
+
+      <form id="start-form" class="card" autocomplete="off">
+        <div class="field">
+          <label class="label" for="student-name">학생 이름</label>
+          <input type="text" id="student-name" class="input" placeholder="예) 김민서" maxlength="20">
+        </div>
+
+        <div class="field">
+          <label class="label" for="student-school">학교</label>
+          <input type="text" id="student-school" class="input" placeholder="예) 보라고등학교" maxlength="30">
+        </div>
+
+        <div class="field">
+          <label class="label" for="student-phone4">학부모님 전화번호 뒷 4자리</label>
+          <input type="text" id="student-phone4" class="input" placeholder="예) 1234"
+                 inputmode="numeric" maxlength="4">
+          <p class="field-hint">같은 이름이 있을 때 학생을 구분하는 데만 씁니다.</p>
+        </div>
+
+        <p id="name-error" class="error" hidden></p>
+        <button type="submit" class="btn btn-primary">테스트 시작</button>
+        <button type="button" id="btn-my-history" class="btn btn-quiet" hidden>내 지난 기록 보기</button>
+      </form>
+    </section>
+
+    <!-- 3. 문제 풀이 화면 -->
+    <section id="screen-quiz" class="screen" hidden>
+      <header class="quiz-head">
+        <p id="quiz-round" class="quiz-round"></p>
+        <div class="progress-text">
+          <span id="progress-now">1</span> / <span id="progress-total">10</span>
+        </div>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+      </header>
+
+      <div class="card">
+        <p id="question-label" class="question-label">다음 어휘의 뜻으로 알맞은 것은?</p>
+        <p id="question-word" class="question-word">어휘</p>
+        <p id="question-hanja" class="question-hanja" hidden></p>
+
+        <div id="choices" class="choices"></div>
+      </div>
+
+      <button id="btn-next" class="btn btn-primary" disabled>다음 문제</button>
+    </section>
+
+    <!-- 4. 결과 화면 -->
+    <section id="screen-result" class="screen" hidden>
+      <div class="card result-card">
+        <p id="result-name" class="result-name"></p>
+        <p class="result-score">
+          <span id="result-correct">0</span><span class="result-total">/<span id="result-total">10</span></span>
+        </p>
+        <p id="result-percent" class="result-percent"></p>
+        <p id="result-comment" class="result-comment"></p>
+        <p id="result-round" class="result-round"></p>
+      </div>
+
+      <section id="wrong-area">
+        <h2 class="section-title">틀린 문제 해설</h2>
+        <div id="wrong-list" class="wrong-list"></div>
+      </section>
+
+      <p id="save-state" class="save-state" hidden></p>
+
+      <button id="btn-retry" class="btn btn-primary">이 회차 다시 풀기</button>
+      <button id="btn-history" class="btn btn-quiet">내 기록 보기</button>
+      <button id="btn-other-round" class="btn btn-quiet">다른 회차 고르기</button>
+    </section>
+
+    <!-- 5. 내 기록 화면 -->
+    <section id="screen-history" class="screen" hidden>
+      <button type="button" id="btn-back-from-history" class="btn-back">돌아가기</button>
+
+      <div class="card">
+        <p class="eyebrow">지금까지의 기록</p>
+        <p id="history-who" class="chosen-round"></p>
+        <p id="history-summary" class="chosen-detail"></p>
+      </div>
+
+      <div id="history-list" class="history-list"></div>
+
+      <button type="button" id="btn-export" class="btn btn-quiet">기록 내려받기 (선생님용)</button>
+      <p id="export-state" class="field-hint" hidden></p>
+    </section>
+
+    <!-- 오류 안내 (문제 파일에 실수가 있을 때만 보입니다) -->
+    <section id="screen-error" class="screen" hidden>
+      <div class="card">
+        <h2 class="section-title">문제 파일을 확인해주세요</h2>
+        <p class="hint">questions.js 파일에서 아래 부분을 고쳐주세요.</p>
+        <ul id="error-list" class="error-list"></ul>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="questions.js"></script>
+  <script src="storage.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
