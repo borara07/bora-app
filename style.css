@@ -699,3 +699,15 @@ h1 {
 @media (prefers-reduced-motion: reduce) {
   .progress-fill { transition: none; }
 }
+
+/* ---------- 연결 확인 페이지 ---------- */
+
+.config-list {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  font-size: 15px;
+  color: var(--text-2);
+  word-break: break-all;
+}
+
+.config-list li { margin-bottom: 6px; }

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서버 연결 확인</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="app">
+    <h1>서버 연결 확인</h1>
+    <p class="subtitle">이 화면을 사진 찍어 보내주세요.</p>
+
+    <div class="card">
+      <p class="eyebrow">확인 결과</p>
+      <p id="verdict" class="chosen-round">확인하는 중…</p>
+      <p id="reason" class="check-state" hidden></p>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">현재 설정</p>
+      <ul id="config" class="config-list"></ul>
+    </div>
+
+    <button type="button" id="btn-again" class="btn btn-primary">다시 확인하기</button>
+    <p class="hint"><a href="./">← 테스트 화면으로 돌아가기</a></p>
+  </main>
+
+  <script src="storage.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var $ = function (id) { return document.getElementById(id); };
+
+    /* 키는 앞뒤 일부만 보여 줍니다 */
+    function mask(key) {
+      if (!key) return '(비어 있음)';
+      if (key.length < 16) return key;
+      return key.slice(0, 12) + '…' + key.slice(-4) + ' (' + key.length + '자)';
+    }
+
+    function showConfig() {
+      var rows = [
+        ['프로젝트 주소', SUPABASE.url || '(비어 있음)'],
+        ['표 이름', SUPABASE.table || '(비어 있음)'],
+        ['키', mask(SUPABASE.anonKey)],
+        ['앱 버전', '2026-08-27 키 형식 자동 전환 포함']
+      ];
+      var ul = $('config');
+      ul.innerHTML = '';
+      rows.forEach(function (r) {
+        var li = document.createElement('li');
+        var b = document.createElement('strong');
+        b.textContent = r[0] + ' : ';
+        li.appendChild(b);
+        li.appendChild(document.createTextNode(r[1]));
+        ul.appendChild(li);
+      });
+    }
+
+    /* 1단계: 그 주소에 서버가 있기는 한지 확인합니다.
+       (주소가 틀리면 여기서 바로 걸립니다) */
+    function probeHost() {
+      if (!SUPABASE.url) return Promise.resolve(false);
+      return fetch(SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/', { mode: 'no-cors' })
+        .then(function () { return true; })
+        .catch(function () { return false; });
+    }
+
+    function run() {
+      var verdict = $('verdict');
+      var reason = $('reason');
+
+      verdict.textContent = '확인하는 중…';
+      reason.hidden = true;
+
+      probeHost().then(function (alive) {
+        if (!alive) {
+          verdict.textContent = '주소가 잘못되었습니다';
+          verdict.style.color = 'var(--wrong)';
+          reason.hidden = false;
+          reason.className = 'check-state is-bad';
+          reason.textContent =
+            '이 주소에서 수파베이스 서버를 찾을 수 없습니다.\n' +
+            SUPABASE.url + '\n\n' +
+            '수파베이스 API 화면의 Project URL 을 그대로 복사해서 알려주세요.';
+          return;
+        }
+        checkSaving();
+      });
+    }
+
+    function checkSaving() {
+      var verdict = $('verdict');
+      var reason = $('reason');
+
+      VocabStore.testConnection().then(function (r) {
+        verdict.textContent = r.ok ? '연결 성공' : '연결 실패';
+        verdict.style.color = r.ok ? 'var(--correct)' : 'var(--wrong)';
+
+        reason.hidden = false;
+        reason.className = 'check-state ' + (r.ok ? 'is-ok' : 'is-bad');
+        reason.textContent = r.message;
+
+        if (!r.ok) {
+          reason.textContent = '서버는 찾았는데 기록을 넣지 못했습니다.\n\n' + r.message;
+        }
+
+        if (r.detail) {
+          var more = document.createElement('span');
+          more.className = 'check-detail';
+          more.textContent = r.detail;
+          reason.appendChild(more);
+        }
+      });
+    }
+
+    showConfig();
+    $('btn-again').addEventListener('click', run);
+    run();
+  })();
+  </script>
+</body>
+</html>
