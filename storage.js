@@ -60,48 +60,77 @@ var VocabStore = (function () {
     return !!(SUPABASE.url && SUPABASE.anonKey && SUPABASE.table);
   }
 
-  function sendToSupabase(record) {
-    if (!supabaseReady()) return Promise.resolve(false);
+  /* 키를 보내는 방법이 두 가지라서, 하나가 막히면 다른 방법으로 다시 시도합니다.
+     (예전 키와 새 publishable 키의 형식이 다릅니다) */
+  var workingWay = null;
 
+  function headersFor(way) {
+    var h = {
+      'apikey': SUPABASE.anonKey,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    };
+    if (way === 'bearer') h['Authorization'] = 'Bearer ' + SUPABASE.anonKey;
+    return h;
+  }
+
+  function bodyFor(record) {
+    return JSON.stringify([{
+      student_name: record.name,
+      school: record.school,
+      phone4: record.phone4,
+      round_title: record.roundTitle,
+      correct: record.correct,
+      total: record.total,
+      percent: record.percent,
+      items: record.items,
+      taken_at: record.savedAt
+    }]);
+  }
+
+  function postOnce(record, way) {
     var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/' + SUPABASE.table;
 
     return fetch(url, {
       method: 'POST',
-      headers: {
-        'apikey': SUPABASE.anonKey,
-        'Authorization': 'Bearer ' + SUPABASE.anonKey,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify([{
-        student_name: record.name,
-        school: record.school,
-        phone4: record.phone4,
-        round_title: record.roundTitle,
-        correct: record.correct,
-        total: record.total,
-        percent: record.percent,
-        items: record.items,
-        taken_at: record.savedAt
-      }])
+      headers: headersFor(way),
+      body: bodyFor(record)
     }).then(function (res) {
-      if (res.ok) return { ok: true };
+      if (res.ok) return { ok: true, way: way };
       return res.text().then(function (body) {
         return {
           ok: false,
+          way: way,
           status: res.status,
           detail: body.slice(0, 300),
           message: explainError(res.status, body)
         };
       });
     }).catch(function (e) {
-      /* 인터넷이 끊겼거나 주소가 틀려도 기기 저장은 남습니다 */
       return {
         ok: false,
+        way: way,
         status: 0,
         detail: String(e && e.message ? e.message : e),
         message: '서버에 연결하지 못했습니다.\n인터넷 연결과 프로젝트 주소를 확인해주세요.'
       };
+    });
+  }
+
+  function sendToSupabase(record) {
+    if (!supabaseReady()) return Promise.resolve({ ok: false, status: 0, detail: '', message: '수파베이스 설정이 비어 있습니다.' });
+
+    var ways = workingWay ? [workingWay] : ['bearer', 'apikey'];
+
+    return postOnce(record, ways[0]).then(function (first) {
+      if (first.ok) { workingWay = first.way; return first; }
+      if (ways.length === 1) return first;
+
+      /* 첫 번째 방법이 막혔으면 두 번째 방법으로 한 번 더 */
+      return postOnce(record, ways[1]).then(function (second) {
+        if (second.ok) { workingWay = second.way; return second; }
+        return first.status === 0 ? second : first;
+      });
     });
   }
 
