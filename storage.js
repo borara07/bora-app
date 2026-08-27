@@ -11,7 +11,7 @@
    ========================================================= */
 
 var SUPABASE = {
-  url: "https://naiabxgeprxebf.supabase.co",
+  url: "https://naiabxgeprxebfqbvpnz.supabase.co",
   anonKey: "sb_publishable_sbvGefQimsbkgnN_Bqc62Q_ZTKdyfBa",
   table: "quiz_attempts"      /* 기록을 쌓을 표 이름 */
 };
