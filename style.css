@@ -1,0 +1,344 @@
+/* =========================================================
+   화면 디자인 파일 (색깔이나 크기를 바꾸고 싶을 때 수정)
+   ========================================================= */
+
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --text: #1f2430;
+  --muted: #6b7280;
+  --line: #e3e7ef;
+  --primary: #3b6ef6;
+  --primary-dark: #2f59cc;
+  --correct: #12855c;
+  --correct-bg: #e7f7f0;
+  --wrong: #d43b4b;
+  --wrong-bg: #fdecee;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+               "Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+h1 {
+  font-size: 26px;
+  margin: 8px 0 4px;
+  text-align: center;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--muted);
+  margin: 0 0 24px;
+  font-size: 15px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px 18px;
+  box-shadow: 0 2px 10px rgba(31, 36, 48, 0.05);
+}
+
+/* ---------- 시작 화면 ---------- */
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  font-size: 17px;
+  padding: 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbfcfe;
+  color: var(--text);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #fff;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 18px;
+}
+
+.error {
+  color: var(--wrong);
+  font-size: 14px;
+  margin: 10px 0 0;
+}
+
+.error-list {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--wrong);
+  font-size: 14px;
+}
+
+.error-list li { margin-bottom: 6px; }
+
+/* ---------- 버튼 ---------- */
+
+.btn {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 16px;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover { background: var(--primary-dark); }
+
+.btn-primary:disabled {
+  background: #c3cbd9;
+  cursor: default;
+}
+
+/* ---------- 진행 상황 ---------- */
+
+.quiz-head { margin-bottom: 16px; }
+
+.progress-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #e1e6f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--primary);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+/* ---------- 문제 ---------- */
+
+.question-label {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.question-word {
+  font-size: 34px;
+  font-weight: 800;
+  margin: 6px 0 20px;
+  word-break: break-word;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--text);
+  background: #fbfcfe;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+}
+
+.choice:hover:not(:disabled) { border-color: var(--primary); }
+
+.choice-num {
+  flex: 0 0 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e7ebf5;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.choice.is-correct {
+  border-color: var(--correct);
+  background: var(--correct-bg);
+  color: var(--correct);
+  font-weight: 700;
+}
+
+.choice.is-correct .choice-num { background: var(--correct); color: #fff; }
+
+.choice.is-wrong {
+  border-color: var(--wrong);
+  background: var(--wrong-bg);
+  color: var(--wrong);
+  font-weight: 700;
+}
+
+.choice.is-wrong .choice-num { background: var(--wrong); color: #fff; }
+
+.choice:disabled { cursor: default; }
+
+/* ---------- 결과 ---------- */
+
+.result-card { text-align: center; }
+
+.result-name {
+  font-size: 16px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.result-score {
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 4px 0 0;
+  line-height: 1.2;
+}
+
+.result-total {
+  font-size: 24px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.result-percent {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 4px 0 0;
+}
+
+.result-comment {
+  color: var(--muted);
+  font-size: 15px;
+  margin: 6px 0 0;
+}
+
+.section-title {
+  font-size: 17px;
+  margin: 28px 0 12px;
+}
+
+.wrong-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wrong-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--wrong);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.wrong-word {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 10px;
+}
+
+.answer-row {
+  font-size: 15px;
+  margin: 4px 0;
+}
+
+.answer-row .tag {
+  display: inline-block;
+  min-width: 52px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.my-answer { color: var(--wrong); font-weight: 700; }
+.real-answer { color: var(--correct); font-weight: 700; }
+
+.explanation {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 14px;
+  color: #414855;
+}
+
+.all-correct {
+  background: var(--correct-bg);
+  color: var(--correct);
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* ---------- 작은 화면(휴대폰) ---------- */
+
+@media (max-width: 380px) {
+  .question-word { font-size: 28px; }
+  .result-score { font-size: 44px; }
+  .choice { font-size: 15px; padding: 13px 12px; }
+}
+
+/* 선택한 보기 표시 */
+.choice.is-selected {
+  border-color: var(--primary);
+  background: #eaf0ff;
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+.choice.is-selected .choice-num {
+  background: var(--primary);
+  color: #fff;
+}

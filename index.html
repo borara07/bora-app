@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>어휘 테스트</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="app">
+
+    <!-- 1. 시작 화면 -->
+    <section id="screen-start" class="screen">
+      <h1 id="quiz-title">어휘 테스트</h1>
+      <p class="subtitle">이름을 입력하고 시작하세요.</p>
+
+      <form id="start-form" class="card" autocomplete="off">
+        <label class="label" for="student-name">학생 이름</label>
+        <input
+          type="text"
+          id="student-name"
+          class="input"
+          placeholder="예) 김민서"
+          maxlength="20">
+        <p id="name-error" class="error" hidden>이름을 입력해주세요.</p>
+        <button type="submit" class="btn btn-primary">테스트 시작</button>
+      </form>
+
+      <p class="hint" id="start-hint"></p>
+    </section>
+
+    <!-- 2. 문제 풀이 화면 -->
+    <section id="screen-quiz" class="screen" hidden>
+      <header class="quiz-head">
+        <div class="progress-text">
+          <span id="progress-now">1</span> / <span id="progress-total">10</span>
+        </div>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+      </header>
+
+      <div class="card">
+        <p class="question-label">다음 단어의 뜻으로 알맞은 것은?</p>
+        <p id="question-word" class="question-word">word</p>
+
+        <div id="choices" class="choices"></div>
+      </div>
+
+      <button id="btn-next" class="btn btn-primary" disabled>다음 문제</button>
+    </section>
+
+    <!-- 3. 결과 화면 -->
+    <section id="screen-result" class="screen" hidden>
+      <div class="card result-card">
+        <p id="result-name" class="result-name"></p>
+        <p class="result-score">
+          <span id="result-correct">0</span><span class="result-total">/<span id="result-total">10</span></span>
+        </p>
+        <p id="result-percent" class="result-percent"></p>
+        <p id="result-comment" class="result-comment"></p>
+      </div>
+
+      <section id="wrong-area">
+        <h2 class="section-title">틀린 문제 해설</h2>
+        <div id="wrong-list" class="wrong-list"></div>
+      </section>
+
+      <button id="btn-retry" class="btn btn-primary">다시 풀기</button>
+    </section>
+
+    <!-- 오류 안내 (문제 파일에 실수가 있을 때만 보입니다) -->
+    <section id="screen-error" class="screen" hidden>
+      <div class="card">
+        <h2 class="section-title">문제 파일을 확인해주세요</h2>
+        <p class="hint">questions.js 파일에서 아래 부분을 고쳐주세요.</p>
+        <ul id="error-list" class="error-list"></ul>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
