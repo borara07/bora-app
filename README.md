@@ -163,6 +163,7 @@ var QUIZ_QUESTION_LABEL = "다음 어휘의 뜻으로 알맞은 것은?";   /* �
 ### 점수를 수파베이스에 쌓기
 
 **1단계.** 수파베이스에서 프로젝트를 만들고, `SQL Editor` 에 아래를 붙여넣어 실행합니다.
+(이 저장소의 **`supabase-설정.sql`** 파일 내용과 같습니다. 그 파일을 열어 복사하셔도 됩니다.)
 
 ```sql
 create table public.quiz_attempts (
