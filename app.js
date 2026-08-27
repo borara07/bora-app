@@ -102,6 +102,7 @@
       var correctText = q.choices[q.answer - 1];
       return {
         word: q.word,
+        hanja: q.hanja || '',
         choices: shuffle(q.choices),   // 보기 순서도 섞습니다
         correctText: correctText,
         explanation: q.explanation || '',
@@ -122,6 +123,15 @@
     $('progress-fill').style.width = Math.round((now / total) * 100) + '%';
 
     $('question-word').textContent = q.word;
+
+    var hanjaBox = $('question-hanja');
+    if (q.hanja) {
+      hanjaBox.textContent = q.hanja;
+      hanjaBox.hidden = false;
+    } else {
+      hanjaBox.textContent = '';
+      hanjaBox.hidden = true;
+    }
 
     var box = $('choices');
     box.innerHTML = '';
@@ -201,9 +211,9 @@
     } else if (percent >= 80) {
       comment = '훌륭해요. 조금만 더 다듬으면 완벽합니다.';
     } else if (percent >= 60) {
-      comment = '기본기는 있어요. 틀린 단어를 복습해봐요.';
+      comment = '기본기는 있어요. 틀린 어휘를 복습해봐요.';
     } else {
-      comment = '아직 헷갈리는 단어가 많아요. 해설을 꼭 읽어보세요.';
+      comment = '아직 헷갈리는 어휘가 많아요. 해설을 꼭 읽어보세요.';
     }
     $('result-comment').textContent = comment;
 
@@ -231,6 +241,12 @@
     var word = document.createElement('p');
     word.className = 'wrong-word';
     word.textContent = q.word;
+    if (q.hanja) {
+      var h = document.createElement('span');
+      h.className = 'wrong-hanja';
+      h.textContent = q.hanja;
+      word.appendChild(h);
+    }
     item.appendChild(word);
 
     item.appendChild(answerRow('내 답', q.myAnswer, 'my-answer'));
@@ -280,6 +296,10 @@
     if (problems.length > 0) {
       showErrors(problems);
       return;
+    }
+
+    if (typeof QUIZ_QUESTION_LABEL === 'string' && QUIZ_QUESTION_LABEL.trim() !== '') {
+      $('question-label').textContent = QUIZ_QUESTION_LABEL;
     }
 
     if (typeof QUIZ_TITLE === 'string' && QUIZ_TITLE.trim() !== '') {

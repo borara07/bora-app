@@ -357,13 +357,15 @@ h1 {
 }
 
 .answer-row {
+  display: flex;
+  gap: 10px;
   font-size: 15px;
   margin: 4px 0;
 }
 
 .answer-row .tag {
-  display: inline-block;
-  min-width: 52px;
+  flex: 0 0 34px;
+  padding-top: 2px;
   font-size: 13px;
   font-weight: 700;
   color: var(--muted);
@@ -399,4 +401,20 @@ h1 {
 
 @media (prefers-reduced-motion: reduce) {
   .progress-fill { transition: none; }
+}
+
+/* 어휘 아래 한자 표시 (국어 어휘용, 없으면 표시되지 않음) */
+.question-hanja {
+  margin: -14px 0 20px;
+  font-size: 17px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.wrong-hanja {
+  margin-left: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.06em;
 }
