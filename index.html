@@ -10,10 +10,23 @@
 
   <main class="app">
 
-    <!-- 1. 시작 화면 -->
-    <section id="screen-start" class="screen">
+    <!-- 1. 회차 선택 화면 -->
+    <section id="screen-rounds" class="screen">
       <h1 id="quiz-title">어휘 테스트</h1>
-      <p class="subtitle">이름을 입력하고 시작하세요.</p>
+      <p class="subtitle">풀고 싶은 회차를 고르세요.</p>
+
+      <div id="round-list" class="round-list"></div>
+    </section>
+
+    <!-- 2. 이름 입력 화면 -->
+    <section id="screen-start" class="screen" hidden>
+      <button type="button" id="btn-back-rounds" class="btn-back">회차 다시 고르기</button>
+
+      <div class="card">
+        <p class="eyebrow">선택한 회차</p>
+        <p id="chosen-round" class="chosen-round">01회</p>
+        <p id="chosen-detail" class="chosen-detail"></p>
+      </div>
 
       <form id="start-form" class="card" autocomplete="off">
         <label class="label" for="student-name">학생 이름</label>
@@ -26,13 +39,12 @@
         <p id="name-error" class="error" hidden>이름을 입력해주세요.</p>
         <button type="submit" class="btn btn-primary">테스트 시작</button>
       </form>
-
-      <p class="hint" id="start-hint"></p>
     </section>
 
-    <!-- 2. 문제 풀이 화면 -->
+    <!-- 3. 문제 풀이 화면 -->
     <section id="screen-quiz" class="screen" hidden>
       <header class="quiz-head">
+        <p id="quiz-round" class="quiz-round"></p>
         <div class="progress-text">
           <span id="progress-now">1</span> / <span id="progress-total">10</span>
         </div>
@@ -50,7 +62,7 @@
       <button id="btn-next" class="btn btn-primary" disabled>다음 문제</button>
     </section>
 
-    <!-- 3. 결과 화면 -->
+    <!-- 4. 결과 화면 -->
     <section id="screen-result" class="screen" hidden>
       <div class="card result-card">
         <p id="result-name" class="result-name"></p>
@@ -59,6 +71,7 @@
         </p>
         <p id="result-percent" class="result-percent"></p>
         <p id="result-comment" class="result-comment"></p>
+        <p id="result-round" class="result-round"></p>
       </div>
 
       <section id="wrong-area">
@@ -66,7 +79,8 @@
         <div id="wrong-list" class="wrong-list"></div>
       </section>
 
-      <button id="btn-retry" class="btn btn-primary">다시 풀기</button>
+      <button id="btn-retry" class="btn btn-primary">이 회차 다시 풀기</button>
+      <button id="btn-other-round" class="btn btn-quiet">다른 회차 고르기</button>
     </section>
 
     <!-- 오류 안내 (문제 파일에 실수가 있을 때만 보입니다) -->
