@@ -11,8 +11,8 @@
    ========================================================= */
 
 var SUPABASE = {
-  url: "",                    /* 예) https://abcdefgh.supabase.co */
-  anonKey: "",                /* 예) eyJhbGciOi... (anon public 키) */
+  url: "https://naiabxgeprxebf.supabase.co",
+  anonKey: "sb_publishable_sbvGefQimsbkgnN_Bqc62Q_ZTKdyfBa",
   table: "quiz_attempts"      /* 기록을 쌓을 표 이름 */
 };
 
