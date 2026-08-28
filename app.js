@@ -796,7 +796,7 @@
       rosterArea.hidden = false;
       var notYet = adminRoster.filter(function (r) { return r.count === 0; }).length;
       $('roster-note').textContent =
-        '재원생 ' + adminRoster.length + '명 중 ' + (adminRoster.length - notYet) + '명 응시' +
+        '현재 재원생 ' + adminRoster.length + '명 중 ' + (adminRoster.length - notYet) + '명 응시' +
         (notYet > 0 ? ' · 아직 안 본 학생 ' + notYet + '명' : '');
 
       fillTable('table-grade', sortRows(gradeStats(), adminSorts['table-grade']),
