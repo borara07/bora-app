@@ -50,12 +50,27 @@
   }
 
   function quizLength() {
-    return (typeof QUIZ_LENGTH === 'number' && QUIZ_LENGTH > 0) ? QUIZ_LENGTH : 10;
+    return (typeof QUIZ_LENGTH === 'number' && QUIZ_LENGTH > 0) ? QUIZ_LENGTH : 15;
+  }
+
+  /* 한 회차에 꼭 넣을 한자성어 수 */
+  function idiomCount() {
+    return (typeof IDIOM_COUNT === 'number' && IDIOM_COUNT >= 0) ? IDIOM_COUNT : 0;
+  }
+
+  function isIdiom(q) {
+    return q && q.type === '한자성어';
   }
 
   /* 이 회차에서 실제로 출제될 문제 수 */
   function countFor(round) {
     return Math.min(quizLength(), round.questions.length);
+  }
+
+  /* 이 회차에서 실제로 나올 한자성어 수 */
+  function idiomsFor(round) {
+    var have = round.questions.filter(isIdiom).length;
+    return Math.min(idiomCount(), have, countFor(round));
   }
 
   /* ---------- 문제 파일 검사 ---------- */
@@ -150,7 +165,9 @@
 
       var meta = document.createElement('span');
       meta.className = 'round-meta';
-      meta.textContent = '전체 ' + round.questions.length + '문제 중 ' + countFor(round) + '문제 출제';
+      var n = idiomsFor(round);
+      meta.textContent = '전체 ' + round.questions.length + '문제 중 ' + countFor(round) + '문제 출제' +
+                         (n > 0 ? ' (한자성어 ' + n + '개 포함)' : '');
       card.appendChild(meta);
 
       card.addEventListener('click', function () {
@@ -167,8 +184,10 @@
     state.round = round;
 
     $('chosen-round').textContent = round.title;
+    var idioms = idiomsFor(round);
     $('chosen-detail').textContent =
-      (round.subtitle ? round.subtitle + ' · ' : '') + countFor(round) + '문제 · 4지선다';
+      (round.subtitle ? round.subtitle + ' · ' : '') + countFor(round) + '문제 · 4지선다' +
+      (idioms > 0 ? ' · 한자성어 ' + idioms + '개 포함' : '');
 
     $('name-error').hidden = true;
 
@@ -188,7 +207,26 @@
   /* ---------- 시험 만들기 ---------- */
 
   function buildQuiz() {
-    var picked = shuffle(state.round.questions).slice(0, countFor(state.round));
+    var all = state.round.questions;
+    var total = countFor(state.round);
+    var wantIdioms = idiomsFor(state.round);
+
+    /* 한자성어를 먼저 정해진 개수만큼 뽑고, 나머지는 일반 어휘로 채웁니다 */
+    var idioms = shuffle(all.filter(isIdiom)).slice(0, wantIdioms);
+    var rest = shuffle(all.filter(function (q) { return !isIdiom(q); }));
+
+    var picked = idioms.concat(rest.slice(0, total - idioms.length));
+
+    /* 일반 어휘가 모자라면 남은 한자성어로 채웁니다 */
+    if (picked.length < total) {
+      var more = shuffle(all.filter(isIdiom)).filter(function (q) {
+        return picked.indexOf(q) === -1;
+      });
+      picked = picked.concat(more.slice(0, total - picked.length));
+    }
+
+    /* 한자성어가 뒤에 몰리지 않도록 순서를 섞습니다 */
+    picked = shuffle(picked);
 
     return picked.map(function (q) {
       return {
