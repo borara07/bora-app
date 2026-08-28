@@ -14,6 +14,8 @@
     quiz: $('screen-quiz'),
     result: $('screen-result'),
     history: $('screen-history'),
+    adminLogin: $('screen-admin-login'),
+    admin: $('screen-admin'),
     error: $('screen-error')
   };
 
@@ -608,6 +610,237 @@
     }
   }
 
+  /* ---------- 관리자 화면 (선생님 전용) ---------- */
+
+  /* 관리자 화면에서 보고 있는 기록과 정렬 상태 */
+  var adminRows = [];
+  var adminSorts = {
+    'table-rounds': { key: 'avg', desc: true },
+    'table-students': { key: 'avg', desc: true },
+    'table-all': { key: 'savedAt', desc: true }
+  };
+
+  function openAdminLogin() {
+    $('admin-password').value = '';
+    $('admin-error').hidden = true;
+    show('adminLogin');
+    $('admin-password').focus();
+  }
+
+  function tryAdminLogin(password) {
+    var err = $('admin-error');
+    err.hidden = true;
+
+    if (password === '') {
+      err.textContent = '비밀번호를 입력해주세요.';
+      err.hidden = false;
+      return;
+    }
+
+    err.textContent = '확인하는 중…';
+    err.hidden = false;
+
+    VocabStore.fetchAll(password).then(function (r) {
+      if (r.ok) {
+        err.hidden = true;
+        showAdmin(r.rows, '수파베이스에 쌓인 전체 학생 기록입니다.');
+        return;
+      }
+
+      if (r.code === 'wrong-password') {
+        err.textContent = '비밀번호가 맞지 않습니다.';
+        err.hidden = false;
+        return;
+      }
+
+      /* 서버 설정 전이라면, 이 기기에 저장된 기록만 보여 줍니다 */
+      if (r.code === 'not-set-up' || r.code === 'no-server' || r.code === 'offline') {
+        if (password === VocabStore.localPassword()) {
+          err.hidden = true;
+          showAdmin(VocabStore.all(),
+            '이 기기에 저장된 기록만 보고 있습니다.\n' +
+            '전체 학생 기록을 보려면 supabase-관리자.sql 설정이 필요합니다.');
+          return;
+        }
+        err.textContent = '비밀번호가 맞지 않습니다.';
+        err.hidden = false;
+        return;
+      }
+
+      err.textContent = '기록을 가져오지 못했습니다.\n' + (r.detail || '');
+      err.hidden = false;
+    });
+  }
+
+  function showAdmin(rows, note) {
+    adminRows = rows || [];
+    $('admin-source').textContent = note;
+    $('admin-export-state').hidden = true;
+    renderAdmin();
+    show('admin');
+  }
+
+  /* ---------- 관리자 화면 계산 ---------- */
+
+  function studentKeyOf(r) {
+    return r.name + '|' + r.school + '|' + r.phone4;
+  }
+
+  function roundStats() {
+    var map = {};
+    adminRows.forEach(function (r) {
+      var m = map[r.roundTitle] || (map[r.roundTitle] = { title: r.roundTitle, count: 0, sum: 0, who: {} });
+      m.count += 1;
+      m.sum += r.percent;
+      m.who[studentKeyOf(r)] = true;
+    });
+    return Object.keys(map).map(function (k) {
+      var m = map[k];
+      return { title: m.title, count: m.count, students: Object.keys(m.who).length, avg: Math.round(m.sum / m.count) };
+    });
+  }
+
+  function studentStats() {
+    var map = {};
+    adminRows.forEach(function (r) {
+      var k = studentKeyOf(r);
+      var m = map[k] || (map[k] = { name: r.name, school: r.school, count: 0, sum: 0, last: '' });
+      m.count += 1;
+      m.sum += r.percent;
+      if (r.savedAt > m.last) m.last = r.savedAt;
+    });
+    return Object.keys(map).map(function (k) {
+      var m = map[k];
+      return { name: m.name, school: m.school, count: m.count, avg: Math.round(m.sum / m.count), last: m.last };
+    });
+  }
+
+  function sortRows(rows, sort) {
+    var out = rows.slice();
+    out.sort(function (a, b) {
+      var x = a[sort.key], y = b[sort.key];
+      if (typeof x === 'number' && typeof y === 'number') return sort.desc ? y - x : x - y;
+      x = String(x == null ? '' : x);
+      y = String(y == null ? '' : y);
+      return sort.desc ? y.localeCompare(x, 'ko') : x.localeCompare(y, 'ko');
+    });
+    return out;
+  }
+
+  /* ---------- 관리자 화면 그리기 ---------- */
+
+  function renderAdmin() {
+    var students = studentStats();
+    var sum = adminRows.reduce(function (a, r) { return a + r.percent; }, 0);
+
+    $('admin-summary').innerHTML = '';
+    [
+      ['학생', students.length + '명'],
+      ['시험', adminRows.length + '번'],
+      ['평균 정답률', (adminRows.length ? Math.round(sum / adminRows.length) : 0) + '%']
+    ].forEach(function (pair) {
+      var box = document.createElement('div');
+      box.className = 'summary-item';
+      var v = document.createElement('p');
+      v.className = 'summary-value';
+      v.textContent = pair[1];
+      var t = document.createElement('p');
+      t.className = 'summary-label';
+      t.textContent = pair[0];
+      box.appendChild(v);
+      box.appendChild(t);
+      $('admin-summary').appendChild(box);
+    });
+
+    fillTable('table-rounds', sortRows(roundStats(), adminSorts['table-rounds']),
+      function (r) { return [r.title, r.students + '명', r.count + '번', r.avg + '%']; });
+
+    fillTable('table-students', sortRows(students, adminSorts['table-students']),
+      function (r) { return [r.name, r.school, r.count + '번', r.avg + '%', shortDate(r.last)]; });
+
+    fillTable('table-all', sortRows(adminRows, adminSorts['table-all']),
+      function (r) { return [r.name, r.school, r.roundTitle, r.correct + '/' + r.total + ' (' + r.percent + '%)', shortDate(r.savedAt)]; });
+  }
+
+  function fillTable(tableId, rows, toCells) {
+    var table = $(tableId);
+    var body = table.querySelector('tbody');
+    body.innerHTML = '';
+
+    if (rows.length === 0) {
+      var tr = document.createElement('tr');
+      var td = document.createElement('td');
+      td.colSpan = table.querySelectorAll('th').length;
+      td.className = 'empty-cell';
+      td.textContent = '기록이 없습니다.';
+      tr.appendChild(td);
+      body.appendChild(tr);
+    } else {
+      rows.forEach(function (r) {
+        var tr = document.createElement('tr');
+        toCells(r).forEach(function (text, i) {
+          var td = document.createElement('td');
+          if (i > 0 && /^[0-9]/.test(String(text))) td.className = 'num';
+          td.textContent = text;
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      });
+    }
+
+    /* 어느 칸을 기준으로 정렬 중인지 표시 */
+    var sort = adminSorts[tableId];
+    Array.prototype.forEach.call(table.querySelectorAll('th'), function (th) {
+      th.classList.remove('is-asc', 'is-desc');
+      if (th.getAttribute('data-sort') === sort.key) {
+        th.classList.add(sort.desc ? 'is-desc' : 'is-asc');
+      }
+    });
+  }
+
+  function shortDate(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    var two = function (n) { return (n < 10 ? '0' : '') + n; };
+    return (d.getFullYear() % 100) + '.' + two(d.getMonth() + 1) + '.' + two(d.getDate());
+  }
+
+  function setupAdminSorting() {
+    ['table-rounds', 'table-students', 'table-all'].forEach(function (id) {
+      var table = $(id);
+      Array.prototype.forEach.call(table.querySelectorAll('th[data-sort]'), function (th) {
+        th.addEventListener('click', function () {
+          var key = th.getAttribute('data-sort');
+          var sort = adminSorts[id];
+          if (sort.key === key) {
+            sort.desc = !sort.desc;
+          } else {
+            sort.key = key;
+            sort.desc = true;
+          }
+          renderAdmin();
+        });
+      });
+    });
+  }
+
+  function exportAdmin() {
+    var note = $('admin-export-state');
+    note.hidden = false;
+
+    if (adminRows.length === 0) {
+      note.textContent = '내려받을 기록이 없습니다.';
+      return;
+    }
+
+    note.textContent = '내려받는 중…';
+    downloadFile('어휘테스트_전체기록.csv', '\ufeff' + VocabStore.toCsv(adminRows)).then(function (ok) {
+      note.textContent = ok
+        ? (adminRows.length + '개의 기록을 내려받았습니다.')
+        : '이 화면에서는 파일을 내려받을 수 없습니다.';
+    });
+  }
+
   /* ---------- 시작 / 다시 풀기 ---------- */
 
   function startQuiz() {
@@ -681,6 +914,18 @@
     $('btn-export').addEventListener('click', exportRecords);
 
     $('btn-check').addEventListener('click', checkConnection);
+
+    $('btn-admin').addEventListener('click', openAdminLogin);
+    $('btn-admin-back').addEventListener('click', renderRounds);
+    $('btn-admin-exit').addEventListener('click', renderRounds);
+    $('btn-admin-export').addEventListener('click', exportAdmin);
+
+    $('admin-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      tryAdminLogin($('admin-password').value.trim());
+    });
+
+    setupAdminSorting();
 
     // 지난번에 못 보낸 기록이 있으면 조용히 다시 보냅니다
     VocabStore.resend();

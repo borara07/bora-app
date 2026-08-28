@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>어휘 테스트</title>
-  <link rel="stylesheet" href="style.css?v=20260827d">
+  <link rel="stylesheet" href="style.css?v=20260828a">
 </head>
 <body>
 
@@ -12,6 +12,10 @@
 
     <!-- 1. 회차 선택 화면 -->
     <section id="screen-rounds" class="screen">
+      <div class="corner">
+        <button type="button" id="btn-admin" class="btn-corner">관리자</button>
+      </div>
+
       <h1 id="quiz-title">어휘 테스트</h1>
       <p class="subtitle">풀고 싶은 회차를 고르세요.</p>
 
@@ -116,6 +120,87 @@
       <p id="check-state" class="check-state" hidden></p>
     </section>
 
+    <!-- 6. 관리자 비밀번호 화면 -->
+    <section id="screen-admin-login" class="screen" hidden>
+      <button type="button" id="btn-admin-back" class="btn-back">돌아가기</button>
+
+      <form id="admin-form" class="card" autocomplete="off">
+        <p class="eyebrow">선생님 전용</p>
+        <p class="chosen-round">전체 기록 보기</p>
+        <p class="chosen-detail">비밀번호를 입력하세요.</p>
+
+        <div class="field" style="margin-top:18px">
+          <label class="label" for="admin-password">비밀번호</label>
+          <input type="password" id="admin-password" class="input" autocomplete="off">
+        </div>
+
+        <p id="admin-error" class="error" hidden></p>
+        <button type="submit" class="btn btn-primary">확인</button>
+      </form>
+    </section>
+
+    <!-- 7. 관리자 화면 -->
+    <section id="screen-admin" class="screen" hidden>
+      <button type="button" id="btn-admin-exit" class="btn-back">돌아가기</button>
+
+      <p id="admin-source" class="save-state"></p>
+
+      <div class="card">
+        <p class="eyebrow">전체 요약</p>
+        <div id="admin-summary" class="summary-row"></div>
+      </div>
+
+      <h2 class="section-title">회차별 평균</h2>
+      <div class="table-wrap">
+        <table class="data-table" id="table-rounds">
+          <thead>
+            <tr>
+              <th data-sort="title">회차</th>
+              <th data-sort="students" class="num">인원</th>
+              <th data-sort="count" class="num">응시</th>
+              <th data-sort="avg" class="num">평균</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h2 class="section-title">학생별 누적</h2>
+      <div class="table-wrap">
+        <table class="data-table" id="table-students">
+          <thead>
+            <tr>
+              <th data-sort="name">이름</th>
+              <th data-sort="school">학교</th>
+              <th data-sort="count" class="num">응시</th>
+              <th data-sort="avg" class="num">평균</th>
+              <th data-sort="last">최근</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h2 class="section-title">전체 기록</h2>
+      <div class="table-wrap">
+        <table class="data-table" id="table-all">
+          <thead>
+            <tr>
+              <th data-sort="name">이름</th>
+              <th data-sort="school">학교</th>
+              <th data-sort="roundTitle">회차</th>
+              <th data-sort="percent" class="num">점수</th>
+              <th data-sort="savedAt">날짜</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <button type="button" id="btn-admin-export" class="btn btn-primary">엑셀(CSV)로 내려받기</button>
+      <p id="admin-export-state" class="field-hint" hidden></p>
+    </section>
+
     <!-- 오류 안내 (문제 파일에 실수가 있을 때만 보입니다) -->
     <section id="screen-error" class="screen" hidden>
       <div class="card">
@@ -127,8 +212,8 @@
 
   </main>
 
-  <script src="questions.js?v=20260827d"></script>
-  <script src="storage.js?v=20260827d"></script>
-  <script src="app.js?v=20260827d"></script>
+  <script src="questions.js?v=20260828a"></script>
+  <script src="storage.js?v=20260828a"></script>
+  <script src="app.js?v=20260828a"></script>
 </body>
 </html>
