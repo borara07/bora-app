@@ -5,7 +5,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>선생님용 - 어휘 테스트</title>
-  <link rel="stylesheet" href="style.css?v=20260828i">
+  <link rel="stylesheet" href="style.css?v=20260828j">
 </head>
 <body>
 
@@ -127,6 +127,11 @@
       <button type="button" id="btn-export" class="btn btn-primary">엑셀(CSV)로 내려받기</button>
       <p id="export-state" class="field-hint" hidden></p>
 
+      <h2 class="section-title">문제 은행</h2>
+      <p id="bank-note" class="field-hint"></p>
+      <button type="button" id="btn-upload" class="btn btn-quiet">문제 은행에 올리기</button>
+      <p id="upload-state" class="check-state" hidden></p>
+
       <p class="hint">
         <a href="./">학생 화면 보기</a> · <a href="check.html">서버 연결 확인</a>
       </p>
@@ -134,7 +139,8 @@
 
   </main>
 
-  <script src="storage.js?v=20260828i"></script>
-  <script src="teacher.js?v=20260828i"></script>
+  <script src="questions.js?v=20260828j"></script>
+  <script src="storage.js?v=20260828j"></script>
+  <script src="teacher.js?v=20260828j"></script>
 </body>
 </html>

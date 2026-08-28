@@ -9,6 +9,7 @@
   var $ = function (id) { return document.getElementById(id); };
 
   var rows = [];        /* 전체 시험 기록 */
+  var myPassword = '';  /* 이번에 들어올 때 쓴 비밀번호 (문제 올릴 때 다시 씁니다) */
   var roster = null;    /* 재원생 명단 기준 누적 (명단을 넣어 둔 경우에만) */
 
   var GRADE_ORDER = ['고3', '고2', '고1', '중3', '중2', '중1'];
@@ -38,6 +39,7 @@
     VocabStore.fetchAll(password).then(function (r) {
       if (r.ok) {
         err.hidden = true;
+        myPassword = password;
         show(r.rows, '수파베이스에 쌓인 전체 학생 기록입니다.');
 
         VocabStore.fetchStudents(password).then(function (sr) {
@@ -84,6 +86,7 @@
 
   function logout() {
     rows = [];
+    myPassword = '';
     roster = null;
     $('password').value = '';
     $('login-error').hidden = true;
@@ -280,6 +283,65 @@
     });
   }
 
+  /* ---------- 문제 은행 올리기 ---------- */
+
+  /* 앱에 들어 있는 문제를 수파베이스가 받을 모양으로 바꿉니다 */
+  function allQuestions() {
+    if (typeof ROUNDS === 'undefined' || !Array.isArray(ROUNDS)) return [];
+    var out = [];
+    ROUNDS.forEach(function (r) {
+      r.questions.forEach(function (q) {
+        out.push({
+          round_title: r.title,
+          word: q.word,
+          hanja: q.hanja || '',
+          correct_answer: q.choices[q.answer - 1],
+          choices: q.choices,
+          explanation: q.explanation || ''
+        });
+      });
+    });
+    return out;
+  }
+
+  function showBankNote() {
+    var list = allQuestions();
+    var rounds = {};
+    list.forEach(function (q) { rounds[q.round_title] = true; });
+    $('bank-note').textContent =
+      '이 앱에 들어 있는 문제: ' + Object.keys(rounds).length + '회차 ' + list.length + '문제';
+    $('btn-upload').disabled = list.length === 0;
+  }
+
+  function uploadQuestions() {
+    var box = $('upload-state');
+    var list = allQuestions();
+
+    box.hidden = false;
+    box.className = 'check-state';
+    box.textContent = list.length + '문제를 올리는 중…';
+
+    VocabStore.syncQuestions(myPassword, list).then(function (r) {
+      if (r.ok) {
+        box.className = 'check-state is-ok';
+        box.textContent = '올렸습니다.\n새로 들어간 문제 ' + r.added + '개, 내용을 새로 맞춘 문제 ' +
+                          r.updated + '개.\n문제 은행에 모두 ' + r.total + '문제가 들어 있습니다.';
+        return;
+      }
+      box.className = 'check-state is-bad';
+      if (r.code === 'not-set-up') {
+        box.textContent = '수파베이스에 문제 은행 설정이 아직 없습니다.\n' +
+                          'SQL Editor 에서 supabase-문제은행.sql 을 실행해주세요.';
+      } else if (r.code === 'wrong-password') {
+        box.textContent = '비밀번호가 맞지 않습니다. 나갔다가 다시 들어와 주세요.';
+      } else if (r.code === 'no-server' || r.code === 'offline') {
+        box.textContent = '수파베이스에 연결하지 못했습니다.';
+      } else {
+        box.textContent = '올리지 못했습니다.\n' + (r.detail || '');
+      }
+    });
+  }
+
   /* ---------- 내려받기 ---------- */
 
   function exportCsv() {
@@ -337,6 +399,8 @@
 
   $('btn-logout').addEventListener('click', logout);
   $('btn-export').addEventListener('click', exportCsv);
+  $('btn-upload').addEventListener('click', uploadQuestions);
+  showBankNote();
 
   setupSorting();
   $('password').focus();

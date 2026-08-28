@@ -384,6 +384,33 @@ var VocabStore = (function () {
       });
     },
 
+    /* 선생님용: 앱에 들어 있는 문제를 수파베이스 문제 은행에 올립니다 */
+    syncQuestions: function (password, list) {
+      if (!supabaseReady()) return Promise.resolve({ ok: false, code: 'no-server' });
+
+      var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/sync_questions';
+
+      return fetch(url, {
+        method: 'POST',
+        headers: headersFor(workingWay || 'bearer'),
+        body: JSON.stringify({ pass: password, payload: list })
+      }).then(function (res) {
+        return res.text().then(function (text) {
+          if (res.ok) {
+            var rows;
+            try { rows = JSON.parse(text); } catch (e) { rows = []; }
+            var r = rows[0] || {};
+            return { ok: true, added: r.added || 0, updated: r.updated || 0, total: r.total || 0 };
+          }
+          if (/비밀번호/.test(text)) return { ok: false, code: 'wrong-password' };
+          if (res.status === 404 || /sync_questions|PGRST202/.test(text)) return { ok: false, code: 'not-set-up' };
+          return { ok: false, code: 'error', detail: '[' + res.status + '] ' + text.slice(0, 200) };
+        });
+      }).catch(function () {
+        return { ok: false, code: 'offline' };
+      });
+    },
+
     teacherPassword: function () { return TEACHER_PASSWORD; },
 
     usingServer: supabaseReady
