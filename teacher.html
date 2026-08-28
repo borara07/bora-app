@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>선생님용 - 어휘 테스트</title>
+  <link rel="stylesheet" href="style.css?v=20260828e">
+</head>
+<body>
+
+  <main class="app">
+
+    <!-- 1. 비밀번호 화면 -->
+    <section id="screen-login" class="screen">
+      <h1>선생님용</h1>
+      <p class="subtitle">학생들의 시험 결과를 봅니다.</p>
+
+      <form id="login-form" class="card" autocomplete="off">
+        <div class="field">
+          <label class="label" for="password">비밀번호</label>
+          <input type="password" id="password" class="input" autocomplete="off">
+        </div>
+        <p id="login-error" class="error" hidden></p>
+        <button type="submit" class="btn btn-primary">들어가기</button>
+      </form>
+
+      <p class="hint"><a href="./">← 학생 화면으로</a></p>
+    </section>
+
+    <!-- 2. 결과 화면 -->
+    <section id="screen-board" class="screen" hidden>
+      <div class="corner">
+        <button type="button" id="btn-logout" class="btn-corner">나가기</button>
+      </div>
+
+      <h1>선생님용</h1>
+      <p id="source-note" class="save-state"></p>
+
+      <div class="card">
+        <p class="eyebrow">전체 요약</p>
+        <div id="summary" class="summary-row"></div>
+      </div>
+
+      <section id="roster-area" hidden>
+        <h2 class="section-title">재원생 응시 현황</h2>
+        <p id="roster-note" class="field-hint"></p>
+
+        <div class="table-wrap" id="grade-wrap">
+          <table class="data-table" id="table-grade">
+            <thead>
+              <tr>
+                <th data-sort="grade">학년</th>
+                <th data-sort="count" class="num">인원</th>
+                <th data-sort="taken" class="num">응시</th>
+                <th data-sort="notYet" class="num">아직</th>
+                <th data-sort="avg" class="num">평균</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table" id="table-roster">
+            <thead>
+              <tr>
+                <th data-sort="name">이름</th>
+                <th data-sort="school">학교</th>
+                <th data-sort="count" class="num">응시</th>
+                <th data-sort="avg" class="num">평균</th>
+                <th data-sort="last">최근</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <h2 class="section-title">회차별 평균</h2>
+      <div class="table-wrap">
+        <table class="data-table" id="table-rounds">
+          <thead>
+            <tr>
+              <th data-sort="title">회차</th>
+              <th data-sort="students" class="num">인원</th>
+              <th data-sort="count" class="num">응시</th>
+              <th data-sort="avg" class="num">평균</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h2 class="section-title">학생별 누적</h2>
+      <div class="table-wrap">
+        <table class="data-table" id="table-students">
+          <thead>
+            <tr>
+              <th data-sort="name">이름</th>
+              <th data-sort="school">학교</th>
+              <th data-sort="count" class="num">응시</th>
+              <th data-sort="avg" class="num">평균</th>
+              <th data-sort="last">최근</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h2 class="section-title">전체 기록</h2>
+      <div class="table-wrap">
+        <table class="data-table" id="table-all">
+          <thead>
+            <tr>
+              <th data-sort="name">이름</th>
+              <th data-sort="school">학교</th>
+              <th data-sort="roundTitle">회차</th>
+              <th data-sort="percent" class="num">점수</th>
+              <th data-sort="savedAt">날짜</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <button type="button" id="btn-export" class="btn btn-primary">엑셀(CSV)로 내려받기</button>
+      <p id="export-state" class="field-hint" hidden></p>
+
+      <p class="hint">
+        <a href="./">학생 화면 보기</a> · <a href="check.html">서버 연결 확인</a>
+      </p>
+    </section>
+
+  </main>
+
+  <script src="storage.js?v=20260828e"></script>
+  <script src="teacher.js?v=20260828e"></script>
+</body>
+</html>

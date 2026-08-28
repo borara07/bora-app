@@ -137,7 +137,7 @@ select q.round_title                               as 회차,
   left join public.attempt_items i on i.question_id = q.id
  group by q.id, q.round_title, q.word, q.hanja, q.correct_answer;
 
--- 관리자 화면용
+-- 선생님용 화면에서 씁니다
 create or replace function public.admin_question_stats(pass text)
 returns table (
   round_title text, word text, hanja text,
