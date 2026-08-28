@@ -619,8 +619,12 @@
     'table-rounds': { key: 'avg', desc: true },
     'table-students': { key: 'avg', desc: true },
     'table-all': { key: 'savedAt', desc: true },
-    'table-roster': { key: 'name', desc: false }
+    'table-roster': { key: 'name', desc: false },
+    'table-grade': { key: 'order', desc: false }
   };
+
+  /* 학년을 보여 줄 순서 (고3 → 중1) */
+  var GRADE_ORDER = ['고3', '고2', '고1', '중3', '중2', '중1'];
 
   function openAdminLogin() {
     $('admin-password').value = '';
@@ -690,6 +694,32 @@
   }
 
   /* ---------- 관리자 화면 계산 ---------- */
+
+  /* 재원생 명단을 학년별로 묶습니다 */
+  function gradeStats() {
+    var map = {};
+    (adminRoster || []).forEach(function (r) {
+      var g = r.grade || '미분류';
+      var m = map[g] || (map[g] = { grade: g, count: 0, taken: 0, sum: 0 });
+      m.count += 1;
+      if (r.count > 0) {
+        m.taken += 1;
+        m.sum += r.avg;
+      }
+    });
+    return Object.keys(map).map(function (k) {
+      var m = map[k];
+      var idx = GRADE_ORDER.indexOf(m.grade);
+      return {
+        grade: m.grade,
+        count: m.count,
+        taken: m.taken,
+        notYet: m.count - m.taken,
+        avg: m.taken ? Math.round(m.sum / m.taken) : 0,
+        order: idx === -1 ? GRADE_ORDER.length : idx
+      };
+    });
+  }
 
   function studentKeyOf(r) {
     return r.name + '|' + r.school + '|' + r.phone4;
@@ -769,6 +799,17 @@
         '재원생 ' + adminRoster.length + '명 중 ' + (adminRoster.length - notYet) + '명 응시' +
         (notYet > 0 ? ' · 아직 안 본 학생 ' + notYet + '명' : '');
 
+      fillTable('table-grade', sortRows(gradeStats(), adminSorts['table-grade']),
+        function (r) {
+          return [
+            r.grade,
+            r.count + '명',
+            r.taken + '명',
+            r.notYet === 0 ? '—' : r.notYet + '명',
+            r.taken === 0 ? '—' : r.avg + '%'
+          ];
+        });
+
       fillTable('table-roster', sortRows(adminRoster, adminSorts['table-roster']),
         function (r) {
           return [
@@ -837,7 +878,7 @@
   }
 
   function setupAdminSorting() {
-    ['table-rounds', 'table-students', 'table-all', 'table-roster'].forEach(function (id) {
+    ['table-rounds', 'table-students', 'table-all', 'table-roster', 'table-grade'].forEach(function (id) {
       var table = $(id);
       Array.prototype.forEach.call(table.querySelectorAll('th[data-sort]'), function (th) {
         th.addEventListener('click', function () {

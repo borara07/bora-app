@@ -366,6 +366,8 @@ var VocabStore = (function () {
               return {
                 name: r.name,
                 school: r.school || '',
+                className: r.class_name || '',
+                grade: r.grade || '미분류',
                 parentPhone: r.parent_phone || '',
                 studentPhone: r.student_phone || '',
                 active: r.active !== false,

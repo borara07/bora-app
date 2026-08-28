@@ -138,12 +138,16 @@ order by taken_at desc;
 -- 4) 앱의 관리자 화면에서 학생별 누적을 볼 수 있게 하기
 --    (supabase-관리자.sql 에서 정한 비밀번호를 씁니다)
 -- ---------------------------------------------------------
+drop function if exists public.admin_students(text);
+
 create or replace function public.admin_students(pass text)
 returns table (
   name          text,
   school        text,
   parent_phone  text,
   student_phone text,
+  class_name    text,   -- 반 (memo 에 적은 값)
+  grade         text,   -- 반 이름 앞부분에서 뽑은 학년 (예: 고2)
   active        boolean,
   attempts      bigint,
   rounds_done   bigint,
@@ -160,14 +164,17 @@ begin
   end if;
 
   return query
-    select s.name, s.school, s.parent_phone, s.student_phone, s.active,
+    select s.name, s.school, s.parent_phone, s.student_phone,
+           s.memo,
+           coalesce(nullif(split_part(coalesce(s.memo, ''), ' ', 1), ''), '미분류'),
+           s.active,
            count(a.id),
            count(distinct a.round_title),
            coalesce(round(avg(a.percent)), 0),
            max(a.taken_at)
       from public.students s
       left join public.quiz_attempts a on a.student_id = s.id
-     group by s.id, s.name, s.school, s.parent_phone, s.student_phone, s.active
+     group by s.id, s.name, s.school, s.parent_phone, s.student_phone, s.memo, s.active
      order by s.name;
 end;
 $$;

@@ -794,6 +794,8 @@ h1 {
   padding: 26px 14px;
 }
 
+#grade-wrap { margin-bottom: 14px; }
+
 /* ---------- 작은 화면(휴대폰) ---------- */
 
 @media (max-width: 380px) {

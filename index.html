@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>어휘 테스트</title>
-  <link rel="stylesheet" href="style.css?v=20260828b">
+  <link rel="stylesheet" href="style.css?v=20260828c">
 </head>
 <body>
 
@@ -168,6 +168,21 @@
       <section id="roster-area" hidden>
         <h2 class="section-title">재원생 기준 누적</h2>
         <p id="roster-note" class="field-hint"></p>
+
+        <div class="table-wrap" id="grade-wrap">
+          <table class="data-table" id="table-grade">
+            <thead>
+              <tr>
+                <th data-sort="grade">학년</th>
+                <th data-sort="count" class="num">인원</th>
+                <th data-sort="taken" class="num">응시</th>
+                <th data-sort="notYet" class="num">아직</th>
+                <th data-sort="avg" class="num">평균</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
         <div class="table-wrap">
           <table class="data-table" id="table-roster">
             <thead>
@@ -231,8 +246,8 @@
 
   </main>
 
-  <script src="questions.js?v=20260828b"></script>
-  <script src="storage.js?v=20260828b"></script>
-  <script src="app.js?v=20260828b"></script>
+  <script src="questions.js?v=20260828c"></script>
+  <script src="storage.js?v=20260828c"></script>
+  <script src="app.js?v=20260828c"></script>
 </body>
 </html>
