@@ -649,21 +649,6 @@ h1 {
   color: var(--muted);
 }
 
-/* 학생 화면 맨 아래의 조용한 선생님용 링크 */
-.teacher-link {
-  margin: 26px 0 0;
-  text-align: center;
-  font-size: 14px;
-}
-
-.teacher-link a {
-  color: var(--muted);
-  text-decoration: none;
-  padding: 8px 12px;
-}
-
-.teacher-link a:hover { color: var(--primary); }
-
 /* ---------- 서버 연결 확인 안내 ---------- */
 
 .check-state {

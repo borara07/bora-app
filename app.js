@@ -529,85 +529,6 @@
     return item;
   }
 
-  /* ---------- 기록 내려받기 (선생님용) ---------- */
-
-  function exportRecords() {
-    var note = $('export-state');
-    note.hidden = false;
-
-    var rows = VocabStore.all();
-    if (rows.length === 0) {
-      note.textContent = '이 기기에 저장된 기록이 없습니다.';
-      return;
-    }
-
-    var csv = '\ufeff' + VocabStore.toCsv();   // 엑셀에서 한글이 깨지지 않도록
-    var filename = '어휘테스트_기록.csv';
-
-    note.textContent = '내려받는 중…';
-
-    downloadFile(filename, csv).then(function (ok) {
-      note.textContent = ok
-        ? (rows.length + '개의 기록을 내려받았습니다.')
-        : '이 화면에서는 파일을 내려받을 수 없습니다.';
-    });
-  }
-
-  /* ---------- 서버 연결 확인 (선생님용) ---------- */
-
-  function checkConnection() {
-    var box = $('check-state');
-    box.hidden = false;
-    box.className = 'check-state';
-    box.textContent = '확인하는 중…';
-
-    VocabStore.testConnection().then(function (r) {
-      box.className = 'check-state ' + (r.ok ? 'is-ok' : 'is-bad');
-      box.textContent = r.message;
-
-      if (!r.ok && r.detail) {
-        var more = document.createElement('span');
-        more.className = 'check-detail';
-        more.textContent = r.detail;
-        box.appendChild(more);
-      }
-    });
-  }
-
-  function downloadFile(filename, text) {
-    // 아티팩트 화면에서는 전용 기능을 통해서만 파일을 건넬 수 있습니다
-    if (window.claude && typeof window.claude.use === 'function') {
-      return window.claude.use('downloads').then(function (downloads) {
-        if (!downloads) return browserDownload(filename, text);
-        return downloads.save({ filename: filename, data: text }).then(function () {
-          return true;
-        }).catch(function () {
-          return false;
-        });
-      }).catch(function () {
-        return browserDownload(filename, text);
-      });
-    }
-    return Promise.resolve(browserDownload(filename, text));
-  }
-
-  function browserDownload(filename, text) {
-    try {
-      var blob = new Blob([text], { type: 'text/csv;charset=utf-8;' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
   /* ---------- 시작 / 다시 풀기 ---------- */
 
   function startQuiz() {
@@ -677,10 +598,6 @@
     $('btn-back-from-history').addEventListener('click', function () {
       show(historyBackTo === 'result' ? 'result' : 'start');
     });
-
-    $('btn-export').addEventListener('click', exportRecords);
-
-    $('btn-check').addEventListener('click', checkConnection);
 
     // 지난번에 못 보낸 기록이 있으면 조용히 다시 보냅니다
     VocabStore.resend();
