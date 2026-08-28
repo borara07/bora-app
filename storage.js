@@ -17,8 +17,8 @@ var SUPABASE = {
 };
 
 /* 수파베이스를 아직 설정하지 않았을 때, 이 기기의 기록만 보기 위한 비밀번호입니다.
-   수파베이스 관리자 설정(supabase-관리자.sql)을 마치면 그쪽 비밀번호를 씁니다. */
-var ADMIN_LOCAL_PASSWORD = "bora2026";
+   수파베이스 선생님용 설정(supabase-선생님.sql)을 마치면 그쪽 비밀번호를 씁니다. */
+var TEACHER_PASSWORD = "bora2026";
 
 var VocabStore = (function () {
   'use strict';
@@ -384,7 +384,7 @@ var VocabStore = (function () {
       });
     },
 
-    localPassword: function () { return ADMIN_LOCAL_PASSWORD; },
+    teacherPassword: function () { return TEACHER_PASSWORD; },
 
     usingServer: supabaseReady
   };
