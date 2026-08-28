@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>어휘 테스트</title>
-  <link rel="stylesheet" href="style.css?v=20260828a">
+  <link rel="stylesheet" href="style.css?v=20260828b">
 </head>
 <body>
 
@@ -165,7 +165,26 @@
         </table>
       </div>
 
-      <h2 class="section-title">학생별 누적</h2>
+      <section id="roster-area" hidden>
+        <h2 class="section-title">재원생 기준 누적</h2>
+        <p id="roster-note" class="field-hint"></p>
+        <div class="table-wrap">
+          <table class="data-table" id="table-roster">
+            <thead>
+              <tr>
+                <th data-sort="name">이름</th>
+                <th data-sort="school">학교</th>
+                <th data-sort="count" class="num">응시</th>
+                <th data-sort="avg" class="num">평균</th>
+                <th data-sort="last">최근</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <h2 class="section-title">학생별 누적 (기록에 남은 이름 기준)</h2>
       <div class="table-wrap">
         <table class="data-table" id="table-students">
           <thead>
@@ -212,8 +231,8 @@
 
   </main>
 
-  <script src="questions.js?v=20260828a"></script>
-  <script src="storage.js?v=20260828a"></script>
-  <script src="app.js?v=20260828a"></script>
+  <script src="questions.js?v=20260828b"></script>
+  <script src="storage.js?v=20260828b"></script>
+  <script src="app.js?v=20260828b"></script>
 </body>
 </html>

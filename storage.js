@@ -345,6 +345,43 @@ var VocabStore = (function () {
       });
     },
 
+    /* 선생님용: 재원생 명단 기준 누적 성적 (명단을 넣어 둔 경우에만 나옵니다) */
+    fetchStudents: function (password) {
+      if (!supabaseReady()) return Promise.resolve({ ok: false, code: 'no-server' });
+
+      var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/admin_students';
+
+      return fetch(url, {
+        method: 'POST',
+        headers: headersFor(workingWay || 'bearer'),
+        body: JSON.stringify({ pass: password })
+      }).then(function (res) {
+        return res.text().then(function (text) {
+          if (!res.ok) return { ok: false, code: 'unavailable' };
+          var rows;
+          try { rows = JSON.parse(text); } catch (e) { return { ok: false, code: 'unavailable' }; }
+          return {
+            ok: true,
+            rows: rows.map(function (r) {
+              return {
+                name: r.name,
+                school: r.school || '',
+                parentPhone: r.parent_phone || '',
+                studentPhone: r.student_phone || '',
+                active: r.active !== false,
+                count: Number(r.attempts) || 0,
+                rounds: Number(r.rounds_done) || 0,
+                avg: Math.round(Number(r.avg_percent) || 0),
+                last: r.last_taken || ''
+              };
+            })
+          };
+        });
+      }).catch(function () {
+        return { ok: false, code: 'offline' };
+      });
+    },
+
     localPassword: function () { return ADMIN_LOCAL_PASSWORD; },
 
     usingServer: supabaseReady
