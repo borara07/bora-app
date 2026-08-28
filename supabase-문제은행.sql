@@ -176,3 +176,59 @@ grant execute on function public.admin_question_stats(text) to anon;
 --   select * from public.question_stats
 --    where 출제횟수 > 0 order by 정답률;
 -- =========================================================
+
+
+-- =========================================================
+-- 앱의 문제를 수파베이스에 한꺼번에 올리기
+--
+-- 선생님용 화면의 '문제 은행 올리기' 버튼이 이 기능을 씁니다.
+-- 회차를 새로 추가한 뒤 그 버튼을 누르면 보기와 해설까지 전부 채워집니다.
+-- =========================================================
+
+create or replace function public.sync_questions(pass text, payload jsonb)
+returns table (added int, updated int, total int)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  a int := 0; u int := 0;
+begin
+  if not exists (select 1 from public.admin_secret where password = pass) then
+    raise exception '비밀번호가 올바르지 않습니다';
+  end if;
+
+  if payload is null or jsonb_typeof(payload) <> 'array' or jsonb_array_length(payload) = 0 then
+    raise exception '보낼 문제가 없습니다';
+  end if;
+
+  with up as (
+    insert into public.questions
+      (round_title, word, hanja, correct_answer, choices, explanation, updated_at)
+    select it->>'round_title',
+           it->>'word',
+           nullif(it->>'hanja', ''),
+           it->>'correct_answer',
+           it->'choices',
+           nullif(it->>'explanation', ''),
+           now()
+      from jsonb_array_elements(payload) it
+     where coalesce(it->>'round_title', '') <> ''
+       and coalesce(it->>'word', '') <> ''
+    on conflict (round_title, word) do update set
+      hanja          = excluded.hanja,
+      correct_answer = excluded.correct_answer,
+      choices        = excluded.choices,
+      explanation    = excluded.explanation,
+      updated_at     = now()
+    returning (xmax = 0) as is_new
+  )
+  select count(*) filter (where is_new), count(*) filter (where not is_new)
+    into a, u from up;
+
+  return query select a, u, (select count(*)::int from public.questions);
+end;
+$$;
+
+revoke all on function public.sync_questions(text, jsonb) from public;
+grant execute on function public.sync_questions(text, jsonb) to anon;
