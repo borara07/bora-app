@@ -614,10 +614,12 @@
 
   /* 관리자 화면에서 보고 있는 기록과 정렬 상태 */
   var adminRows = [];
+  var adminRoster = null;   /* 재원생 명단 기준 누적 (명단을 넣어 둔 경우에만) */
   var adminSorts = {
     'table-rounds': { key: 'avg', desc: true },
     'table-students': { key: 'avg', desc: true },
-    'table-all': { key: 'savedAt', desc: true }
+    'table-all': { key: 'savedAt', desc: true },
+    'table-roster': { key: 'name', desc: false }
   };
 
   function openAdminLogin() {
@@ -644,6 +646,12 @@
       if (r.ok) {
         err.hidden = true;
         showAdmin(r.rows, '수파베이스에 쌓인 전체 학생 기록입니다.');
+
+        /* 재원생 명단을 넣어 두었으면 그 기준 누적도 함께 보여 줍니다 */
+        VocabStore.fetchStudents(password).then(function (sr) {
+          adminRoster = sr.ok ? sr.rows : null;
+          renderAdmin();
+        });
         return;
       }
 
@@ -674,6 +682,7 @@
 
   function showAdmin(rows, note) {
     adminRows = rows || [];
+    adminRoster = null;
     $('admin-source').textContent = note;
     $('admin-export-state').hidden = true;
     renderAdmin();
@@ -752,6 +761,28 @@
       $('admin-summary').appendChild(box);
     });
 
+    var rosterArea = $('roster-area');
+    if (adminRoster) {
+      rosterArea.hidden = false;
+      var notYet = adminRoster.filter(function (r) { return r.count === 0; }).length;
+      $('roster-note').textContent =
+        '재원생 ' + adminRoster.length + '명 중 ' + (adminRoster.length - notYet) + '명 응시' +
+        (notYet > 0 ? ' · 아직 안 본 학생 ' + notYet + '명' : '');
+
+      fillTable('table-roster', sortRows(adminRoster, adminSorts['table-roster']),
+        function (r) {
+          return [
+            r.name,
+            r.school,
+            r.count === 0 ? '—' : r.count + '번',
+            r.count === 0 ? '—' : r.avg + '%',
+            r.count === 0 ? '아직 안 봄' : shortDate(r.last)
+          ];
+        });
+    } else {
+      rosterArea.hidden = true;
+    }
+
     fillTable('table-rounds', sortRows(roundStats(), adminSorts['table-rounds']),
       function (r) { return [r.title, r.students + '명', r.count + '번', r.avg + '%']; });
 
@@ -806,7 +837,7 @@
   }
 
   function setupAdminSorting() {
-    ['table-rounds', 'table-students', 'table-all'].forEach(function (id) {
+    ['table-rounds', 'table-students', 'table-all', 'table-roster'].forEach(function (id) {
       var table = $(id);
       Array.prototype.forEach.call(table.querySelectorAll('th[data-sort]'), function (th) {
         th.addEventListener('click', function () {
