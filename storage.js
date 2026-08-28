@@ -16,6 +16,10 @@ var SUPABASE = {
   table: "quiz_attempts"      /* 기록을 쌓을 표 이름 */
 };
 
+/* 수파베이스를 아직 설정하지 않았을 때, 이 기기의 기록만 보기 위한 비밀번호입니다.
+   수파베이스 관리자 설정(supabase-관리자.sql)을 마치면 그쪽 비밀번호를 씁니다. */
+var ADMIN_LOCAL_PASSWORD = "bora2026";
+
 var VocabStore = (function () {
   'use strict';
 
@@ -157,6 +161,23 @@ var VocabStore = (function () {
     return '알 수 없는 오류입니다. (코드 ' + status + ')';
   }
 
+  /* 서버에서 받은 한 줄을 앱이 쓰는 모양으로 바꿉니다 */
+  function fromServerRow(row) {
+    return {
+      id: 'server-' + row.id,
+      name: row.student_name,
+      school: row.school,
+      phone4: row.phone4,
+      roundTitle: row.round_title,
+      correct: row.correct,
+      total: row.total,
+      percent: row.percent,
+      items: row.items || [],
+      savedAt: row.taken_at,
+      sent: true
+    };
+  }
+
   /* ---------- 바깥에서 쓰는 기능 ---------- */
 
   return {
@@ -244,9 +265,9 @@ var VocabStore = (function () {
     },
 
     /* 엑셀에서 열 수 있는 표 형식으로 만들기 */
-    toCsv: function () {
+    toCsv: function (list) {
       var head = ['이름', '학교', '전화뒷자리', '회차', '맞은개수', '전체문항', '정답률', '본날짜'];
-      var rows = readAll().map(function (r) {
+      var rows = (list || readAll()).map(function (r) {
         return [r.name, r.school, r.phone4, r.roundTitle, r.correct, r.total, r.percent + '%', r.savedAt];
       });
       return [head].concat(rows).map(function (row) {
@@ -290,6 +311,41 @@ var VocabStore = (function () {
         };
       });
     },
+
+    /* 선생님용: 비밀번호를 서버에 보내 맞을 때만 전체 기록을 받아옵니다.
+       (비밀번호는 이 파일에 저장되지 않고, 서버에서 확인합니다) */
+    fetchAll: function (password) {
+      if (!supabaseReady()) {
+        return Promise.resolve({ ok: false, code: 'no-server' });
+      }
+
+      var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/admin_attempts';
+
+      return fetch(url, {
+        method: 'POST',
+        headers: headersFor(workingWay || 'bearer'),
+        body: JSON.stringify({ pass: password })
+      }).then(function (res) {
+        return res.text().then(function (text) {
+          if (res.ok) {
+            var rows;
+            try { rows = JSON.parse(text); } catch (e) { rows = []; }
+            return { ok: true, rows: rows.map(fromServerRow) };
+          }
+          if (/비밀번호|admin_secret/.test(text)) {
+            return { ok: false, code: 'wrong-password' };
+          }
+          if (res.status === 404 || /admin_attempts|PGRST202/.test(text)) {
+            return { ok: false, code: 'not-set-up' };
+          }
+          return { ok: false, code: 'error', detail: '[' + res.status + '] ' + text.slice(0, 200) };
+        });
+      }).catch(function (e) {
+        return { ok: false, code: 'offline', detail: String(e && e.message ? e.message : e) };
+      });
+    },
+
+    localPassword: function () { return ADMIN_LOCAL_PASSWORD; },
 
     usingServer: supabaseReady
   };
