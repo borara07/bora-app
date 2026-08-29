@@ -25,6 +25,7 @@ var VocabStore = (function () {
 
   var KEY_RECORDS = 'vocab.records';
   var KEY_LAST = 'vocab.lastStudent';
+  var KEY_HOMEWORK = 'vocab.homework';   /* 마지막으로 확인한 숙제 회차 */
 
   /* ---------- 기기 저장소 다루기 ---------- */
 
@@ -378,6 +379,55 @@ var VocabStore = (function () {
               };
             })
           };
+        });
+      }).catch(function () {
+        return { ok: false, code: 'offline' };
+      });
+    },
+
+    /* 이번 주 숙제 회차를 읽어 옵니다.
+       인터넷이 안 되면 지난번에 확인한 값을 씁니다. */
+    homeworkRound: function () {
+      var cached = null;
+      try { cached = window.localStorage.getItem(KEY_HOMEWORK); } catch (e) { cached = null; }
+
+      if (!supabaseReady()) {
+        return Promise.resolve({ ok: false, round: cached });
+      }
+
+      var url = SUPABASE.url.replace(/\/+$/, '') +
+                '/rest/v1/app_settings?key=eq.homework_round&select=value';
+
+      return fetch(url, { headers: headersFor(workingWay || 'bearer') })
+        .then(function (res) {
+          if (!res.ok) return { ok: false, round: cached };
+          return res.json().then(function (rows) {
+            var value = (rows && rows[0] && rows[0].value) || '';
+            try { window.localStorage.setItem(KEY_HOMEWORK, value); } catch (e) { /* 넘어갑니다 */ }
+            return { ok: true, round: value };
+          });
+        })
+        .catch(function () {
+          return { ok: false, round: cached };
+        });
+    },
+
+    /* 선생님용: 이번 주 숙제 회차를 정합니다 (빈 값이면 전체 열기) */
+    setHomeworkRound: function (password, round) {
+      if (!supabaseReady()) return Promise.resolve({ ok: false, code: 'no-server' });
+
+      var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/set_homework_round';
+
+      return fetch(url, {
+        method: 'POST',
+        headers: headersFor(workingWay || 'bearer'),
+        body: JSON.stringify({ pass: password, round: round || '' })
+      }).then(function (res) {
+        return res.text().then(function (text) {
+          if (res.ok) return { ok: true, round: round || '' };
+          if (/비밀번호/.test(text)) return { ok: false, code: 'wrong-password' };
+          if (res.status === 404 || /set_homework_round|PGRST202/.test(text)) return { ok: false, code: 'not-set-up' };
+          return { ok: false, code: 'error', detail: '[' + res.status + '] ' + text.slice(0, 200) };
         });
       }).catch(function () {
         return { ok: false, code: 'offline' };

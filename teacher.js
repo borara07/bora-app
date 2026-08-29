@@ -42,6 +42,8 @@
         myPassword = password;
         show(r.rows, '수파베이스에 쌓인 전체 학생 기록입니다.');
 
+        loadHomework();
+
         VocabStore.fetchStudents(password).then(function (sr) {
           roster = sr.ok ? sr.rows : null;
           render();
@@ -283,6 +285,74 @@
     });
   }
 
+  /* ---------- 이번 주 숙제 회차 ---------- */
+
+  function fillHomeworkPicker(current) {
+    var pick = $('homework-pick');
+    pick.innerHTML = '';
+
+    var all = document.createElement('option');
+    all.value = '';
+    all.textContent = '모든 회차 열기 (숙제 지정 안 함)';
+    pick.appendChild(all);
+
+    if (typeof ROUNDS !== 'undefined' && Array.isArray(ROUNDS)) {
+      ROUNDS.forEach(function (r) {
+        var op = document.createElement('option');
+        op.value = r.title;
+        op.textContent = r.title;
+        pick.appendChild(op);
+      });
+    }
+
+    pick.value = current || '';
+    $('homework-now').textContent = current ? current : '지정 안 함 (모든 회차 열림)';
+  }
+
+  function loadHomework() {
+    VocabStore.homeworkRound().then(function (r) {
+      fillHomeworkPicker(r.round || '');
+      if (!r.ok) {
+        var box = $('homework-state');
+        box.hidden = false;
+        box.className = 'check-state';
+        box.textContent = '수파베이스에서 숙제 회차를 읽지 못했습니다.\n' +
+                          'supabase-숙제회차.sql 을 실행했는지 확인해주세요.';
+      }
+    });
+  }
+
+  function saveHomework() {
+    var box = $('homework-state');
+    var round = $('homework-pick').value;
+
+    box.hidden = false;
+    box.className = 'check-state';
+    box.textContent = '정하는 중…';
+
+    VocabStore.setHomeworkRound(myPassword, round).then(function (r) {
+      if (r.ok) {
+        box.className = 'check-state is-ok';
+        box.textContent = round
+          ? ('이번 주 숙제를 ' + round + ' 로 정했습니다.\n학생 화면에는 이 회차만 보입니다.')
+          : '모든 회차를 열었습니다.\n학생이 아무 회차나 고를 수 있습니다.';
+        $('homework-now').textContent = round ? round : '지정 안 함 (모든 회차 열림)';
+        return;
+      }
+      box.className = 'check-state is-bad';
+      if (r.code === 'not-set-up') {
+        box.textContent = '수파베이스에 숙제 회차 설정이 아직 없습니다.\n' +
+                          'SQL Editor 에서 supabase-숙제회차.sql 을 실행해주세요.';
+      } else if (r.code === 'wrong-password') {
+        box.textContent = '비밀번호가 맞지 않습니다. 나갔다가 다시 들어와 주세요.';
+      } else if (r.code === 'no-server' || r.code === 'offline') {
+        box.textContent = '수파베이스에 연결하지 못했습니다.';
+      } else {
+        box.textContent = '정하지 못했습니다.\n' + (r.detail || '');
+      }
+    });
+  }
+
   /* ---------- 문제 은행 올리기 ---------- */
 
   /* 앱에 들어 있는 문제를 수파베이스가 받을 모양으로 바꿉니다 */
@@ -400,6 +470,7 @@
   $('btn-logout').addEventListener('click', logout);
   $('btn-export').addEventListener('click', exportCsv);
   $('btn-upload').addEventListener('click', uploadQuestions);
+  $('btn-homework').addEventListener('click', saveHomework);
   showBankNote();
 
   setupSorting();
