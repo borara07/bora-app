@@ -5,7 +5,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>선생님용 - 어휘 테스트</title>
-  <link rel="stylesheet" href="style.css?v=20260828n">
+  <link rel="stylesheet" href="style.css?v=20260828p">
 </head>
 <body>
 
@@ -36,6 +36,20 @@
 
       <h1>선생님용</h1>
       <p id="source-note" class="save-state"></p>
+
+      <div class="card">
+        <p class="eyebrow">이번 주 숙제</p>
+        <p id="homework-now" class="chosen-round">확인하는 중…</p>
+        <p class="chosen-detail">학생에게는 여기서 정한 회차 하나만 보입니다.</p>
+
+        <div class="field" style="margin-top:16px">
+          <label class="label" for="homework-pick">숙제로 낼 회차</label>
+          <select id="homework-pick" class="input"></select>
+        </div>
+
+        <button type="button" id="btn-homework" class="btn btn-primary">이 회차로 정하기</button>
+        <p id="homework-state" class="check-state" hidden></p>
+      </div>
 
       <div class="card">
         <p class="eyebrow">전체 요약</p>
@@ -139,8 +153,8 @@
 
   </main>
 
-  <script src="questions.js?v=20260828n"></script>
-  <script src="storage.js?v=20260828n"></script>
-  <script src="teacher.js?v=20260828n"></script>
+  <script src="questions.js?v=20260828p"></script>
+  <script src="storage.js?v=20260828p"></script>
+  <script src="teacher.js?v=20260828p"></script>
 </body>
 </html>

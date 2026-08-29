@@ -29,6 +29,9 @@
   /* 기록 화면에서 '돌아가기'를 눌렀을 때 갈 화면 */
   var historyBackTo = 'rounds';
 
+  /* 이번 주 숙제 회차 (빈 값이면 모든 회차를 고를 수 있습니다) */
+  var homeworkRound = '';
+
   /* ---------- 공통 도구 ---------- */
 
   function show(name) {
@@ -142,11 +145,24 @@
 
   /* ---------- 회차 선택 화면 ---------- */
 
+  /* 이번 주에 풀 수 있는 회차만 골라 냅니다 */
+  function openRounds() {
+    if (!homeworkRound) return ROUNDS;
+    var only = ROUNDS.filter(function (r) { return r.title === homeworkRound; });
+    return only.length ? only : ROUNDS;   /* 숙제 회차를 못 찾으면 모두 보여 줍니다 */
+  }
+
   function renderRounds() {
     var box = $('round-list');
     box.innerHTML = '';
 
-    ROUNDS.forEach(function (round) {
+    var list = openRounds();
+
+    $('rounds-note').textContent = (list.length === 1 && homeworkRound)
+      ? '이번 주 숙제입니다.'
+      : '풀고 싶은 회차를 고르세요.';
+
+    list.forEach(function (round) {
       var card = document.createElement('button');
       card.type = 'button';
       card.className = 'round-card';
@@ -680,9 +696,11 @@
 
     $('btn-retry').addEventListener('click', startQuiz);
 
-    $('btn-other-round').addEventListener('click', renderRounds);
-
-    renderRounds();
+    /* 숙제 회차를 확인한 뒤 회차 목록을 그립니다 */
+    VocabStore.homeworkRound().then(function (r) {
+      homeworkRound = r.round || '';
+      renderRounds();
+    });
   }
 
   init();
