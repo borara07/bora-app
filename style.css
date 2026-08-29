@@ -546,6 +546,27 @@ h1 {
   border-top: 1px dashed var(--line);
   font-size: 15.5px;
   color: var(--text-2);
+  white-space: pre-line;   /* 뜻이 여러 개일 때 줄바꿈을 살립니다 */
+}
+
+/* 해설 아래에 따로 놓이는 예문 */
+.example {
+  margin: 12px 0 0;
+  padding: 13px 15px;
+  background: var(--soft);
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.example-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--primary);
 }
 
 .all-correct {
