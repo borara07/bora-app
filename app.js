@@ -386,13 +386,49 @@
     item.appendChild(answerRow('정답', q.correctText, 'real-answer'));
 
     if (q.explanation) {
+      var parts = splitExplanation(q.explanation);
+
       var exp = document.createElement('p');
       exp.className = 'explanation';
-      exp.textContent = q.explanation;
+      exp.textContent = parts.meaning;
       item.appendChild(exp);
+
+      if (parts.example) {
+        var ex = document.createElement('p');
+        ex.className = 'example';
+
+        var tag = document.createElement('span');
+        tag.className = 'example-label';
+        tag.textContent = parts.label;
+        ex.appendChild(tag);
+        ex.appendChild(document.createTextNode(parts.example));
+
+        item.appendChild(ex);
+      }
     }
 
     return item;
+  }
+
+  /* 해설을 '뜻풀이'와 '예문'으로 나눕니다.
+     해설에 '예)' 나 '유래)' 가 있으면 그 뒤가 예문입니다. */
+  function splitExplanation(text) {
+    var m = /\s*(예|유래)\)\s*/.exec(text);
+
+    if (!m) {
+      return { meaning: breakSenses(text), example: '', label: '' };
+    }
+
+    return {
+      meaning: breakSenses(text.slice(0, m.index).trim()),
+      example: text.slice(m.index + m[0].length).trim(),
+      label: m[1] === '유래' ? '유래' : '예문'
+    };
+  }
+
+  /* ① ② ③ 처럼 뜻이 여러 개면 줄을 나눠 줍니다 */
+  function breakSenses(text) {
+    return text.replace(/ (?=[①②③④⑤])/g, '\n').trim();
   }
 
   function answerRow(tagText, value, valueClass) {
