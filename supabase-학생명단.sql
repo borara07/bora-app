@@ -182,7 +182,9 @@ $$;
 revoke all on function public.admin_students(text) from public;
 grant execute on function public.admin_students(text) to anon;
 
+-- 이 함수는 선생님만 씁니다. 학생 앱에서는 부를 수 없게 막아 둡니다.
 revoke all on function public.match_all_attempts() from public;
+revoke all on function public.match_all_attempts() from anon, authenticated;
 
 
 -- =========================================================

@@ -119,7 +119,9 @@ begin
 end;
 $$;
 
+-- 이 함수는 선생님만 씁니다. 학생 앱에서는 부를 수 없게 막아 둡니다.
 revoke all on function public.rebuild_attempt_items() from public;
+revoke all on function public.rebuild_attempt_items() from anon, authenticated;
 
 -- 어휘별 정답률
 create or replace view public.question_stats as

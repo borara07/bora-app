@@ -85,7 +85,9 @@ begin
 end;
 $$;
 
+-- 이 함수는 선생님만 씁니다. 학생 앱에서는 부를 수 없게 막아 둡니다.
 revoke all on function public.sync_students(jsonb) from public;
+revoke all on function public.sync_students(jsonb) from anon, authenticated;
 
 -- 재원생에서 내려온 학생들 (기록은 그대로 남아 있습니다)
 create or replace view public.former_students as
