@@ -69,14 +69,31 @@ var VocabStore = (function () {
      (예전 키와 새 publishable 키의 형식이 다릅니다) */
   var workingWay = null;
 
-  function headersFor(way) {
+  /* minimal 을 true 로 주면 '답장 내용은 필요 없다'고 알립니다.
+     기록을 넣을 때만 씁니다. 서버에서 무언가를 받아와야 하는 요청에는 쓰지 않습니다. */
+  function headersFor(way, minimal) {
     var h = {
       'apikey': SUPABASE.anonKey,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
+      'Content-Type': 'application/json'
     };
+    if (minimal) h['Prefer'] = 'return=minimal';
     if (way === 'bearer') h['Authorization'] = 'Bearer ' + SUPABASE.anonKey;
     return h;
+  }
+
+  /* 서버가 보낸 '맞다/아니다' 답을 읽습니다.
+     읽을 수 없으면 null 을 돌려줍니다. (모양이 달라져도 앱이 멈추지 않게) */
+  function readYesNo(text) {
+    var v;
+    try {
+      v = JSON.parse(text);
+    } catch (e) {
+      v = String(text).trim();
+      return (v === 'true') ? true : (v === 'false' ? false : null);
+    }
+    if (Array.isArray(v)) v = v[0];
+    if (v && typeof v === 'object') v = v.check_enrolled;
+    return (v === true || v === false) ? v : null;
   }
 
   function bodyFor(record) {
@@ -98,7 +115,7 @@ var VocabStore = (function () {
 
     return fetch(url, {
       method: 'POST',
-      headers: headersFor(way),
+      headers: headersFor(way, true),
       body: bodyFor(record)
     }).then(function (res) {
       if (res.ok) return { ok: true, way: way };
@@ -152,8 +169,8 @@ var VocabStore = (function () {
              '수파베이스 API 화면에서 publishable(anon) 키를 다시 복사해주세요.';
     }
     if (status === 403 || /42501|row-level security/i.test(text)) {
-      return '표에 기록을 넣을 권한이 없습니다.\n' +
-             'SQL 중 policy(권한) 부분이 실행되지 않은 것 같습니다.';
+      return '재원생 명단에 없는 학생이라 기록을 저장하지 못했습니다.\n' +
+             '이름과 학부모님 전화번호 뒷 4자리가 명단과 같은지 확인해주세요.';
     }
     if (status === 400 || /PGRST204|column/i.test(text)) {
       return '보내는 내용이 표의 칸과 맞지 않습니다.\n' +
@@ -288,27 +305,56 @@ var VocabStore = (function () {
         });
       }
 
-      return sendToSupabase({
-        name: '연결테스트',
-        school: '연결테스트',
-        phone4: '0000',
-        roundTitle: '연결확인',
-        correct: 1,
-        total: 1,
-        percent: 100,
-        items: [],
-        savedAt: new Date().toISOString()
-      }).then(function (sent) {
-        if (sent.ok) {
-          return {
-            ok: true,
-            message: '연결 성공!\n수파베이스 Table Editor 에 \'연결테스트\' 기록이 한 건 들어가 있습니다.\n확인하신 뒤 그 줄은 지우셔도 됩니다.'
-          };
+      /* 기록을 넣어 보지 않고, 읽기만 해서 확인합니다.
+         (이제는 재원생 명단에 있는 학생의 기록만 들어갈 수 있습니다) */
+      var base = SUPABASE.url.replace(/\/+$/, '');
+
+      return fetch(base + '/rest/v1/app_settings?key=eq.homework_round&select=value', {
+        headers: headersFor('bearer')
+      }).then(function (res) {
+        if (!res.ok) {
+          return res.text().then(function (body) {
+            return {
+              ok: false,
+              message: explainError(res.status, body),
+              detail: '자세한 내용: [' + res.status + '] ' + body.slice(0, 300)
+            };
+          });
         }
+
+        /* 재원생 확인 기능이 켜져 있는지도 함께 봅니다 */
+        return fetch(base + '/rest/v1/rpc/check_enrolled', {
+          method: 'POST',
+          headers: headersFor('bearer'),
+          body: JSON.stringify({ student_name: '', phone4: '' })
+        }).then(function (res2) {
+          return res2.text().then(function (body2) {
+            if (res2.ok && readYesNo(body2) === false) {
+              return {
+                ok: true,
+                message: '연결 성공!\n재원생 확인도 켜져 있습니다.\n명단에 있는 학생만 시험을 시작할 수 있습니다.'
+              };
+            }
+            if (res2.ok) {
+              return {
+                ok: false,
+                message: '재원생 확인의 답을 읽지 못했습니다.\n이 화면을 사진 찍어 보내주세요.',
+                detail: '받은 내용: ' + body2.slice(0, 200)
+              };
+            }
+            return {
+              ok: false,
+              message: '서버에는 연결되지만 재원생 확인 기능이 아직 없습니다.\n' +
+                       'SQL Editor 에서 supabase-재원생확인.sql 을 실행해주세요.',
+              detail: '자세한 내용: [' + res2.status + '] ' + body2.slice(0, 200)
+            };
+          });
+        });
+      }).catch(function (e) {
         return {
           ok: false,
-          message: sent.message,
-          detail: '자세한 내용: [' + sent.status + '] ' + sent.detail
+          message: '서버에 연결하지 못했습니다.\n인터넷 연결과 프로젝트 주소를 확인해주세요.',
+          detail: String(e && e.message ? e.message : e)
         };
       });
     },
@@ -379,6 +425,38 @@ var VocabStore = (function () {
               };
             })
           };
+        });
+      }).catch(function () {
+        return { ok: false, code: 'offline' };
+      });
+    },
+
+    /* 재원생 명단에 있는 학생인지 서버에 물어봅니다.
+       명단 자체는 받아오지 않고, 맞다/아니다만 받습니다.
+       확인이 되지 않으면 시험을 시작할 수 없습니다. */
+    isEnrolled: function (student) {
+      if (!supabaseReady()) return Promise.resolve({ ok: false, code: 'no-server' });
+
+      var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/check_enrolled';
+
+      return fetch(url, {
+        method: 'POST',
+        headers: headersFor(workingWay || 'bearer'),
+        body: JSON.stringify({
+          student_name: student.name || '',
+          phone4: student.phone4 || ''
+        })
+      }).then(function (res) {
+        return res.text().then(function (text) {
+          if (res.ok) {
+            var yes = readYesNo(text);
+            if (yes === null) return { ok: false, code: 'error', detail: '답을 읽지 못했습니다.' };
+            return { ok: true, enrolled: yes };
+          }
+          if (res.status === 404 || /check_enrolled|PGRST202/.test(text)) {
+            return { ok: false, code: 'not-set-up' };
+          }
+          return { ok: false, code: 'error', detail: '[' + res.status + '] ' + text.slice(0, 200) };
         });
       }).catch(function () {
         return { ok: false, code: 'offline' };

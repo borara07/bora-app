@@ -619,6 +619,54 @@
     return item;
   }
 
+  /* ---------- 재원생 확인 ---------- */
+
+  /* 재원생 명단에 있는 학생인지 서버에 물어본 뒤에 시작합니다.
+     명단에 없으면 시험을 시작할 수 없습니다.
+     (링크만 아는 사람이 들어와도 풀 수 없게 하기 위한 것입니다) */
+  function startIfEnrolled(student) {
+    var btn = $('btn-start');
+    var label = btn.textContent;
+
+    btn.disabled = true;
+    btn.textContent = '확인하는 중…';
+
+    VocabStore.isEnrolled(student).then(function (r) {
+      btn.disabled = false;
+      btn.textContent = label;
+
+      if (r.ok && r.enrolled) {
+        state.student = student;
+        VocabStore.rememberStudent(student);
+        startQuiz();
+        return;
+      }
+
+      showStartError(r);
+    });
+  }
+
+  /* 시작하지 못한 이유를 학생이 알아들을 수 있게 알려 줍니다 */
+  function showStartError(r) {
+    var message;
+
+    if (r.ok) {
+      message = '재원생 명단에서 찾지 못했습니다.\n' +
+                '이름과 학부모님 전화번호 뒷 4자리를 다시 확인해주세요.\n' +
+                '계속 안 되면 선생님께 문의해주세요.';
+    } else if (r.code === 'offline' || r.code === 'no-server') {
+      message = '인터넷 연결을 확인한 뒤 다시 눌러주세요.\n' +
+                '재원생인지 확인이 되어야 시험을 시작할 수 있습니다.';
+    } else if (r.code === 'not-set-up') {
+      message = '재원생 확인 준비가 아직 되지 않았습니다.\n선생님께 알려주세요.';
+    } else {
+      message = '확인하지 못했습니다. 잠시 뒤 다시 눌러주세요.';
+    }
+
+    $('name-error').textContent = message;
+    $('name-error').hidden = false;
+  }
+
   /* ---------- 시작 / 다시 풀기 ---------- */
 
   function startQuiz() {
@@ -662,9 +710,7 @@
       }
 
       $('name-error').hidden = true;
-      state.student = student;
-      VocabStore.rememberStudent(student);
-      startQuiz();
+      startIfEnrolled(student);
     });
 
     ['student-name', 'student-school', 'student-phone4'].forEach(function (id) {

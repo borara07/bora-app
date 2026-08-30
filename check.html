@@ -5,7 +5,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>서버 연결 확인</title>
-  <link rel="stylesheet" href="style.css?v=20260828p">
+  <link rel="stylesheet" href="style.css?v=20260830">
 </head>
 <body>
 
@@ -36,7 +36,7 @@
     <p class="hint"><a href="./">← 테스트 화면으로 돌아가기</a></p>
   </main>
 
-  <script src="storage.js?v=20260828p"></script>
+  <script src="storage.js?v=20260830"></script>
   <script>
   (function () {
     'use strict';
@@ -55,7 +55,7 @@
         ['프로젝트 주소', SUPABASE.url || '(비어 있음)'],
         ['표 이름', SUPABASE.table || '(비어 있음)'],
         ['키', mask(SUPABASE.anonKey)],
-        ['앱 버전', '2026-08-27 키 형식 자동 전환 포함']
+        ['앱 버전', '2026-08-30 재원생만 시험 시작 가능']
       ];
       var ul = $('config');
       ul.innerHTML = '';
@@ -114,7 +114,7 @@
         reason.textContent = r.message;
 
         if (!r.ok) {
-          reason.textContent = '서버는 찾았는데 기록을 넣지 못했습니다.\n\n' + r.message;
+          reason.textContent = '서버는 찾았는데 준비가 덜 되었습니다.\n\n' + r.message;
         }
 
         if (r.detail) {

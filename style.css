@@ -270,7 +270,9 @@ h1 {
 
 .error {
   color: var(--wrong);
-  font-size: 15px;
+  font-size: 17px;
+  line-height: 1.55;
+  white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
   margin: 10px 0 0;
 }
 
