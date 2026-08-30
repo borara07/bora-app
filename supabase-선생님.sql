@@ -38,7 +38,10 @@ begin
   end if;
 
   return query
-    select * from public.quiz_attempts order by taken_at desc;
+    select a.*
+      from public.quiz_attempts a
+     where not public.is_teacher(a.student_name, a.phone4)   -- 선생님이 본 것은 뺍니다
+     order by a.taken_at desc;
 end;
 $$;
 

@@ -135,6 +135,36 @@ order by taken_at desc;
 
 
 -- ---------------------------------------------------------
+-- 선생님 계정인지 알려 주는 기능
+--
+--   메모(memo)가 '선생님' 으로 시작하는 줄을 선생님 계정으로 봅니다.
+--   선생님도 시험을 볼 수 있어야 해서 명단에 넣어두지만,
+--   통계에는 들어가지 않게 하려고 씁니다.
+-- ---------------------------------------------------------
+create or replace function public.is_teacher(student_name text, phone4 text)
+returns boolean
+language plpgsql
+security definer
+stable
+set search_path = public
+as $$
+begin
+  return exists (
+    select 1
+      from public.students s
+     where coalesce(s.memo, '') like '선생님%'
+       and s.name_key = lower(regexp_replace(coalesce(student_name, ''), '\s', '', 'g'))
+       and s.parent_phone4 = regexp_replace(coalesce(phone4, ''), '[^0-9]', '', 'g')
+  );
+end;
+$$;
+
+-- 이 함수는 선생님만 씁니다. 학생 앱에서는 부를 수 없게 막아 둡니다.
+revoke all on function public.is_teacher(text, text) from public;
+revoke all on function public.is_teacher(text, text) from anon, authenticated;
+
+
+-- ---------------------------------------------------------
 -- 4) 앱의 선생님용 화면에서 학생별 누적을 볼 수 있게 하기
 --    (supabase-선생님.sql 에서 정한 비밀번호를 씁니다)
 -- ---------------------------------------------------------
@@ -174,6 +204,7 @@ begin
            max(a.taken_at)
       from public.students s
       left join public.quiz_attempts a on a.student_id = s.id
+     where coalesce(s.memo, '') not like '선생님%'   -- 선생님 계정은 통계에서 뺍니다
      group by s.id, s.name, s.school, s.parent_phone, s.student_phone, s.memo, s.active
      order by s.name;
 end;

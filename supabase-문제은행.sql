@@ -12,6 +12,9 @@
 --
 -- ※ 앱은 고치지 않아도 됩니다. 지금도 보내고 있는 자료를
 --    수파베이스가 알아서 풀어서 쌓습니다.
+--
+-- ※ supabase-학생명단.sql 을 먼저 실행해주세요.
+--    (선생님이 푼 것을 정답률에서 빼는 데 그 파일의 기능을 씁니다)
 -- =========================================================
 
 create table if not exists public.questions (
@@ -136,7 +139,11 @@ select q.round_title                               as 회차,
             else round(100.0 * count(i.id) filter (where i.is_correct) / count(i.id))
        end                                         as 정답률
   from public.questions q
-  left join public.attempt_items i on i.question_id = q.id
+  left join public.attempt_items i
+    on i.question_id = q.id
+   and not exists (select 1 from public.quiz_attempts a          -- 선생님이 푼 것은 빼고 셉니다
+                    where a.id = i.attempt_id
+                      and public.is_teacher(a.student_name, a.phone4))
  group by q.id, q.round_title, q.word, q.hanja, q.correct_answer;
 
 -- 선생님용 화면에서 씁니다
@@ -162,7 +169,11 @@ begin
                 else round(100.0 * count(i.id) filter (where i.is_correct) / count(i.id))
            end
       from public.questions q
-      left join public.attempt_items i on i.question_id = q.id
+      left join public.attempt_items i
+        on i.question_id = q.id
+       and not exists (select 1 from public.quiz_attempts a      -- 선생님이 푼 것은 빼고 셉니다
+                        where a.id = i.attempt_id
+                          and public.is_teacher(a.student_name, a.phone4))
      group by q.id, q.round_title, q.word, q.hanja
      order by q.round_title, q.word;
 end;
