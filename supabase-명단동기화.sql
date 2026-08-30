@@ -8,6 +8,7 @@
 --   시트의 현재 재원생 명단을 통째로 받아서 수파베이스와 맞춥니다.
 --     · 시트에 새로 있는 학생  → 추가
 --     · 시트에서 사라진 학생   → 재원생에서 내림 (지우지 않습니다)
+--       (메모가 '선생님' 으로 시작하는 줄은 시트에 없어도 그대로 둡니다)
 --     · 다시 나타난 학생       → 재원생으로 복귀
 --
 --   ※ 학생을 삭제하지 않습니다. 시험 기록은 그대로 남습니다.
@@ -74,6 +75,7 @@ begin
        set active = false,
            left_at = coalesce(s.left_at, now())
      where s.active
+       and coalesce(s.memo, '') not like '선생님%'   -- 선생님 계정은 시트에 없어도 그대로 둡니다
        and not exists (select 1 from _incoming i
                         where i.name_key = s.name_key and i.phone4 = s.parent_phone4)
     returning 1
