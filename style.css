@@ -115,14 +115,38 @@ h1 {
 /* 재시험 안내 (결과 화면) */
 .retest-note {
   margin: 16px 0 0;
-  padding: 16px 18px;
+  padding: 18px;
   border-radius: 16px;
   background: var(--chip);
   border: 2px solid var(--primary);
   color: var(--text);
+}
+
+.retest-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.5;
+}
+
+.retest-list {
+  margin: 14px 0 0;
+  padding-left: 22px;
+}
+
+.retest-list li {
+  margin-top: 12px;
   font-size: 17px;
   line-height: 1.55;
-  white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
+  color: var(--text-2);
+}
+
+/* '바로 재시험을 보려면' 처럼 갈래 이름을 굵게 한 줄로 */
+.retest-step {
+  display: block;
+  color: var(--text);
+  font-weight: 700;
 }
 
 .card {

@@ -369,7 +369,7 @@
     }
     $('result-comment').textContent = comment;
 
-    showRetestNote(correct, total);
+    showRetestNote(correct);
 
     var list = $('wrong-list');
     list.innerHTML = '';
@@ -396,7 +396,7 @@
     return (typeof RETEST_MAX === 'number' && RETEST_MAX >= 0) ? RETEST_MAX : 10;
   }
 
-  function showRetestNote(correct, total) {
+  function showRetestNote(correct) {
     var box = $('retest-note');
 
     if (correct > retestMax()) {
@@ -404,11 +404,9 @@
       return;
     }
 
-    box.textContent =
-      '재시험을 봐야 합니다.\n' +
-      total + '문제 중 ' + correct + '문제를 맞혔습니다. ' +
-      retestMax() + '문제 이하이면 다시 봐야 합니다.\n' +
-      '틀린 문제 해설을 읽은 뒤 아래 \'다시 보기\' 를 눌러 한 번 더 풀어주세요.';
+    /* 안내 내용은 index.html 에 적혀 있고, 기준 개수만 여기서 채웁니다 */
+    $('retest-title').textContent =
+      '정답이 ' + retestMax() + '개 이하이면 재시험을 봐야 해요.';
     box.hidden = false;
   }
 
