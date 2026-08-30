@@ -163,17 +163,9 @@
     var note = $('rounds-note');
     note.innerHTML = '';
 
-    if (list.length === 1 && homeworkRound) {
-      var em = document.createElement('strong');
-      em.className = 'note-round';
-      em.textContent = homeworkRound;
-
-      note.appendChild(document.createTextNode('이번 주 테스트 회차는 '));
-      note.appendChild(em);
-      note.appendChild(document.createTextNode(' 입니다.'));
-    } else {
-      note.textContent = '아래 회차를 눌러 시작하세요.';
-    }
+    note.textContent = (list.length === 1 && homeworkRound)
+      ? '이번주 어휘 시험입니다.'
+      : '아래 회차를 눌러 시작하세요.';
 
     list.forEach(function (round) {
       var card = document.createElement('button');
@@ -377,6 +369,8 @@
     }
     $('result-comment').textContent = comment;
 
+    showRetestNote(correct, total);
+
     var list = $('wrong-list');
     list.innerHTML = '';
 
@@ -394,6 +388,28 @@
     saveResult(correct, total, percent);
 
     show('result');
+  }
+
+  /* 맞힌 개수가 기준(RETEST_MAX) 이하이면 재시험을 보라고 안내합니다.
+     '다시 보기'는 누구나 누를 수 있지만, 이 경우에는 꼭 봐야 합니다. */
+  function retestMax() {
+    return (typeof RETEST_MAX === 'number' && RETEST_MAX >= 0) ? RETEST_MAX : 10;
+  }
+
+  function showRetestNote(correct, total) {
+    var box = $('retest-note');
+
+    if (correct > retestMax()) {
+      box.hidden = true;
+      return;
+    }
+
+    box.textContent =
+      '재시험을 봐야 합니다.\n' +
+      total + '문제 중 ' + correct + '문제를 맞혔습니다. ' +
+      retestMax() + '문제 이하이면 다시 봐야 합니다.\n' +
+      '틀린 문제 해설을 읽은 뒤 아래 \'다시 보기\' 를 눌러 한 번 더 풀어주세요.';
+    box.hidden = false;
   }
 
   function buildWrongItem(q) {

@@ -112,10 +112,17 @@ h1 {
   line-height: 1.5;
 }
 
-/* 이번 주 테스트 회차 이름 */
-.note-round {
-  color: var(--primary);
-  font-weight: 700;
+/* 재시험 안내 (결과 화면) */
+.retest-note {
+  margin: 16px 0 0;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--chip);
+  border: 2px solid var(--primary);
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.55;
+  white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
 }
 
 .card {
