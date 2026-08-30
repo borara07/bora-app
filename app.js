@@ -406,7 +406,7 @@
 
     /* 안내 내용은 index.html 에 적혀 있고, 기준 개수만 여기서 채웁니다 */
     $('retest-title').textContent =
-      '정답이 ' + retestMax() + '개 이하이면 재시험을 봐야 해요.';
+      '정답이 ' + retestMax() + '개 이하예요. 재시험을 봐야 합니다.';
     box.hidden = false;
   }
 
