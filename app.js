@@ -158,9 +158,22 @@
 
     var list = openRounds();
 
-    $('rounds-note').textContent = (list.length === 1 && homeworkRound)
-      ? '이번 주 숙제입니다.'
-      : '풀고 싶은 회차를 고르세요.';
+    /* 선생님이 이번 주 회차를 정해 두었으면 그 회차를 안내합니다.
+       (학생은 회차를 고를 수 없습니다) */
+    var note = $('rounds-note');
+    note.innerHTML = '';
+
+    if (list.length === 1 && homeworkRound) {
+      var em = document.createElement('strong');
+      em.className = 'note-round';
+      em.textContent = homeworkRound;
+
+      note.appendChild(document.createTextNode('이번 주 테스트 회차는 '));
+      note.appendChild(em);
+      note.appendChild(document.createTextNode(' 입니다.'));
+    } else {
+      note.textContent = '아래 회차를 눌러 시작하세요.';
+    }
 
     list.forEach(function (round) {
       var card = document.createElement('button');

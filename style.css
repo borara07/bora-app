@@ -108,7 +108,14 @@ h1 {
   text-align: center;
   color: var(--muted);
   margin: 0 0 26px;
-  font-size: 16px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/* 이번 주 테스트 회차 이름 */
+.note-round {
+  color: var(--primary);
+  font-weight: 700;
 }
 
 .card {
