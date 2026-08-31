@@ -464,9 +464,10 @@ var VocabStore = (function () {
 
     /* 이번 주 숙제 회차를 읽어 옵니다.
        인터넷이 안 되면 지난번에 확인한 값을 씁니다. */
-    homeworkRound: function (group) {
-      var key = 'homework_round:' + (group || '고등부');
-      var store = KEY_HOMEWORK + ':' + (group || '고등부');
+    homeworkRound: function (group, subject) {
+      var who = (subject && subject !== '어휘' ? subject + ':' : '') + (group || '고등부');
+      var key = 'homework_round:' + who;
+      var store = KEY_HOMEWORK + ':' + who;
       var cached = null;
       try { cached = window.localStorage.getItem(store); } catch (e) { cached = null; }
 
@@ -492,7 +493,7 @@ var VocabStore = (function () {
     },
 
     /* 선생님용: 이번 주 숙제 회차를 정합니다 (빈 값이면 전체 열기) */
-    setHomeworkRound: function (password, round, group) {
+    setHomeworkRound: function (password, round, group, subject) {
       if (!supabaseReady()) return Promise.resolve({ ok: false, code: 'no-server' });
 
       var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/set_homework_round';
@@ -500,7 +501,11 @@ var VocabStore = (function () {
       return fetch(url, {
         method: 'POST',
         headers: headersFor(workingWay || 'bearer'),
-        body: JSON.stringify({ pass: password, round: round || '', grade_group: group || '' })
+        body: JSON.stringify({
+          pass: password,
+          round: round || '',
+          grade_group: (subject && subject !== '어휘' ? subject + ':' : '') + (group || '')
+        })
       }).then(function (res) {
         return res.text().then(function (text) {
           if (res.ok) return { ok: true, round: round || '' };

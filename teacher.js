@@ -337,9 +337,22 @@
     return $('homework-group').value || '고등부';
   }
 
+  function homeworkSubject() {
+    return $('homework-subject').value || '어휘';
+  }
+
+  /* 그 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS) */
+  function roundsOf(subject) {
+    var list = (subject === '문법')
+      ? (typeof GRAMMAR_ROUNDS !== 'undefined' ? GRAMMAR_ROUNDS : [])
+      : (typeof ROUNDS !== 'undefined' ? ROUNDS : []);
+    return Array.isArray(list) ? list : [];
+  }
+
   function fillHomeworkPicker(current) {
     var pick = $('homework-pick');
     var group = homeworkGroup();
+    var subject = homeworkSubject();
     pick.innerHTML = '';
 
     var all = document.createElement('option');
@@ -348,26 +361,24 @@
     pick.appendChild(all);
 
     var count = 0;
-    if (typeof ROUNDS !== 'undefined' && Array.isArray(ROUNDS)) {
-      ROUNDS.forEach(function (r) {
-        if ((r.group || '고등부') !== group) { return; }
-        count += 1;
-        var op = document.createElement('option');
-        op.value = r.title;
-        op.textContent = r.title;
-        pick.appendChild(op);
-      });
-    }
+    roundsOf(subject).forEach(function (r) {
+      if ((r.group || '고등부') !== group) { return; }
+      count += 1;
+      var op = document.createElement('option');
+      op.value = r.title;
+      op.textContent = r.title;
+      pick.appendChild(op);
+    });
 
     if (count === 0) {
-      all.textContent = group + ' 회차가 아직 없습니다';
+      all.textContent = subject + ' ' + group + ' 회차가 아직 없습니다';
     }
 
     pick.value = current || '';
   }
 
   function loadHomework() {
-    VocabStore.homeworkRound(homeworkGroup()).then(function (r) {
+    VocabStore.homeworkRound(homeworkGroup(), homeworkSubject()).then(function (r) {
       fillHomeworkPicker(r.round || '');
       if (!r.ok) {
         var box = $('homework-state');
@@ -383,19 +394,20 @@
     var box = $('homework-state');
     var round = $('homework-pick').value;
     var group = homeworkGroup();
+    var subject = homeworkSubject();
 
     box.hidden = false;
     box.className = 'check-state';
     box.textContent = '정하는 중…';
 
-    VocabStore.setHomeworkRound(myPassword, round, group).then(function (r) {
+    VocabStore.setHomeworkRound(myPassword, round, group, subject).then(function (r) {
       if (r.ok) {
         box.className = 'check-state is-ok';
         box.textContent = round
-          ? (group + ' 이번 주 숙제를 ' + round + ' 로 정했습니다.\n' +
-             group + ' 학생에게는 이 회차만 열립니다.')
-          : (group + ' 의 모든 회차를 열었습니다.\n' +
-             group + ' 학생이 아무 회차나 고를 수 있습니다.');
+          ? (subject + ' · ' + group + ' 이번 주 시험을 ' + round + ' 로 정했습니다.\n' +
+             '그 반 학생에게는 이 회차만 열립니다.')
+          : (subject + ' · ' + group + ' 의 모든 회차를 열었습니다.\n' +
+             '학생이 아무 회차나 고를 수 있습니다.');
         return;
       }
       box.className = 'check-state is-bad';
@@ -532,9 +544,11 @@
   $('btn-homework').addEventListener('click', saveHomework);
 
   /* 반을 바꾸면 그 반의 회차 목록과 지금 정해진 회차를 다시 읽습니다 */
-  $('homework-group').addEventListener('change', function () {
-    $('homework-state').hidden = true;
-    loadHomework();
+  ['homework-group', 'homework-subject'].forEach(function (id) {
+    $(id).addEventListener('change', function () {
+      $('homework-state').hidden = true;
+      loadHomework();
+    });
   });
 
   /* 통계에서 볼 반을 바꿉니다 */

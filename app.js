@@ -5,6 +5,18 @@
 (function () {
   'use strict';
 
+  /* 이 페이지가 다루는 과목입니다.
+     index.html 은 '어휘', grammar.html 은 '문법' 이라고 미리 적어 둡니다. */
+  var SUBJECT = (typeof APP_SUBJECT === 'string' && APP_SUBJECT) ? APP_SUBJECT : '어휘';
+
+  /* 이 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS) */
+  function allRounds() {
+    var list = (SUBJECT === '문법')
+      ? (typeof GRAMMAR_ROUNDS !== 'undefined' ? GRAMMAR_ROUNDS : undefined)
+      : (typeof ROUNDS !== 'undefined' ? ROUNDS : undefined);
+    return list;
+  }
+
   /* ---------- 화면 요소 모으기 ---------- */
   var $ = function (id) { return document.getElementById(id); };
 
@@ -32,6 +44,9 @@
 
   /* 이번 주 숙제 회차 (빈 값이면 모든 회차를 고를 수 있습니다) */
   var homeworkRound = '';
+
+  /* 문제 위에 놓이는 기본 물음 (문법 문제는 문제마다 따로 적습니다) */
+  var defaultLabel = '다음 어휘의 뜻으로 알맞은 것은?';
 
   /* ---------- 공통 도구 ---------- */
 
@@ -99,18 +114,20 @@
 
   function validateRounds() {
     var problems = [];
+    var list = allRounds();
+    var file = (SUBJECT === '문법') ? 'questions-grammar.js' : 'questions.js';
 
-    if (typeof ROUNDS === 'undefined' || !Array.isArray(ROUNDS)) {
-      problems.push('회차 목록(ROUNDS)을 찾을 수 없습니다. questions.js 파일을 확인해주세요.');
+    if (!Array.isArray(list)) {
+      problems.push('회차 목록을 찾을 수 없습니다. ' + file + ' 파일을 확인해주세요.');
       return problems;
     }
 
-    if (ROUNDS.length === 0) {
-      problems.push('회차가 하나도 없습니다. questions.js 에 회차를 추가해주세요.');
+    if (list.length === 0) {
+      problems.push('회차가 하나도 없습니다. ' + file + ' 에 회차를 추가해주세요.');
       return problems;
     }
 
-    ROUNDS.forEach(function (round, r) {
+    list.forEach(function (round, r) {
       var where = (r + 1) + '번째 회차';
 
       if (!round || typeof round !== 'object') {
@@ -130,20 +147,30 @@
       round.questions.forEach(function (q, i) {
         var no = name + ' ' + (i + 1) + '번째 문제';
 
-        if (!q || typeof q.word !== 'string' || q.word.trim() === '') {
-          problems.push(no + ': word(어휘)가 비어 있습니다.');
+        if (!q || typeof q !== 'object') {
+          problems.push(no + ': 문제 내용이 비어 있습니다.');
+          return;
         }
-        if (!Array.isArray(q.choices) || q.choices.length !== 4) {
-          problems.push(no + ': 보기(choices)는 정확히 4개여야 합니다.');
+
+        var head = [q.word, q.sentence, q.ask].filter(function (t) {
+          return typeof t === 'string' && t.trim() !== '';
+        });
+        if (head.length === 0) {
+          problems.push(no + ': 어휘(word)나 물음(ask)이 비어 있습니다.');
+        }
+
+        var choices = q.ox ? ['O', 'X'] : q.choices;
+        if (!Array.isArray(choices) || choices.length < 2 || choices.length > 5) {
+          problems.push(no + ': 보기(choices)는 2개에서 5개 사이여야 합니다.');
         } else {
-          q.choices.forEach(function (c, ci) {
+          choices.forEach(function (c, ci) {
             if (typeof c !== 'string' || c.trim() === '') {
               problems.push(no + ': ' + (ci + 1) + '번 보기가 비어 있습니다.');
             }
           });
-        }
-        if (typeof q.answer !== 'number' || q.answer < 1 || q.answer > 4) {
-          problems.push(no + ': answer(정답 번호)는 1~4 중 하나여야 합니다.');
+          if (typeof q.answer !== 'number' || q.answer < 1 || q.answer > choices.length) {
+            problems.push(no + ': answer(정답 번호)는 1~' + choices.length + ' 중 하나여야 합니다.');
+          }
         }
       });
     });
@@ -174,7 +201,7 @@
   /* 그 반이 볼 회차만 고릅니다. 회차에 반이 안 적혀 있으면 고등부로 봅니다 */
   function roundsForGroup(group) {
     var want = group || '고등부';
-    return ROUNDS.filter(function (r) {
+    return (allRounds() || []).filter(function (r) {
       return (r.group || '고등부') === want;
     });
   }
@@ -270,11 +297,14 @@
     picked = shuffle(picked);
 
     return picked.map(function (q) {
+      var choices = q.ox ? ['O', 'X'] : q.choices;
       return {
-        word: q.word,
+        ask: q.ask || '',                       // 물음 (문법 문제)
+        word: q.word || q.sentence || '',       // 큰 글씨로 보일 말
         hanja: q.hanja || '',
-        choices: shuffle(q.choices),   // 보기 순서도 섞습니다
-        correctText: q.choices[q.answer - 1],
+        /* OX 는 O·X 순서가 정해져 있으니 섞지 않습니다 */
+        choices: q.ox ? choices.slice() : shuffle(choices),
+        correctText: choices[q.answer - 1],
         explanation: q.explanation || '',
         myAnswer: null
       };
@@ -293,7 +323,13 @@
     $('progress-total').textContent = total;
     $('progress-fill').style.width = Math.round((now / total) * 100) + '%';
 
-    $('question-word').textContent = q.word;
+    /* 문법 문제는 물음이 따로 있습니다. 어휘는 회차 공통 문구를 씁니다 */
+    $('question-label').textContent = q.ask || defaultLabel;
+
+    var wordBox = $('question-word');
+    wordBox.textContent = q.word;
+    wordBox.hidden = (q.word === '');
+    wordBox.classList.toggle('is-sentence', q.word.length > 8);
 
     var hanjaBox = $('question-hanja');
     if (q.hanja) {
@@ -552,7 +588,7 @@
       name: state.student.name,
       school: state.student.school,
       phone4: state.student.phone4,
-      roundTitle: state.round.title,
+      roundTitle: (SUBJECT === '문법' ? '[문법] ' : '') + state.round.title,
       correct: correct,
       total: total,
       percent: percent,
@@ -688,7 +724,7 @@
         VocabStore.rememberStudent(student);
 
         /* 그 반의 이번 주 숙제 회차를 읽은 뒤 회차 화면을 보여 줍니다 */
-        VocabStore.homeworkRound(state.group).then(function (h) {
+        VocabStore.homeworkRound(state.group, SUBJECT).then(function (h) {
           homeworkRound = h.round || '';
           renderRounds();
         });
@@ -740,8 +776,12 @@
     }
 
     if (typeof QUIZ_QUESTION_LABEL === 'string' && QUIZ_QUESTION_LABEL.trim() !== '') {
-      $('question-label').textContent = QUIZ_QUESTION_LABEL;
+      defaultLabel = QUIZ_QUESTION_LABEL;
     }
+    if (SUBJECT === '문법') {
+      defaultLabel = '알맞은 것을 고르세요.';
+    }
+    $('question-label').textContent = defaultLabel;
 
     if (typeof QUIZ_TITLE === 'string' && QUIZ_TITLE.trim() !== '') {
       /* 첫 화면에는 로고만 두었습니다. 제목 자리가 있으면 그때만 채웁니다 */
