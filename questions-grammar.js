@@ -91,6 +91,10 @@
    어휘는 questions.js 의 RETEST_MAX 를 따로 씁니다. */
 var GRAMMAR_RETEST_MAX = 13;
 
+/* 문법 앱 이름 (브라우저 탭과 즐겨찾기에 이 이름이 보입니다)
+   어휘는 questions.js 의 QUIZ_TITLE 을 따로 씁니다. */
+var GRAMMAR_QUIZ_TITLE = "고등 국어 문법 테스트";
+
 
 /* 회차 목록 */
 var GRAMMAR_ROUNDS = [

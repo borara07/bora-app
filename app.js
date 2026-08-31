@@ -831,11 +831,17 @@
     }
     $('question-label').textContent = defaultLabel;
 
-    if (typeof QUIZ_TITLE === 'string' && QUIZ_TITLE.trim() !== '') {
+    /* 앱 이름은 과목마다 다릅니다
+       (어휘는 questions.js 의 QUIZ_TITLE, 문법은 questions-grammar.js 의 GRAMMAR_QUIZ_TITLE) */
+    var appTitle = (SUBJECT === '문법' && typeof GRAMMAR_QUIZ_TITLE === 'string')
+      ? GRAMMAR_QUIZ_TITLE
+      : QUIZ_TITLE;
+
+    if (typeof appTitle === 'string' && appTitle.trim() !== '') {
       /* 첫 화면에는 로고만 두었습니다. 제목 자리가 있으면 그때만 채웁니다 */
       var titleBox = $('quiz-title');
-      if (titleBox) titleBox.textContent = QUIZ_TITLE;
-      document.title = QUIZ_TITLE;
+      if (titleBox) titleBox.textContent = appTitle;
+      document.title = appTitle;
     }
 
     $('btn-back-start').addEventListener('click', function () {
