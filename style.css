@@ -689,6 +689,7 @@ h1 {
   font-family: var(--font-title);
   font-size: 21px;
   font-weight: 400;
+  color: var(--primary);
   margin: 0 0 12px;
 }
 
@@ -700,17 +701,19 @@ h1 {
   letter-spacing: 0.06em;
 }
 
+/* 내 답·정답은 한 단계 작게 (아래 해설이 눈에 먼저 들어오도록) */
 .answer-row {
   display: flex;
   gap: 10px;
-  font-size: 15px;
+  font-size: 14px;
+  line-height: 1.6;
   margin: 5px 0;
 }
 
 .answer-row .tag {
   flex: 0 0 36px;
-  padding-top: 2px;
-  font-size: 14px;
+  padding-top: 1px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--muted);
 }
@@ -718,11 +721,13 @@ h1 {
 .my-answer { color: var(--answer-mine); font-weight: 700; }
 .real-answer { color: var(--answer-right); font-weight: 700; }
 
+/* 해설과 예문은 글씨 크기를 똑같이 맞춥니다 */
 .explanation {
   margin: 14px 0 0;
   padding-top: 14px;
   border-top: 1px dashed var(--line);
-  font-size: 15.5px;
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--text-2);
   white-space: pre-line;   /* 뜻이 여러 개일 때 줄바꿈을 살립니다 */
 }
