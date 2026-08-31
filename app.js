@@ -490,6 +490,10 @@
   /* 맞힌 개수가 기준(RETEST_MAX) 이하이면 재시험을 보라고 안내합니다.
      '다시 보기'는 누구나 누를 수 있지만, 이 경우에는 꼭 봐야 합니다. */
   function retestMax() {
+    /* 문법은 questions-grammar.js 의 GRAMMAR_RETEST_MAX 를 씁니다 */
+    if (SUBJECT === '문법' && typeof GRAMMAR_RETEST_MAX === 'number' && GRAMMAR_RETEST_MAX >= 0) {
+      return GRAMMAR_RETEST_MAX;
+    }
     return (typeof RETEST_MAX === 'number' && RETEST_MAX >= 0) ? RETEST_MAX : 10;
   }
 
