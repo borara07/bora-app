@@ -721,20 +721,21 @@ h1 {
 .my-answer { color: var(--answer-mine); font-weight: 700; }
 .real-answer { color: var(--answer-right); font-weight: 700; }
 
-/* 해설과 예문은 글씨 크기를 똑같이 맞춥니다 */
+/* 해설이 주인공입니다. 예문에는 상자가 있어서 그냥 두면 예문이 더 눈에 띕니다.
+   그래서 해설을 한 단계 크고 진하게 두어 균형을 맞춥니다 */
 .explanation {
   margin: 14px 0 0;
   padding-top: 14px;
   border-top: 1px dashed var(--line);
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text);
   white-space: pre-line;   /* 뜻이 여러 개일 때 줄바꿈을 살립니다 */
 }
 
-/* 해설 아래에 따로 놓이는 예문 */
+/* 해설 아래에 따로 놓이는 예문 (해설보다 조용하게) */
 .example {
-  margin: 12px 0 0;
+  margin: 14px 0 0;
   padding: 13px 15px;
   background: var(--soft);
   border-radius: 12px;
