@@ -19,7 +19,8 @@
 
   var sorts = {
     'table-grade':    { key: 'order',     desc: false },
-    'table-roster':   { key: 'name',      desc: false },
+    'table-roster-high': { key: 'name',   desc: false },
+    'table-roster-mid':  { key: 'name',   desc: false },
     'table-rounds':   { key: 'avg',       desc: true },
     'table-students': { key: 'avg',       desc: true },
     'table-all':      { key: 'savedAt',   desc: true }
@@ -235,11 +236,24 @@
                 r.taken === 0 ? '—' : r.avg + '%'];
       });
 
-      fill('table-roster', sortRows(roster, sorts['table-roster']), function (r) {
-        return [r.name, r.school,
-                r.count === 0 ? '—' : r.count + '번',
-                r.count === 0 ? '—' : r.avg + '%',
-                r.count === 0 ? '아직 안 봄' : shortDate(r.last)];
+      /* 명단은 반마다 따로 보여 줍니다 */
+      [['high', '고등부'], ['mid', '중등부']].forEach(function (pair) {
+        var id = pair[0], name = pair[1];
+        var mine = roster.filter(function (r) { return (r.group || '고등부') === name; });
+
+        $('roster-box-' + id).hidden = (mine.length === 0);
+        if (mine.length === 0) { return; }
+
+        var done = mine.filter(function (r) { return r.count > 0; }).length;
+        $('roster-head-' + id).textContent =
+          name + ' ' + mine.length + '명 · ' + done + '명 응시';
+
+        fill('table-roster-' + id, sortRows(mine, sorts['table-roster-' + id]), function (r) {
+          return [r.name, r.school,
+                  r.count === 0 ? '—' : r.count + '번',
+                  r.count === 0 ? '—' : r.avg + '%',
+                  r.count === 0 ? '아직 안 봄' : shortDate(r.last)];
+        });
       });
     } else {
       area.hidden = true;

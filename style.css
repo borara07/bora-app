@@ -237,6 +237,16 @@ html.on-rounds .btn-primary:disabled {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+/* 선생님 화면 — 반별 명단 상자 */
+.roster-group { margin-top: 18px; }
+
+.roster-group-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
 /* 대문 — 로고 아래에 앱 이름 */
 .brand-box {
   display: flex;
