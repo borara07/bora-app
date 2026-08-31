@@ -76,6 +76,7 @@
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
   --brand-deep: #5b2d8e;    /* 첫 화면 바탕 (로고와 같은 진한 보라) */
+  --deep-action: #dd3690;   /* 진한 보라 화면 위의 버튼 (분홍) */
   --title-bold: 0.5px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
   --answer-right: #dd3690;  /* 틀린 문제 해설의 '정답' 글자색 (선명한 분홍) */
@@ -109,6 +110,7 @@
     --wrong: #ff92a8;
     --wrong-bg: #38202b;
     --brand-deep: #4a2478;
+    --deep-action: #dd3690;
     --answer-mine: #a99cca;
     --answer-right: #f983bd;
     --shadow: rgba(0, 0, 0, 0.4);
@@ -134,6 +136,7 @@
   --wrong: #ff92a8;
   --wrong-bg: #38202b;
   --brand-deep: #4a2478;
+  --deep-action: #dd3690;
   --answer-mine: #a99cca;
   --answer-right: #f983bd;
   --shadow: rgba(0, 0, 0, 0.4);
@@ -175,6 +178,52 @@ html, body {
 html.on-rounds,
 html.on-rounds body {
   background: var(--brand-deep);
+}
+
+/* 진한 보라 화면(이름 입력·회차 고르기)에서는 흰 상자를 쓰지 않습니다.
+   회차 버튼과 같은 규칙으로 — 흰색은 '누르거나 쓰는 곳' 입니다 */
+html.on-rounds .card {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+html.on-rounds .label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  margin-bottom: 7px;
+}
+
+html.on-rounds .input {
+  background: #ffffff;
+  border-color: transparent;
+  color: var(--text);
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.18);
+}
+
+html.on-rounds .input:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+html.on-rounds .field-hint { color: rgba(255, 255, 255, 0.65); }
+
+html.on-rounds .error { color: #ffc9d6; }
+
+/* 입력칸이 흰색이라, 버튼은 다른 색이어야 눌러야 할 곳으로 보입니다 */
+html.on-rounds .btn-primary {
+  background: var(--deep-action);
+  color: #ffffff;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.22);
+}
+
+html.on-rounds .btn-primary:hover:not(:disabled) { background: #c72a80; }
+
+html.on-rounds .btn-primary:disabled {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.55);
+  box-shadow: none;
 }
 
 /* 대문 — 로고 아래에 앱 이름 */
