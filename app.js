@@ -20,6 +20,7 @@
   /* ---------- 시험 진행 상태 ---------- */
   var state = {
     student: null, // { name, school, phone4 }
+    group: '',     // 그 학생의 반 (고등부 / 중등부)
     round: null,   // 고른 회차
     list: [],      // 이번 시험에 출제된 문제들
     index: 0,      // 지금 몇 번째 문제인지 (0부터)
@@ -27,7 +28,7 @@
   };
 
   /* 기록 화면에서 '돌아가기'를 눌렀을 때 갈 화면 */
-  var historyBackTo = 'rounds';
+  var historyBackTo = 'start';
 
   /* 이번 주 숙제 회차 (빈 값이면 모든 회차를 고를 수 있습니다) */
   var homeworkRound = '';
@@ -38,7 +39,7 @@
     Object.keys(screens).forEach(function (key) {
       screens[key].hidden = (key !== name);
     });
-    paintBackground(name === 'rounds');
+    paintBackground(name === 'start' || name === 'rounds');
     window.scrollTo(0, 0);
   }
 
@@ -170,6 +171,14 @@
     return m ? { no: m[1], topic: m[2] } : { no: '', topic: title || '' };
   }
 
+  /* 그 반이 볼 회차만 고릅니다. 회차에 반이 안 적혀 있으면 고등부로 봅니다 */
+  function roundsForGroup(group) {
+    var want = group || '고등부';
+    return ROUNDS.filter(function (r) {
+      return (r.group || '고등부') === want;
+    });
+  }
+
   /* 지금 풀 수 있는 회차인지 (선생님이 숙제 회차를 정했으면 그 회차만) */
   function isOpen(round) {
     if (!homeworkRound) { return true; }
@@ -180,12 +189,25 @@
     var box = $('round-list');
     box.innerHTML = '';
 
+    var mine = roundsForGroup(state.group);
+
     /* 숙제 회차를 못 찾으면 모두 열어 둡니다 (학생이 아예 못 푸는 일이 없게) */
-    var found = !homeworkRound || ROUNDS.some(function (r) {
+    var found = !homeworkRound || mine.some(function (r) {
       return r.title === homeworkRound;
     });
 
-    ROUNDS.forEach(function (round) {
+    $('rounds-who').textContent = (state.student ? state.student.name + ' 학생' : '') +
+                                  (state.group ? ' · ' + state.group : '');
+
+    var empty = $('rounds-empty');
+    if (mine.length === 0) {
+      empty.textContent = state.group + ' 시험이 아직 준비되지 않았습니다.\n선생님께 알려주세요.';
+      empty.hidden = false;
+    } else {
+      empty.hidden = true;
+    }
+
+    mine.forEach(function (round) {
       var open = !found || isOpen(round);
       var part = splitRoundTitle(round.title);
 
@@ -220,32 +242,10 @@
     show('rounds');
   }
 
+  /* 회차를 고르면 바로 시험을 시작합니다 (이름은 이미 확인했습니다) */
   function chooseRound(round) {
     state.round = round;
-
-    $('chosen-round').textContent = round.title;
-
-    /* 출제 범위만 보여 줍니다. '+' 로 이어진 항목은 줄을 나눕니다
-       ("논리 어휘 24개 + 수능필수 한자성어 6개" -> 두 줄) */
-    $('chosen-detail').textContent = (round.subtitle || '')
-      .split('+')
-      .map(function (part) { return part.trim(); })
-      .filter(function (part) { return part; })
-      .join('\n');
-
-    $('name-error').hidden = true;
-
-    // 지난번에 시험 본 학생이면 입력칸을 미리 채워 줍니다
-    var last = VocabStore.lastStudent();
-    if (last) {
-      if (!$('student-name').value) $('student-name').value = last.name || '';
-      if (!$('student-school').value) $('student-school').value = last.school || '';
-      if (!$('student-phone4').value) $('student-phone4').value = last.phone4 || '';
-    }
-    refreshHistoryButton();
-
-    show('start');
-    $('student-name').focus();
+    startQuiz();
   }
 
   /* ---------- 시험 만들기 ---------- */
@@ -687,8 +687,14 @@
 
       if (r.ok && r.enrolled) {
         state.student = student;
+        state.group = r.group || '고등부';
         VocabStore.rememberStudent(student);
-        startQuiz();
+
+        /* 그 반의 이번 주 숙제 회차를 읽은 뒤 회차 화면을 보여 줍니다 */
+        VocabStore.homeworkRound(state.group).then(function (h) {
+          homeworkRound = h.round || '';
+          renderRounds();
+        });
         return;
       }
 
@@ -747,7 +753,10 @@
       document.title = QUIZ_TITLE;
     }
 
-    $('btn-back-rounds').addEventListener('click', renderRounds);
+    $('btn-back-start').addEventListener('click', function () {
+      show('start');
+      $('student-name').focus();
+    });
 
     $('start-form').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -794,11 +803,15 @@
 
     $('btn-retry').addEventListener('click', startQuiz);
 
-    /* 숙제 회차를 확인한 뒤 회차 목록을 그립니다 */
-    VocabStore.homeworkRound().then(function (r) {
-      homeworkRound = r.round || '';
-      renderRounds();
-    });
+    /* 지난번에 시험 본 학생이면 입력칸을 미리 채워 줍니다 */
+    var last = VocabStore.lastStudent();
+    if (last) {
+      $('student-name').value = last.name || '';
+      $('student-school').value = last.school || '';
+      $('student-phone4').value = last.phone4 || '';
+    }
+    refreshHistoryButton();
+    show('start');
   }
 
   init();

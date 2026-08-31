@@ -5,9 +5,9 @@
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>선생님용 - 어휘 테스트</title>
-  <link rel="icon" href="favicon.png?v=20260901t">
+  <link rel="icon" href="favicon.png?v=20260901u">
   <meta name="theme-color" content="#7c3aed">
-  <link rel="stylesheet" href="style.css?v=20260901t">
+  <link rel="stylesheet" href="style.css?v=20260901u">
 </head>
 <body>
 
@@ -42,15 +42,32 @@
       <div class="card">
         <p class="eyebrow">이번 주 숙제</p>
         <p id="homework-now" class="chosen-round">확인하는 중…</p>
-        <p class="chosen-detail">학생에게는 여기서 정한 회차 하나만 보입니다.</p>
+        <p class="chosen-detail">고른 반의 학생에게는 여기서 정한 회차 하나만 열립니다.</p>
 
         <div class="field" style="margin-top:16px">
+          <label class="label" for="homework-group">반</label>
+          <select id="homework-group" class="input">
+            <option value="고등부">고등부</option>
+            <option value="중등부">중등부</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label class="label" for="homework-pick">숙제로 낼 회차</label>
           <select id="homework-pick" class="input"></select>
         </div>
 
         <button type="button" id="btn-homework" class="btn btn-primary">이 회차로 정하기</button>
         <p id="homework-state" class="check-state" hidden></p>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">통계에서 볼 반</p>
+        <select id="stat-group" class="input">
+          <option value="">전체</option>
+          <option value="고등부">고등부</option>
+          <option value="중등부">중등부</option>
+        </select>
       </div>
 
       <div class="card">
@@ -155,8 +172,8 @@
 
   </main>
 
-  <script src="questions.js?v=20260901t"></script>
-  <script src="storage.js?v=20260901t"></script>
-  <script src="teacher.js?v=20260901t"></script>
+  <script src="questions.js?v=20260901u"></script>
+  <script src="storage.js?v=20260901u"></script>
+  <script src="teacher.js?v=20260901u"></script>
 </body>
 </html>

@@ -191,6 +191,37 @@ html.on-rounds body {
   height: auto;
 }
 
+/* 회차 화면에서는 로고만 작게 (이름은 아래에 따로 적습니다) */
+.brand-box-small {
+  gap: 0;
+  margin: 26px 0 16px;
+}
+
+.brand-box-small .brand-mark { width: 40px; }
+
+/* 회차 화면 맨 위 '김보라 학생 · 고등부' */
+.rounds-who {
+  margin: 0 0 16px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.rounds-empty {
+  margin: 8px 0 0;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: center;
+  white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
+}
+
+
+
 .brand-name {
   font-family: var(--font-title);
   font-size: 23px;
@@ -485,6 +516,15 @@ h1 {
 }
 
 .btn-quiet:hover { border-color: var(--primary); }
+
+/* 진한 보라 바탕 위에 놓이는 조용한 버튼 */
+.btn.btn-on-deep {
+  margin-top: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.btn.btn-on-deep:hover { border-color: #ffffff; }
 
 .btn:focus-visible {
   outline: 2px solid var(--text);

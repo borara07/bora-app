@@ -81,19 +81,16 @@ var VocabStore = (function () {
     return h;
   }
 
-  /* 서버가 보낸 '맞다/아니다' 답을 읽습니다.
+  /* 재원생 확인의 답을 읽습니다.
+     {"ok": true, "group": "고등부"} 모양을 기대합니다.
      읽을 수 없으면 null 을 돌려줍니다. (모양이 달라져도 앱이 멈추지 않게) */
-  function readYesNo(text) {
+  function readGroup(text) {
     var v;
-    try {
-      v = JSON.parse(text);
-    } catch (e) {
-      v = String(text).trim();
-      return (v === 'true') ? true : (v === 'false' ? false : null);
-    }
+    try { v = JSON.parse(text); } catch (e) { return null; }
     if (Array.isArray(v)) v = v[0];
-    if (v && typeof v === 'object') v = v.check_enrolled;
-    return (v === true || v === false) ? v : null;
+    if (!v || typeof v !== 'object') return null;
+    if (typeof v.ok !== 'boolean') return null;
+    return { ok: v.ok, group: String(v.group || '') };
   }
 
   function bodyFor(record) {
@@ -309,7 +306,7 @@ var VocabStore = (function () {
          (이제는 재원생 명단에 있는 학생의 기록만 들어갈 수 있습니다) */
       var base = SUPABASE.url.replace(/\/+$/, '');
 
-      return fetch(base + '/rest/v1/app_settings?key=eq.homework_round&select=value', {
+      return fetch(base + '/rest/v1/app_settings?key=like.homework_round*&select=value', {
         headers: headersFor('bearer')
       }).then(function (res) {
         if (!res.ok) {
@@ -323,13 +320,14 @@ var VocabStore = (function () {
         }
 
         /* 재원생 확인 기능이 켜져 있는지도 함께 봅니다 */
-        return fetch(base + '/rest/v1/rpc/check_enrolled', {
+        return fetch(base + '/rest/v1/rpc/check_enrolled_group', {
           method: 'POST',
           headers: headersFor('bearer'),
           body: JSON.stringify({ student_name: '', phone4: '' })
         }).then(function (res2) {
           return res2.text().then(function (body2) {
-            if (res2.ok && readYesNo(body2) === false) {
+            var answer = readGroup(body2);
+            if (res2.ok && answer && answer.ok === false) {
               return {
                 ok: true,
                 message: '연결 성공!\n재원생 확인도 켜져 있습니다.\n명단에 있는 학생만 시험을 시작할 수 있습니다.'
@@ -345,7 +343,7 @@ var VocabStore = (function () {
             return {
               ok: false,
               message: '서버에는 연결되지만 재원생 확인 기능이 아직 없습니다.\n' +
-                       'SQL Editor 에서 supabase-재원생확인.sql 을 실행해주세요.',
+                       'SQL Editor 에서 supabase-재원생확인.sql 과\nsupabase-반나누기.sql 을 실행해주세요.',
               detail: '자세한 내용: [' + res2.status + '] ' + body2.slice(0, 200)
             };
           });
@@ -415,6 +413,7 @@ var VocabStore = (function () {
                 school: r.school || '',
                 className: r.class_name || '',
                 grade: r.grade || '미분류',
+                group: r.grade_group || '고등부',
                 parentPhone: r.parent_phone || '',
                 studentPhone: r.student_phone || '',
                 active: r.active !== false,
@@ -432,12 +431,12 @@ var VocabStore = (function () {
     },
 
     /* 재원생 명단에 있는 학생인지 서버에 물어봅니다.
-       명단 자체는 받아오지 않고, 맞다/아니다만 받습니다.
+       명단 자체는 받아오지 않고, 맞다/아니다와 그 학생의 반만 받습니다.
        확인이 되지 않으면 시험을 시작할 수 없습니다. */
     isEnrolled: function (student) {
       if (!supabaseReady()) return Promise.resolve({ ok: false, code: 'no-server' });
 
-      var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/check_enrolled';
+      var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/check_enrolled_group';
 
       return fetch(url, {
         method: 'POST',
@@ -449,9 +448,9 @@ var VocabStore = (function () {
       }).then(function (res) {
         return res.text().then(function (text) {
           if (res.ok) {
-            var yes = readYesNo(text);
-            if (yes === null) return { ok: false, code: 'error', detail: '답을 읽지 못했습니다.' };
-            return { ok: true, enrolled: yes };
+            var answer = readGroup(text);
+            if (answer === null) return { ok: false, code: 'error', detail: '답을 읽지 못했습니다.' };
+            return { ok: true, enrolled: answer.ok, group: answer.group };
           }
           if (res.status === 404 || /check_enrolled|PGRST202/.test(text)) {
             return { ok: false, code: 'not-set-up' };
@@ -465,23 +464,25 @@ var VocabStore = (function () {
 
     /* 이번 주 숙제 회차를 읽어 옵니다.
        인터넷이 안 되면 지난번에 확인한 값을 씁니다. */
-    homeworkRound: function () {
+    homeworkRound: function (group) {
+      var key = 'homework_round:' + (group || '고등부');
+      var store = KEY_HOMEWORK + ':' + (group || '고등부');
       var cached = null;
-      try { cached = window.localStorage.getItem(KEY_HOMEWORK); } catch (e) { cached = null; }
+      try { cached = window.localStorage.getItem(store); } catch (e) { cached = null; }
 
       if (!supabaseReady()) {
         return Promise.resolve({ ok: false, round: cached });
       }
 
       var url = SUPABASE.url.replace(/\/+$/, '') +
-                '/rest/v1/app_settings?key=eq.homework_round&select=value';
+                '/rest/v1/app_settings?key=eq.' + encodeURIComponent(key) + '&select=value';
 
       return fetch(url, { headers: headersFor(workingWay || 'bearer') })
         .then(function (res) {
           if (!res.ok) return { ok: false, round: cached };
           return res.json().then(function (rows) {
             var value = (rows && rows[0] && rows[0].value) || '';
-            try { window.localStorage.setItem(KEY_HOMEWORK, value); } catch (e) { /* 넘어갑니다 */ }
+            try { window.localStorage.setItem(store, value); } catch (e) { /* 넘어갑니다 */ }
             return { ok: true, round: value };
           });
         })
@@ -491,7 +492,7 @@ var VocabStore = (function () {
     },
 
     /* 선생님용: 이번 주 숙제 회차를 정합니다 (빈 값이면 전체 열기) */
-    setHomeworkRound: function (password, round) {
+    setHomeworkRound: function (password, round, group) {
       if (!supabaseReady()) return Promise.resolve({ ok: false, code: 'no-server' });
 
       var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/set_homework_round';
@@ -499,11 +500,12 @@ var VocabStore = (function () {
       return fetch(url, {
         method: 'POST',
         headers: headersFor(workingWay || 'bearer'),
-        body: JSON.stringify({ pass: password, round: round || '' })
+        body: JSON.stringify({ pass: password, round: round || '', grade_group: group || '' })
       }).then(function (res) {
         return res.text().then(function (text) {
           if (res.ok) return { ok: true, round: round || '' };
           if (/비밀번호/.test(text)) return { ok: false, code: 'wrong-password' };
+          if (/반을 고르지/.test(text)) return { ok: false, code: 'no-group' };
           if (res.status === 404 || /set_homework_round|PGRST202/.test(text)) return { ok: false, code: 'not-set-up' };
           return { ok: false, code: 'error', detail: '[' + res.status + '] ' + text.slice(0, 200) };
         });

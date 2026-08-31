@@ -8,7 +8,10 @@
 
   var $ = function (id) { return document.getElementById(id); };
 
-  var rows = [];        /* 전체 시험 기록 */
+  var allRows = [];     /* 서버에서 받아온 전체 시험 기록 */
+  var allRoster = null; /* 서버에서 받아온 전체 명단 */
+  var statGroup = '';   /* 통계에서 볼 반 (빈 값이면 전체) */
+  var rows = [];        /* 지금 화면에 쓰는 시험 기록 (고른 반만) */
   var myPassword = '';  /* 이번에 들어올 때 쓴 비밀번호 (문제 올릴 때 다시 씁니다) */
   var roster = null;    /* 재원생 명단 기준 누적 (명단을 넣어 둔 경우에만) */
 
@@ -45,7 +48,8 @@
         loadHomework();
 
         VocabStore.fetchStudents(password).then(function (sr) {
-          roster = sr.ok ? sr.rows : null;
+          allRoster = sr.ok ? sr.rows : null;
+          applyGroup();
           render();
         });
         return;
@@ -76,8 +80,9 @@
   }
 
   function show(list, note) {
-    rows = list || [];
-    roster = null;
+    allRows = list || [];
+    allRoster = null;
+    applyGroup();
     $('source-note').textContent = note;
     $('export-state').hidden = true;
     render();
@@ -87,8 +92,10 @@
   }
 
   function logout() {
+    allRows = [];
     rows = [];
     myPassword = '';
+    allRoster = null;
     roster = null;
     $('password').value = '';
     $('login-error').hidden = true;
@@ -101,6 +108,31 @@
 
   function studentKeyOf(r) {
     return r.name + '|' + r.school + '|' + r.phone4;
+  }
+
+  /* 이름(띄어쓰기 무시) + 학부모 연락처 뒷 4자리로 같은 학생을 찾습니다.
+     (앱의 다른 곳과 같은 기준입니다) */
+  function identityOf(name, phone) {
+    var key = String(name || '').replace(/\s/g, '').toLowerCase();
+    var four = String(phone || '').replace(/[^0-9]/g, '').slice(-4);
+    return key + '|' + four;
+  }
+
+  /* 고른 반의 기록·명단만 남깁니다 */
+  function applyGroup() {
+    roster = allRoster;
+    rows = allRows;
+
+    if (!statGroup) { return; }
+
+    if (allRoster) {
+      roster = allRoster.filter(function (r) { return (r.group || '고등부') === statGroup; });
+
+      /* 그 반 학생만 남기려면 누가 그 반인지 알아야 합니다 */
+      var mine = {};
+      roster.forEach(function (r) { mine[identityOf(r.name, r.parentPhone)] = true; });
+      rows = allRows.filter(function (r) { return mine[identityOf(r.name, r.phone4)]; });
+    }
   }
 
   function roundStats() {
@@ -287,8 +319,13 @@
 
   /* ---------- 이번 주 숙제 회차 ---------- */
 
+  function homeworkGroup() {
+    return $('homework-group').value || '고등부';
+  }
+
   function fillHomeworkPicker(current) {
     var pick = $('homework-pick');
+    var group = homeworkGroup();
     pick.innerHTML = '';
 
     var all = document.createElement('option');
@@ -296,8 +333,11 @@
     all.textContent = '모든 회차 열기 (숙제 지정 안 함)';
     pick.appendChild(all);
 
+    var count = 0;
     if (typeof ROUNDS !== 'undefined' && Array.isArray(ROUNDS)) {
       ROUNDS.forEach(function (r) {
+        if ((r.group || '고등부') !== group) { return; }
+        count += 1;
         var op = document.createElement('option');
         op.value = r.title;
         op.textContent = r.title;
@@ -305,19 +345,24 @@
       });
     }
 
+    if (count === 0) {
+      all.textContent = group + ' 회차가 아직 없습니다';
+    }
+
     pick.value = current || '';
-    $('homework-now').textContent = current ? current : '지정 안 함 (모든 회차 열림)';
+    $('homework-now').textContent = group + ' — ' +
+      (current ? current : '지정 안 함 (모든 회차 열림)');
   }
 
   function loadHomework() {
-    VocabStore.homeworkRound().then(function (r) {
+    VocabStore.homeworkRound(homeworkGroup()).then(function (r) {
       fillHomeworkPicker(r.round || '');
       if (!r.ok) {
         var box = $('homework-state');
         box.hidden = false;
         box.className = 'check-state';
         box.textContent = '수파베이스에서 숙제 회차를 읽지 못했습니다.\n' +
-                          'supabase-숙제회차.sql 을 실행했는지 확인해주세요.';
+                          'supabase-반나누기.sql 을 실행했는지 확인해주세요.';
       }
     });
   }
@@ -325,24 +370,28 @@
   function saveHomework() {
     var box = $('homework-state');
     var round = $('homework-pick').value;
+    var group = homeworkGroup();
 
     box.hidden = false;
     box.className = 'check-state';
     box.textContent = '정하는 중…';
 
-    VocabStore.setHomeworkRound(myPassword, round).then(function (r) {
+    VocabStore.setHomeworkRound(myPassword, round, group).then(function (r) {
       if (r.ok) {
         box.className = 'check-state is-ok';
         box.textContent = round
-          ? ('이번 주 숙제를 ' + round + ' 로 정했습니다.\n학생 화면에는 이 회차만 보입니다.')
-          : '모든 회차를 열었습니다.\n학생이 아무 회차나 고를 수 있습니다.';
-        $('homework-now').textContent = round ? round : '지정 안 함 (모든 회차 열림)';
+          ? (group + ' 이번 주 숙제를 ' + round + ' 로 정했습니다.\n' +
+             group + ' 학생에게는 이 회차만 열립니다.')
+          : (group + ' 의 모든 회차를 열었습니다.\n' +
+             group + ' 학생이 아무 회차나 고를 수 있습니다.');
+        $('homework-now').textContent = group + ' — ' +
+          (round ? round : '지정 안 함 (모든 회차 열림)');
         return;
       }
       box.className = 'check-state is-bad';
       if (r.code === 'not-set-up') {
-        box.textContent = '수파베이스에 숙제 회차 설정이 아직 없습니다.\n' +
-                          'SQL Editor 에서 supabase-숙제회차.sql 을 실행해주세요.';
+        box.textContent = '수파베이스에 반별 숙제 회차 설정이 아직 없습니다.\n' +
+                          'SQL Editor 에서 supabase-반나누기.sql 을 실행해주세요.';
       } else if (r.code === 'wrong-password') {
         box.textContent = '비밀번호가 맞지 않습니다. 나갔다가 다시 들어와 주세요.';
       } else if (r.code === 'no-server' || r.code === 'offline') {
@@ -471,6 +520,20 @@
   $('btn-export').addEventListener('click', exportCsv);
   $('btn-upload').addEventListener('click', uploadQuestions);
   $('btn-homework').addEventListener('click', saveHomework);
+
+  /* 반을 바꾸면 그 반의 회차 목록과 지금 정해진 회차를 다시 읽습니다 */
+  $('homework-group').addEventListener('change', function () {
+    $('homework-state').hidden = true;
+    loadHomework();
+  });
+
+  /* 통계에서 볼 반을 바꿉니다 */
+  $('stat-group').addEventListener('change', function () {
+    statGroup = this.value;
+    applyGroup();
+    render();
+  });
+
   showBankNote();
 
   setupSorting();
