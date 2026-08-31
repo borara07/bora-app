@@ -241,11 +241,11 @@ h1 {
   color: var(--text);
 }
 
-/* 제목 크기는 '틀린 문제 해설' 과 똑같이 맞춥니다 */
+/* 글자가 두 줄로 길어서, 소제목(21px)보다 한 단계 작게 둡니다 */
 .retest-title {
   font-family: var(--font-title);
   margin: 0;
-  font-size: 21px;
+  font-size: 19px;
   white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
   font-weight: 400;
   color: var(--primary-dark);
