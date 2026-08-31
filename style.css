@@ -68,15 +68,14 @@
   --text-2: #4a4166;       /* 해설 글자 */
   --muted: #6f6494;
   --line: #e6e0f7;
-  --primary: #6f4ad4;      /* 연보라 (버튼·강조) */
-  --primary-dark: #5a37bb;
+  --primary: #7c3aed;      /* 연보라 (버튼·강조) */
+  --primary-dark: #6d28d9;
   --on-primary: #ffffff;
   --correct: #12795e;
   --correct-bg: #e3f6ef;
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
   --title-bold: 0.5px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
-  --word-purple: #7c3aed;   /* 틀린 문제 해설의 어휘·예문 이름표 (선명한 보라) */
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
   --answer-right: #be185d;  /* 틀린 문제 해설의 '정답' 글자색 (선명한 분홍) */
   --shadow: rgba(70, 48, 130, 0.08);
@@ -101,14 +100,13 @@
     --text-2: #c6bde0;
     --muted: #a99cca;
     --line: #322a48;
-    --primary: #b79bff;
-    --primary-dark: #c9b4ff;
+    --primary: #a78bfa;
+    --primary-dark: #c4b5fd;
     --on-primary: #1a1229;
     --correct: #63d7ad;
     --correct-bg: #143329;
     --wrong: #ff92a8;
     --wrong-bg: #38202b;
-    --word-purple: #a78bfa;
     --answer-mine: #a99cca;
     --answer-right: #f9a8c8;
     --shadow: rgba(0, 0, 0, 0.4);
@@ -126,14 +124,13 @@
   --text-2: #c6bde0;
   --muted: #a99cca;
   --line: #322a48;
-  --primary: #b79bff;
-  --primary-dark: #c9b4ff;
+  --primary: #a78bfa;
+  --primary-dark: #c4b5fd;
   --on-primary: #1a1229;
   --correct: #63d7ad;
   --correct-bg: #143329;
   --wrong: #ff92a8;
   --wrong-bg: #38202b;
-  --word-purple: #a78bfa;
   --answer-mine: #a99cca;
   --answer-right: #f9a8c8;
   --shadow: rgba(0, 0, 0, 0.4);
@@ -709,7 +706,7 @@ h1 {
   font-family: var(--font-title);
   font-size: 21px;
   font-weight: 400;
-  color: var(--word-purple);
+  color: var(--primary);
   margin: 0 0 12px;
 }
 
@@ -772,7 +769,7 @@ h1 {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: var(--word-purple);
+  color: var(--primary);
 }
 
 .all-correct {

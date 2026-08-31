@@ -10,7 +10,7 @@
 
 1. **색은 반드시 `style.css` 의 `:root` 변수에서 가져다 씁니다.**
    `var(--primary)`, `var(--card)`, `var(--muted)` 처럼 쓰고,
-   `#6f4ad4` 같은 색 코드를 컴포넌트에 직접 적지 않습니다.
+   `#7c3aed` 같은 색 코드를 컴포넌트에 직접 적지 않습니다.
    새 색이 꼭 필요하면 `:root`(밝은 화면), `@media (prefers-color-scheme: dark)`,
    `:root[data-theme="dark"]` **세 곳 모두**에 변수를 추가합니다.
 2. **강조색은 연보라 하나만** 씁니다. 정답 초록·오답 빨강은 채점 표시 전용이며
