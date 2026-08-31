@@ -75,6 +75,8 @@
   --correct-bg: #e3f6ef;
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
+  --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
+  --answer-right: #047857;  /* 틀린 문제 해설의 '정답' 글자색 (에메랄드) */
   --shadow: rgba(70, 48, 130, 0.08);
 
   /* 글씨체 (뒤쪽은 글씨체를 못 받았을 때 대신 쓸 것들) */
@@ -104,6 +106,8 @@
     --correct-bg: #143329;
     --wrong: #ff92a8;
     --wrong-bg: #38202b;
+    --answer-mine: #a99cca;
+    --answer-right: #34d399;
     --shadow: rgba(0, 0, 0, 0.4);
   }
 }
@@ -126,6 +130,8 @@
   --correct-bg: #143329;
   --wrong: #ff92a8;
   --wrong-bg: #38202b;
+  --answer-mine: #a99cca;
+  --answer-right: #34d399;
   --shadow: rgba(0, 0, 0, 0.4);
 }
 
@@ -697,8 +703,8 @@ h1 {
   color: var(--muted);
 }
 
-.my-answer { color: var(--wrong); font-weight: 700; }
-.real-answer { color: var(--correct); font-weight: 700; }
+.my-answer { color: var(--answer-mine); font-weight: 700; }
+.real-answer { color: var(--answer-right); font-weight: 700; }
 
 .explanation {
   margin: 14px 0 0;
