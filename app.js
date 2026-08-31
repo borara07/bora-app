@@ -224,10 +224,14 @@
     state.round = round;
 
     $('chosen-round').textContent = round.title;
-    var idioms = idiomsFor(round);
-    $('chosen-detail').textContent =
-      (round.subtitle ? round.subtitle + ' · ' : '') + countFor(round) + '문제 · 4지선다' +
-      (idioms > 0 ? ' · 한자성어 ' + idioms + '개 포함' : '');
+
+    /* 출제 범위만 보여 줍니다. '+' 로 이어진 항목은 줄을 나눕니다
+       ("논리 어휘 24개 + 수능필수 한자성어 6개" -> 두 줄) */
+    $('chosen-detail').textContent = (round.subtitle || '')
+      .split('+')
+      .map(function (part) { return part.trim(); })
+      .filter(function (part) { return part; })
+      .join('\n');
 
     $('name-error').hidden = true;
 

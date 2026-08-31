@@ -393,9 +393,11 @@ h1 {
 }
 
 .chosen-detail {
-  margin: 2px 0 0;
+  margin: 6px 0 0;
   font-size: 15px;
+  line-height: 1.6;
   color: var(--text-2);
+  white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
 }
 
 .label {
