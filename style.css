@@ -143,7 +143,6 @@
    그래서 획을 아주 조금 덧그려 굵게 보이게 합니다.
    굵기를 바꾸려면 맨 위 :root 의 --title-bold 값만 고치면 됩니다 */
 h1,
-#rounds-note,
 .retest-title,
 .round-title,
 .chosen-round,
@@ -178,7 +177,28 @@ html.on-rounds body {
   background: var(--brand-deep);
 }
 
-html.on-rounds #rounds-note { color: #ffffff; }
+/* 대문 — 로고 아래에 앱 이름 */
+.brand-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 46px 0 34px;
+}
+
+.brand-mark {
+  width: 76px;
+  height: auto;
+}
+
+.brand-name {
+  font-family: var(--font-title);
+  font-size: 30px;
+  font-weight: 400;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
 
 .app {
   max-width: 600px;
@@ -201,24 +221,6 @@ h1 {
   margin: 8px 0 6px;
   text-align: center;
   text-wrap: balance;
-}
-
-/* ---------- 학원 로고 ---------- */
-
-.brand {
-  display: block;
-  width: 250px;
-  max-width: 72%;
-  height: auto;
-  margin: 42px auto 26px;
-}
-
-/* 첫 화면의 이번 주 안내 문구 (로고 아래 큰 글씨) */
-#rounds-note {
-  font-family: var(--font-title);
-  font-size: 24px;
-  color: var(--text);
-  margin: 0 0 34px;
 }
 
 .subtitle {
@@ -297,7 +299,7 @@ h1 {
 .round-card {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 0;
   width: 100%;
   text-align: left;
   font-family: inherit;
@@ -305,7 +307,7 @@ h1 {
   background: var(--card);
   border: 1.5px solid var(--line);
   border-radius: 18px;
-  padding: 20px 46px 18px 20px;
+  padding: 18px 46px 18px 20px;
   box-shadow: 0 2px 12px var(--shadow);
   cursor: pointer;
   position: relative;
@@ -335,18 +337,6 @@ h1 {
   font-size: 21px;
   font-weight: 400;
   letter-spacing: -0.01em;
-}
-
-.round-subtitle {
-  font-size: 15px;
-  color: var(--text-2);
-}
-
-.round-meta {
-  margin-top: 6px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--primary);
 }
 
 /* ---------- 이름 입력 ---------- */

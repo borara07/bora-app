@@ -164,10 +164,9 @@
   /* ---------- 회차 선택 화면 ---------- */
 
   /* 이번 주에 풀 수 있는 회차만 골라 냅니다 */
+  /* 문제지가 만들어진 회차를 모두 보여 줍니다 */
   function openRounds() {
-    if (!homeworkRound) return ROUNDS;
-    var only = ROUNDS.filter(function (r) { return r.title === homeworkRound; });
-    return only.length ? only : ROUNDS;   /* 숙제 회차를 못 찾으면 모두 보여 줍니다 */
+    return ROUNDS;
   }
 
   function renderRounds() {
@@ -175,15 +174,6 @@
     box.innerHTML = '';
 
     var list = openRounds();
-
-    /* 선생님이 이번 주 회차를 정해 두었으면 그 회차를 안내합니다.
-       (학생은 회차를 고를 수 없습니다) */
-    var note = $('rounds-note');
-    note.innerHTML = '';
-
-    note.textContent = (list.length === 1 && homeworkRound)
-      ? '이번주 어휘 시험입니다.'
-      : '아래 회차를 눌러 시작하세요.';
 
     list.forEach(function (round) {
       var card = document.createElement('button');
@@ -194,13 +184,6 @@
       title.className = 'round-title';
       title.textContent = round.title;
       card.appendChild(title);
-
-      var meta = document.createElement('span');
-      meta.className = 'round-meta';
-      var n = idiomsFor(round);
-      meta.textContent = countFor(round) + ' 문제' +
-                         (n > 0 ? ' / 수능필수 한자성어 ' + n + '개 포함' : '');
-      card.appendChild(meta);
 
       card.addEventListener('click', function () {
         chooseRound(round);
