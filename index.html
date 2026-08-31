@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="on-rounds">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
@@ -7,16 +7,16 @@
   <title>어휘 테스트</title>
 
   <!-- 휴대폰 바탕화면에 앱처럼 놓기 위한 설정 -->
-  <link rel="manifest" href="manifest.json?v=20260901g">
-  <meta name="theme-color" content="#7c3aed">
-  <link rel="icon" href="favicon.png?v=20260901g">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260901g">
+  <link rel="manifest" href="manifest.json?v=20260901h">
+  <meta name="theme-color" content="#5b2d8e">
+  <link rel="icon" href="favicon.png?v=20260901h">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260901h">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라국어 어휘">
 
-  <link rel="stylesheet" href="style.css?v=20260901g">
+  <link rel="stylesheet" href="style.css?v=20260901h">
 </head>
 <body>
 
@@ -24,10 +24,8 @@
 
     <!-- 1. 회차 선택 화면 -->
     <section id="screen-rounds" class="screen">
-      <picture>
-        <source srcset="logo/logo-h-white.png?v=20260901g" media="(prefers-color-scheme: dark)">
-        <img class="brand" src="logo/logo-h.png?v=20260901g" alt="보라! 국어전문학원" width="1276" height="211">
-      </picture>
+      <!-- 바탕이 진한 보라라서 흰색 로고를 씁니다 -->
+      <img class="brand" src="logo/logo-h-white.png?v=20260901h" alt="보라! 국어전문학원" width="1276" height="211">
       <h1 id="rounds-note" class="subtitle">이번주 어휘 시험입니다.</h1>
 
       <div id="round-list" class="round-list"></div>
@@ -150,8 +148,8 @@
 
   </main>
 
-  <script src="questions.js?v=20260901g"></script>
-  <script src="storage.js?v=20260901g"></script>
-  <script src="app.js?v=20260901g"></script>
+  <script src="questions.js?v=20260901h"></script>
+  <script src="storage.js?v=20260901h"></script>
+  <script src="app.js?v=20260901h"></script>
 </body>
 </html>

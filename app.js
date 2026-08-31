@@ -38,7 +38,25 @@
     Object.keys(screens).forEach(function (key) {
       screens[key].hidden = (key !== name);
     });
+    paintBackground(name === 'rounds');
     window.scrollTo(0, 0);
+  }
+
+  /* 첫 화면만 진한 보라 바탕으로 바꿉니다.
+     휴대폰 맨 위 띠 색(theme-color)도 같이 맞춥니다 */
+  function paintBackground(deep) {
+    var root = document.documentElement;
+    if (deep) {
+      root.classList.add('on-rounds');
+    } else {
+      root.classList.remove('on-rounds');
+    }
+
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) { return; }
+    var color = getComputedStyle(root)
+      .getPropertyValue(deep ? '--brand-deep' : '--primary').trim();
+    if (color) { meta.setAttribute('content', color); }
   }
 
   function shuffle(arr) {

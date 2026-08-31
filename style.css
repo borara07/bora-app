@@ -75,6 +75,7 @@
   --correct-bg: #e3f6ef;
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
+  --brand-deep: #5b2d8e;    /* 첫 화면 바탕 (로고와 같은 진한 보라) */
   --title-bold: 0.5px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
   --answer-right: #be185d;  /* 틀린 문제 해설의 '정답' 글자색 (선명한 분홍) */
@@ -107,6 +108,7 @@
     --correct-bg: #143329;
     --wrong: #ff92a8;
     --wrong-bg: #38202b;
+    --brand-deep: #4a2478;
     --answer-mine: #a99cca;
     --answer-right: #f9a8c8;
     --shadow: rgba(0, 0, 0, 0.4);
@@ -131,6 +133,7 @@
   --correct-bg: #143329;
   --wrong: #ff92a8;
   --wrong-bg: #38202b;
+  --brand-deep: #4a2478;
   --answer-mine: #a99cca;
   --answer-right: #f9a8c8;
   --shadow: rgba(0, 0, 0, 0.4);
@@ -167,6 +170,15 @@ html, body {
   line-height: 1.65;
   -webkit-text-size-adjust: 100%;
 }
+
+/* 첫 화면(회차 고르기)만 로고와 같은 진한 보라 바탕을 씁니다.
+   html 과 body 두 곳에 모두 칠해야 화면 끝까지 색이 채워집니다 */
+html.on-rounds,
+html.on-rounds body {
+  background: var(--brand-deep);
+}
+
+html.on-rounds #rounds-note { color: #ffffff; }
 
 .app {
   max-width: 600px;
