@@ -164,30 +164,55 @@
   /* ---------- 회차 선택 화면 ---------- */
 
   /* 이번 주에 풀 수 있는 회차만 골라 냅니다 */
-  /* 문제지가 만들어진 회차를 모두 보여 줍니다 */
-  function openRounds() {
-    return ROUNDS;
+  /* 회차 이름을 번호와 주제로 나눕니다. ("01회 논리 1" -> "01", "논리 1") */
+  function splitRoundTitle(title) {
+    var m = /^\s*(\d+)\s*회\s*(.*)$/.exec(title || '');
+    return m ? { no: m[1], topic: m[2] } : { no: '', topic: title || '' };
+  }
+
+  /* 지금 풀 수 있는 회차인지 (선생님이 숙제 회차를 정했으면 그 회차만) */
+  function isOpen(round) {
+    if (!homeworkRound) { return true; }
+    return round.title === homeworkRound;
   }
 
   function renderRounds() {
     var box = $('round-list');
     box.innerHTML = '';
 
-    var list = openRounds();
+    /* 숙제 회차를 못 찾으면 모두 열어 둡니다 (학생이 아예 못 푸는 일이 없게) */
+    var found = !homeworkRound || ROUNDS.some(function (r) {
+      return r.title === homeworkRound;
+    });
 
-    list.forEach(function (round) {
+    ROUNDS.forEach(function (round) {
+      var open = !found || isOpen(round);
+      var part = splitRoundTitle(round.title);
+
       var card = document.createElement('button');
       card.type = 'button';
-      card.className = 'round-card';
+      card.className = 'round-btn' + (open ? '' : ' is-locked');
 
-      var title = document.createElement('span');
-      title.className = 'round-title';
-      title.textContent = round.title;
-      card.appendChild(title);
+      var no = document.createElement('span');
+      no.className = 'round-no';
+      no.textContent = part.no || round.title;
+      card.appendChild(no);
 
-      card.addEventListener('click', function () {
-        chooseRound(round);
-      });
+      if (part.no) {
+        var topic = document.createElement('span');
+        topic.className = 'round-topic';
+        topic.textContent = part.topic;
+        card.appendChild(topic);
+      }
+
+      if (open) {
+        card.addEventListener('click', function () {
+          chooseRound(round);
+        });
+      } else {
+        card.disabled = true;
+        card.setAttribute('aria-label', round.title + ' — 이번 주에는 열려 있지 않습니다');
+      }
 
       box.appendChild(card);
     });
