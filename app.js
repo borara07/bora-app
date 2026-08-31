@@ -187,8 +187,8 @@
       var meta = document.createElement('span');
       meta.className = 'round-meta';
       var n = idiomsFor(round);
-      meta.textContent = '전체 ' + round.questions.length + '문제 중 ' + countFor(round) + '문제 출제' +
-                         (n > 0 ? ' (한자성어 ' + n + '개 포함)' : '');
+      meta.textContent = countFor(round) + '문제' +
+                         (n > 0 ? ' · 한자성어 ' + n + '개' : '');
       card.appendChild(meta);
 
       card.addEventListener('click', function () {
