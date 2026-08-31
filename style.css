@@ -6,6 +6,36 @@
    전체 톤이 그대로 유지됩니다. (직접 색 코드를 적지 마세요)
    ========================================================= */
 
+/* ---------- 글씨체 ----------
+   두 가지를 씁니다.
+     · 고운밤        : 제목과 문제 어휘처럼 큰 글씨 (카페24 고운밤)
+     · 나눔스퀘어라운드 : 보기·해설 같은 본문
+
+   한자(基盤 등)는 이 글씨체들에 들어 있지 않아서,
+   아래 unicode-range 로 '한글과 영문만' 맡기고
+   한자는 휴대폰에 원래 있는 글씨체가 그립니다.
+   글씨체를 바꾸려면 fonts 폴더의 파일과 아래 이름만 바꾸면 됩니다. */
+
+@font-face {
+  font-family: "고운밤";
+  src: url("fonts/goun-bam.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-205E,
+                 U+1100-11FF, U+3130-318F, U+AC00-D7A3;
+}
+
+@font-face {
+  font-family: "나눔스퀘어라운드";
+  src: url("fonts/square-round.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-205E,
+                 U+1100-11FF, U+3130-318F, U+AC00-D7A3;
+}
+
 /* ---------- 밝은 화면 색 ---------- */
 :root {
   --bg: #f7f5fd;
@@ -26,6 +56,12 @@
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
   --shadow: rgba(70, 48, 130, 0.08);
+
+  /* 글씨체 (뒤쪽은 글씨체를 못 받았을 때 대신 쓸 것들) */
+  --font-body: "나눔스퀘어라운드", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+               "Malgun Gothic", "맑은 고딕", sans-serif;
+  --font-title: "고운밤", "나눔스퀘어라운드", -apple-system, "Apple SD Gothic Neo",
+                "Malgun Gothic", "맑은 고딕", sans-serif;
 }
 
 /* ---------- 어두운 화면 색 (휴대폰 다크 모드) ---------- */
@@ -83,8 +119,7 @@ html, body {
   padding: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
-               "Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif;
+  font-family: var(--font-body);
   font-size: 17px;
   line-height: 1.65;
   -webkit-text-size-adjust: 100%;
@@ -97,11 +132,23 @@ html, body {
 }
 
 h1 {
-  font-size: 30px;
+  font-family: var(--font-title);
+  font-size: 32px;
+  font-weight: 400;
   letter-spacing: -0.01em;
   margin: 8px 0 6px;
   text-align: center;
   text-wrap: balance;
+}
+
+/* ---------- 학원 로고 ---------- */
+
+.brand {
+  display: block;
+  width: 220px;
+  max-width: 64%;
+  height: auto;
+  margin: 4px auto 16px;
 }
 
 .subtitle {
@@ -123,9 +170,10 @@ h1 {
 }
 
 .retest-title {
+  font-family: var(--font-title);
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 400;
   color: var(--primary);
   line-height: 1.5;
 }
@@ -204,8 +252,9 @@ h1 {
 }
 
 .round-title {
-  font-size: 21px;
-  font-weight: 800;
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 400;
   letter-spacing: -0.01em;
 }
 
@@ -262,9 +311,10 @@ h1 {
 }
 
 .chosen-round {
+  font-family: var(--font-title);
   margin: 2px 0 0;
-  font-size: 24px;
-  font-weight: 800;
+  font-size: 25px;
+  font-weight: 400;
   letter-spacing: -0.01em;
 }
 
@@ -408,8 +458,9 @@ h1 {
 }
 
 .question-word {
-  font-size: 40px;
-  font-weight: 800;
+  font-family: var(--font-title);
+  font-size: 42px;
+  font-weight: 400;
   letter-spacing: -0.02em;
   margin: 6px 0 20px;
   word-break: break-word;
@@ -492,8 +543,9 @@ h1 {
 }
 
 .result-score {
-  font-size: 60px;
-  font-weight: 800;
+  font-family: var(--font-title);
+  font-size: 62px;
+  font-weight: 400;
   color: var(--primary);
   margin: 4px 0 0;
   line-height: 1.15;
@@ -530,7 +582,9 @@ h1 {
 }
 
 .section-title {
-  font-size: 19px;
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 400;
   margin: 30px 0 12px;
 }
 
@@ -549,8 +603,9 @@ h1 {
 }
 
 .wrong-word {
-  font-size: 22px;
-  font-weight: 800;
+  font-family: var(--font-title);
+  font-size: 23px;
+  font-weight: 400;
   margin: 0 0 12px;
 }
 
@@ -671,9 +726,10 @@ h1 {
 .history-main { min-width: 0; }
 
 .history-round {
+  font-family: var(--font-title);
   margin: 0;
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 19px;
+  font-weight: 400;
 }
 
 .history-when {
