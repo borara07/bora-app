@@ -76,7 +76,7 @@
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
   --brand-deep: #5b2d8e;    /* 첫 화면 바탕 (로고와 같은 진한 보라) */
-  --deep-action: #dd3690;   /* 진한 보라 화면 위의 버튼 (분홍) */
+  --deep-action: #c4b5fd;   /* 진한 보라 화면 위의 버튼 (밝은 라벤더) */
   --title-bold: 0.5px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
   --answer-right: #dd3690;  /* 틀린 문제 해설의 '정답' 글자색 (선명한 분홍) */
@@ -110,7 +110,7 @@
     --wrong: #ff92a8;
     --wrong-bg: #38202b;
     --brand-deep: #4a2478;
-    --deep-action: #dd3690;
+    --deep-action: #c4b5fd;
     --answer-mine: #a99cca;
     --answer-right: #f983bd;
     --shadow: rgba(0, 0, 0, 0.4);
@@ -136,7 +136,7 @@
   --wrong: #ff92a8;
   --wrong-bg: #38202b;
   --brand-deep: #4a2478;
-  --deep-action: #dd3690;
+  --deep-action: #c4b5fd;
   --answer-mine: #a99cca;
   --answer-right: #f983bd;
   --shadow: rgba(0, 0, 0, 0.4);
@@ -214,11 +214,11 @@ html.on-rounds .error { color: #ffc9d6; }
 /* 입력칸이 흰색이라, 버튼은 다른 색이어야 눌러야 할 곳으로 보입니다 */
 html.on-rounds .btn-primary {
   background: var(--deep-action);
-  color: #ffffff;
+  color: #4a1d7a;
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.22);
 }
 
-html.on-rounds .btn-primary:hover:not(:disabled) { background: #c72a80; }
+html.on-rounds .btn-primary:hover:not(:disabled) { background: #d6cbff; }
 
 html.on-rounds .btn-primary:disabled {
   background: rgba(255, 255, 255, 0.2);
