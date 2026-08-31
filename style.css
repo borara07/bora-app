@@ -76,6 +76,7 @@
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
   --title-bold: 0.5px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
+  --word-purple: #7c3aed;   /* 틀린 문제 해설의 어휘·예문 이름표 (선명한 보라) */
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
   --answer-right: #be185d;  /* 틀린 문제 해설의 '정답' 글자색 (선명한 분홍) */
   --shadow: rgba(70, 48, 130, 0.08);
@@ -107,6 +108,7 @@
     --correct-bg: #143329;
     --wrong: #ff92a8;
     --wrong-bg: #38202b;
+    --word-purple: #a78bfa;
     --answer-mine: #a99cca;
     --answer-right: #f9a8c8;
     --shadow: rgba(0, 0, 0, 0.4);
@@ -131,6 +133,7 @@
   --correct-bg: #143329;
   --wrong: #ff92a8;
   --wrong-bg: #38202b;
+  --word-purple: #a78bfa;
   --answer-mine: #a99cca;
   --answer-right: #f9a8c8;
   --shadow: rgba(0, 0, 0, 0.4);
@@ -706,7 +709,7 @@ h1 {
   font-family: var(--font-title);
   font-size: 21px;
   font-weight: 400;
-  color: var(--primary);
+  color: var(--word-purple);
   margin: 0 0 12px;
 }
 
@@ -769,7 +772,7 @@ h1 {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: var(--primary);
+  color: var(--word-purple);
 }
 
 .all-correct {
