@@ -76,7 +76,7 @@
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
-  --answer-right: #6f4ad4;  /* 틀린 문제 해설의 '정답' 글자색 (연보라) */
+  --answer-right: #5b2d8e;  /* 틀린 문제 해설의 '정답' 글자색 (로고 보라) */
   --shadow: rgba(70, 48, 130, 0.08);
 
   /* 글씨체 (뒤쪽은 글씨체를 못 받았을 때 대신 쓸 것들) */
@@ -107,7 +107,7 @@
     --wrong: #ff92a8;
     --wrong-bg: #38202b;
     --answer-mine: #a99cca;
-    --answer-right: #b79bff;
+    --answer-right: #cbb6ff;
     --shadow: rgba(0, 0, 0, 0.4);
   }
 }
@@ -131,7 +131,7 @@
   --wrong: #ff92a8;
   --wrong-bg: #38202b;
   --answer-mine: #a99cca;
-  --answer-right: #b79bff;
+  --answer-right: #cbb6ff;
   --shadow: rgba(0, 0, 0, 0.4);
 }
 
@@ -217,7 +217,7 @@ h1 {
   font-size: 21px;
   white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
   font-weight: 400;
-  color: var(--text);
+  color: var(--primary-dark);
   line-height: 1.45;
 }
 
@@ -658,7 +658,7 @@ h1 {
   font-family: var(--font-title);
   font-size: 21px;
   font-weight: 400;
-  color: var(--text);
+  color: var(--primary-dark);
   margin: 30px 0 14px;
 }
 
