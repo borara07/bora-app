@@ -101,7 +101,16 @@
 
   /* 이 회차에서 실제로 출제될 문제 수 */
   function countFor(round) {
-    return Math.min(quizLength(), round.questions.length);
+    var want = quizLength();
+
+    /* 회차에 mix 가 적혀 있으면, 그 숫자를 더한 값이 이 회차의 문제 수입니다.
+       (예: mix: { 단순: 16, 객관식: 4 } → 20문제) */
+    if (round && round.mix) {
+      var sum = (round.mix['단순'] || 0) + (round.mix['객관식'] || 0);
+      if (sum > 0) want = sum;
+    }
+
+    return Math.min(want, round.questions.length);
   }
 
   /* 이 회차에서 실제로 나올 한자성어 수 */
