@@ -716,7 +716,7 @@ h1 {
   font-size: 21px;
   font-weight: 400;
   color: var(--primary);
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 
 /* 한자는 획이 촘촘해서 덧그리면 뭉갭니다. 휴대폰 기본 글씨체 그대로 둡니다 */
@@ -729,20 +729,21 @@ h1 {
   letter-spacing: 0.06em;
 }
 
-/* 내 답·정답·해설을 모두 같은 15px 로 맞춥니다 */
+/* 내 답·정답·해설을 모두 같은 15px 로 맞춥니다.
+   이름표를 값 위에 두어 카드 안의 글이 모두 왼쪽 한 줄로 정렬되게 합니다 */
 .answer-row {
-  display: flex;
-  gap: 10px;
+  display: block;
   font-size: 15px;
   line-height: 1.55;
-  margin: 5px 0;
+  margin: 0 0 10px;
 }
 
 .answer-row .tag {
-  flex: 0 0 36px;
-  padding-top: 1px;
-  font-size: 14px;
+  display: block;
+  margin-bottom: 1px;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.04em;
   color: var(--muted);
 }
 
@@ -754,7 +755,7 @@ h1 {
 .explanation {
   margin: 14px 0 0;
   padding-top: 14px;
-  border-top: 1px dashed var(--line);
+  border-top: 1px solid var(--track);
   font-size: 15px;
   line-height: 1.55;
   color: var(--text);
