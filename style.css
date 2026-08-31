@@ -76,7 +76,7 @@
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
-  --answer-right: #047857;  /* 틀린 문제 해설의 '정답' 글자색 (에메랄드) */
+  --answer-right: #6f4ad4;  /* 틀린 문제 해설의 '정답' 글자색 (연보라) */
   --shadow: rgba(70, 48, 130, 0.08);
 
   /* 글씨체 (뒤쪽은 글씨체를 못 받았을 때 대신 쓸 것들) */
@@ -107,7 +107,7 @@
     --wrong: #ff92a8;
     --wrong-bg: #38202b;
     --answer-mine: #a99cca;
-    --answer-right: #34d399;
+    --answer-right: #b79bff;
     --shadow: rgba(0, 0, 0, 0.4);
   }
 }
@@ -131,7 +131,7 @@
   --wrong: #ff92a8;
   --wrong-bg: #38202b;
   --answer-mine: #a99cca;
-  --answer-right: #34d399;
+  --answer-right: #b79bff;
   --shadow: rgba(0, 0, 0, 0.4);
 }
 
@@ -701,19 +701,19 @@ h1 {
   letter-spacing: 0.06em;
 }
 
-/* 내 답·정답은 한 단계 작게 (아래 해설이 눈에 먼저 들어오도록) */
+/* 내 답·정답·해설을 모두 같은 15px 로 맞춥니다 */
 .answer-row {
   display: flex;
   gap: 10px;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.55;
   margin: 5px 0;
 }
 
 .answer-row .tag {
   flex: 0 0 36px;
   padding-top: 1px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--muted);
 }
@@ -721,13 +721,13 @@ h1 {
 .my-answer { color: var(--answer-mine); font-weight: 700; }
 .real-answer { color: var(--answer-right); font-weight: 700; }
 
-/* 해설이 주인공입니다. 예문에는 상자가 있어서 그냥 두면 예문이 더 눈에 띕니다.
-   그래서 해설을 한 단계 크고 진하게 두어 균형을 맞춥니다 */
+/* 해설이 주인공입니다. 크기는 내 답·정답과 같게 두고,
+   글자색만 진하게 해서 눈이 먼저 가게 합니다 */
 .explanation {
   margin: 14px 0 0;
   padding-top: 14px;
   border-top: 1px dashed var(--line);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.55;
   color: var(--text);
   white-space: pre-line;   /* 뜻이 여러 개일 때 줄바꿈을 살립니다 */
@@ -740,7 +740,7 @@ h1 {
   background: var(--soft);
   border-radius: 12px;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.55;
   color: var(--text-2);
 }
 
