@@ -662,6 +662,14 @@ h1 {
   line-height: 1.55;
 }
 
+/* 틀린 문제 카드에서도 글이 길면 같은 규칙으로 줄입니다 */
+.wrong-word.is-sentence {
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.wrong-word.is-long { font-size: 16px; }
+
 /* 어휘 아래 한자 (hanja 를 비워두면 표시되지 않습니다) */
 .question-hanja {
   margin: -14px 0 20px;

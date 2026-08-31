@@ -504,6 +504,9 @@
 
     var word = document.createElement('p');
     word.className = 'wrong-word';
+    /* 문법 문제처럼 글이 길면 크기를 줄입니다 (문제 화면과 같은 규칙) */
+    if (q.word.length > 8) { word.className += ' is-sentence'; }
+    if (q.word.length > 40) { word.className += ' is-long'; }
     word.textContent = q.word;
     if (q.hanja) {
       var h = document.createElement('span');
