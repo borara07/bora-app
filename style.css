@@ -75,7 +75,7 @@
   --correct-bg: #e3f6ef;
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
-  --title-bold: 0.8px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
+  --title-bold: 0.5px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
   --answer-right: #5b2d8e;  /* 틀린 문제 해설의 '정답' 글자색 (로고 보라) */
   --shadow: rgba(70, 48, 130, 0.08);
