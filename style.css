@@ -534,10 +534,12 @@ h1 {
   gap: 13px;
   width: 100%;
   text-align: left;
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.5;
   font-family: inherit;
   color: var(--text);
+  /* 글씨체에 중간 굵기가 없어서, 획을 아주 조금 덧그려 반 단계만 두껍게 합니다 */
+  -webkit-text-stroke: 0.3px currentColor;
   background: var(--soft);
   border: 1.5px solid var(--line);
   border-radius: 14px;
@@ -553,6 +555,7 @@ h1 {
 }
 
 .choice-num {
+  -webkit-text-stroke: 0;
   flex: 0 0 30px;
   height: 30px;
   border-radius: 50%;
@@ -567,6 +570,7 @@ h1 {
 
 /* 고른 보기 */
 .choice.is-selected {
+  -webkit-text-stroke: 0;
   border-color: var(--primary);
   background: var(--selected);
   color: var(--primary-dark);
