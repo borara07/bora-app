@@ -58,10 +58,10 @@
 
 /* ---------- 밝은 화면 색 ---------- */
 :root {
-  --bg: #f7f5fd;
+  --bg: #ece6fb;
   --card: #ffffff;
   --soft: #faf8ff;         /* 입력칸·보기 배경 */
-  --track: #e6e0f7;        /* 진행 막대 바탕 */
+  --track: #ddd4f4;        /* 진행 막대 바탕 */
   --chip: #ece6fb;         /* 보기 번호 동그라미 */
   --selected: #ece4ff;     /* 고른 보기 배경 */
   --text: #241c3c;
@@ -237,7 +237,7 @@ h1 {
   margin: 14px 0 0;
   padding: 20px 18px;
   border-radius: 18px;
-  background: var(--chip);
+  background: var(--soft);
   color: var(--text);
 }
 
@@ -808,7 +808,7 @@ h1 {
   padding: 13px 16px;
   white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
   border-radius: 14px;
-  background: var(--chip);
+  background: var(--soft);
   color: var(--primary-dark);
   font-size: 15px;
   font-weight: 700;
