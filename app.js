@@ -550,7 +550,7 @@
 
     VocabStore.save(record).then(function (r) {
       if (r.sentToServer) {
-        box.textContent = '기록이 저장되었습니다. (선생님께 전송 완료)';
+        box.textContent = '기록이 저장되었습니다.\n(선생님께 전송 완료)';
       } else if (r.savedOnDevice && VocabStore.usingServer()) {
         box.textContent = '기록을 이 기기에 저장했습니다. 인터넷 연결 후 자동으로 전송됩니다.';
         box.className = 'save-state is-waiting';

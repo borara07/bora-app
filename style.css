@@ -754,6 +754,7 @@ h1 {
 .save-state {
   margin: 16px 0 0;
   padding: 13px 16px;
+  white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
   border-radius: 14px;
   background: var(--chip);
   color: var(--primary-dark);
