@@ -78,7 +78,7 @@
   --brand-deep: #5b2d8e;    /* 첫 화면 바탕 (로고와 같은 진한 보라) */
   --title-bold: 0.5px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
-  --answer-right: #be185d;  /* 틀린 문제 해설의 '정답' 글자색 (선명한 분홍) */
+  --answer-right: #f759a9;  /* 틀린 문제 해설의 '정답' 글자색 (밝은 분홍) */
   --shadow: rgba(70, 48, 130, 0.08);
 
   /* 글씨체 (뒤쪽은 글씨체를 못 받았을 때 대신 쓸 것들) */
@@ -110,7 +110,7 @@
     --wrong-bg: #38202b;
     --brand-deep: #4a2478;
     --answer-mine: #a99cca;
-    --answer-right: #f9a8c8;
+    --answer-right: #f983bd;
     --shadow: rgba(0, 0, 0, 0.4);
   }
 }
@@ -135,7 +135,7 @@
   --wrong-bg: #38202b;
   --brand-deep: #4a2478;
   --answer-mine: #a99cca;
-  --answer-right: #f9a8c8;
+  --answer-right: #f983bd;
   --shadow: rgba(0, 0, 0, 0.4);
 }
 
