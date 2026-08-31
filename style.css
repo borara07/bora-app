@@ -201,40 +201,48 @@ h1 {
 }
 
 /* 재시험 안내 (결과 화면) */
+/* 연보라 상자 자체가 '중요하다' 는 표시라서, 테두리는 두지 않습니다 */
 .retest-note {
-  margin: 16px 0 0;
-  padding: 18px;
-  border-radius: 16px;
+  margin: 14px 0 0;
+  padding: 20px 18px;
+  border-radius: 18px;
   background: var(--chip);
-  border: 2px solid var(--primary);
   color: var(--text);
 }
 
+/* 제목 크기는 '틀린 문제 해설' 과 똑같이 맞춥니다 */
 .retest-title {
   font-family: var(--font-title);
   margin: 0;
-  font-size: 19px;
+  font-size: 21px;
   white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
   font-weight: 400;
-  color: var(--primary);
-  line-height: 1.5;
+  color: var(--text);
+  line-height: 1.45;
 }
 
 .retest-list {
-  margin: 14px 0 0;
-  padding-left: 22px;
+  margin: 16px 0 0;
+  padding-left: 20px;
 }
 
 .retest-list li {
-  margin-top: 12px;
+  margin-top: 14px;
   font-size: 16px;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--text-2);
+}
+
+/* 번호를 연보라로 (본문과 섞이지 않게) */
+.retest-list li::marker {
+  color: var(--primary-dark);
+  font-weight: 700;
 }
 
 /* '바로 재시험을 보려면' 처럼 갈래 이름을 굵게 한 줄로 */
 .retest-step {
   display: block;
+  margin-bottom: 2px;
   color: var(--text);
   font-weight: 700;
 }
@@ -591,7 +599,20 @@ h1 {
 
 /* ---------- 결과 ---------- */
 
+/* 결과 카드는 큰 글씨 하나(점수)만 두고, 나머지는 모두 본문 크기로 맞춥니다 */
 .result-card { text-align: center; }
+
+/* 회차 이름표 (카드 맨 위) */
+.result-round {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--primary-dark);
+  font-size: 14px;
+  font-weight: 700;
+}
 
 .result-name {
   font-size: 16px;
@@ -604,39 +625,30 @@ h1 {
   font-size: 58px;
   font-weight: 400;
   color: var(--primary);
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   line-height: 1.15;
   font-variant-numeric: tabular-nums;
 }
 
+/* 큰 글씨체에 굵은 파일이 없어서 400 을 씁니다 */
 .result-total {
   font-size: 24px;
+  font-weight: 400;
   color: var(--muted);
-  font-weight: 700;
 }
 
 .result-percent {
   font-size: 16px;
-  font-weight: 700;
-  margin: 4px 0 0;
+  color: var(--muted);
+  margin: 2px 0 0;
 }
 
 .result-comment {
   color: var(--text-2);
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1.6;
   white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
-  margin: 6px 0 0;
-}
-
-.result-round {
-  display: inline-block;
-  margin: 14px 0 0;
-  padding: 5px 14px;
-  border-radius: 999px;
-  background: var(--chip);
-  color: var(--primary-dark);
-  font-size: 14px;
-  font-weight: 700;
+  margin: 12px 0 0;
 }
 
 .section-title {
