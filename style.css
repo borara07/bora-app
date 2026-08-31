@@ -36,6 +36,26 @@
                  U+1100-11FF, U+3130-318F, U+AC00-D7A3;
 }
 
+@font-face {
+  font-family: "나눔스퀘어라운드";
+  src: url("fonts/square-round-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-205E,
+                 U+1100-11FF, U+3130-318F, U+AC00-D7A3;
+}
+
+@font-face {
+  font-family: "나눔스퀘어라운드";
+  src: url("fonts/square-round-extrabold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-205E,
+                 U+1100-11FF, U+3130-318F, U+AC00-D7A3;
+}
+
 /* ---------- 밝은 화면 색 ---------- */
 :root {
   --bg: #f7f5fd;
@@ -145,10 +165,18 @@ h1 {
 
 .brand {
   display: block;
-  width: 220px;
-  max-width: 64%;
+  width: 250px;
+  max-width: 72%;
   height: auto;
-  margin: 4px auto 16px;
+  margin: 30px auto 26px;
+}
+
+/* 첫 화면의 이번 주 안내 문구 (로고 아래 큰 글씨) */
+#rounds-note {
+  font-family: var(--font-title);
+  font-size: 26px;
+  color: var(--text);
+  margin: 0 0 34px;
 }
 
 .subtitle {

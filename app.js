@@ -718,7 +718,9 @@
     }
 
     if (typeof QUIZ_TITLE === 'string' && QUIZ_TITLE.trim() !== '') {
-      $('quiz-title').textContent = QUIZ_TITLE;
+      /* 첫 화면에는 로고만 두었습니다. 제목 자리가 있으면 그때만 채웁니다 */
+      var titleBox = $('quiz-title');
+      if (titleBox) titleBox.textContent = QUIZ_TITLE;
       document.title = QUIZ_TITLE;
     }
 
