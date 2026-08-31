@@ -710,7 +710,9 @@ h1 {
   margin: 0 0 12px;
 }
 
+/* 한자는 획이 촘촘해서 덧그리면 뭉갭니다. 휴대폰 기본 글씨체 그대로 둡니다 */
 .wrong-hanja {
+  -webkit-text-stroke: 0;
   margin-left: 8px;
   font-size: 15px;
   font-weight: 500;
