@@ -564,7 +564,7 @@ h1 {
   gap: 13px;
   width: 100%;
   text-align: left;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.55;
   font-family: inherit;
   color: var(--text);
@@ -591,7 +591,7 @@ h1 {
   border-radius: 50%;
   background: var(--chip);
   color: var(--muted);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   display: flex;
   align-items: center;
