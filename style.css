@@ -76,7 +76,6 @@
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
   --brand-deep: #5b2d8e;    /* 첫 화면 바탕 (로고와 같은 진한 보라) */
-  --deep-action: #ffffff;   /* 진한 보라 화면 위의 버튼 */
   --title-bold: 0.5px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
   --answer-right: #dd3690;  /* 틀린 문제 해설의 '정답' 글자색 (선명한 분홍) */
@@ -110,7 +109,6 @@
     --wrong: #ff92a8;
     --wrong-bg: #38202b;
     --brand-deep: #4a2478;
-    --deep-action: #ffffff;
     --answer-mine: #a99cca;
     --answer-right: #f983bd;
     --shadow: rgba(0, 0, 0, 0.4);
@@ -136,7 +134,6 @@
   --wrong: #ff92a8;
   --wrong-bg: #38202b;
   --brand-deep: #4a2478;
-  --deep-action: #ffffff;
   --answer-mine: #a99cca;
   --answer-right: #f983bd;
   --shadow: rgba(0, 0, 0, 0.4);
@@ -214,26 +211,10 @@ html.on-rounds .field-hint { color: rgba(255, 255, 255, 0.65); }
 
 html.on-rounds .error { color: #ffc9d6; }
 
-/* 입력칸이 반투명이라, 누르는 버튼은 흰색으로 또렷하게 둡니다.
-   '다음' 과 '내 지난 기록 보기' 를 같은 모양으로 씁니다 */
+/* 진한 보라 화면의 버튼은 모두 테두리만 있는 같은 모양입니다.
+   (흰색은 '쓰는 칸'과 '열린 회차' 몫으로 남겨 둡니다) */
 html.on-rounds .btn-primary,
-html.on-rounds .btn-quiet {
-  background: var(--deep-action);
-  color: var(--primary);
-  border: none;
-  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.22);
-}
-
-html.on-rounds .btn-primary:hover:not(:disabled),
-html.on-rounds .btn-quiet:hover { background: #f2eefc; }
-
-html.on-rounds .btn-primary:disabled {
-  background: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.55);
-  box-shadow: none;
-}
-
-/* 회차 화면의 '이름 다시 입력' 은 테두리만 남깁니다 (흰색은 열린 회차 몫) */
+html.on-rounds .btn-quiet,
 html.on-rounds .btn.btn-on-deep {
   background: none;
   color: rgba(255, 255, 255, 0.9);
@@ -241,7 +222,17 @@ html.on-rounds .btn.btn-on-deep {
   box-shadow: none;
 }
 
-html.on-rounds .btn.btn-on-deep:hover { background: none; border-color: #ffffff; }
+html.on-rounds .btn-primary:hover:not(:disabled),
+html.on-rounds .btn-quiet:hover,
+html.on-rounds .btn.btn-on-deep:hover {
+  background: none;
+  border-color: #ffffff;
+}
+
+html.on-rounds .btn-primary:disabled {
+  color: rgba(255, 255, 255, 0.45);
+  border-color: rgba(255, 255, 255, 0.2);
+}
 
 /* 대문 — 로고 아래에 앱 이름 */
 .brand-box {
