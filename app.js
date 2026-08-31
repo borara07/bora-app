@@ -274,10 +274,37 @@
 
   /* ---------- 시험 만들기 ---------- */
 
+  /* 보기가 둘뿐이거나 OX 인 '단순' 문제인지 봅니다 */
+  function isSimple(q) {
+    if (q.ox) { return true; }
+    return Array.isArray(q.choices) && q.choices.length <= 2;
+  }
+
+  /* 회차에 mix 가 적혀 있으면 그 개수만큼 골고루 뽑습니다.
+     (예: mix: { 단순: 12, 객관식: 3 }) */
+  function pickByMix(all, total, mix) {
+    var simple = shuffle(all.filter(isSimple));
+    var choice = shuffle(all.filter(function (q) { return !isSimple(q); }));
+
+    var picked = simple.slice(0, Math.min(mix['단순'] || 0, simple.length))
+      .concat(choice.slice(0, Math.min(mix['객관식'] || 0, choice.length)));
+
+    /* 한쪽이 모자라면 남은 문제로 채웁니다 */
+    if (picked.length < total) {
+      var rest = shuffle(all.filter(function (q) { return picked.indexOf(q) === -1; }));
+      picked = picked.concat(rest.slice(0, total - picked.length));
+    }
+    return shuffle(picked.slice(0, total));
+  }
+
   function buildQuiz() {
     var all = state.round.questions;
     var total = countFor(state.round);
     var wantIdioms = idiomsFor(state.round);
+
+    if (state.round.mix) {
+      return toQuizItems(pickByMix(all, total, state.round.mix));
+    }
 
     /* 한자성어를 먼저 정해진 개수만큼 뽑고, 나머지는 일반 어휘로 채웁니다 */
     var idioms = shuffle(all.filter(isIdiom)).slice(0, wantIdioms);
@@ -296,6 +323,10 @@
     /* 한자성어가 뒤에 몰리지 않도록 순서를 섞습니다 */
     picked = shuffle(picked);
 
+    return toQuizItems(picked);
+  }
+
+  function toQuizItems(picked) {
     return picked.map(function (q) {
       var choices = q.ox ? ['O', 'X'] : q.choices;
       return {
