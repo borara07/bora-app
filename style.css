@@ -532,8 +532,8 @@ h1 {
   gap: 13px;
   width: 100%;
   text-align: left;
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.55;
   font-family: inherit;
   color: var(--text);
   /* 글씨체에 중간 굵기가 없어서, 획을 아주 조금 덧그려 반 단계만 두껍게 합니다 */
