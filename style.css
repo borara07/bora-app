@@ -9,7 +9,7 @@
 /* ---------- 글씨체 ----------
    두 가지를 씁니다.
      · 고운밤        : 제목과 문제 어휘처럼 큰 글씨 (카페24 고운밤)
-     · 에스코어 드림   : 보기·해설 같은 본문
+     · 나눔스퀘어     : 보기·해설 같은 본문
 
    한자(基盤 등)는 이 글씨체들에 들어 있지 않아서,
    아래 unicode-range 로 '한글과 영문만' 맡기고
@@ -27,8 +27,8 @@
 }
 
 @font-face {
-  font-family: "에스코어드림";
-  src: url("fonts/dream.woff2") format("woff2");
+  font-family: "나눔스퀘어";
+  src: url("fonts/square.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -37,9 +37,19 @@
 }
 
 @font-face {
-  font-family: "에스코어드림";
-  src: url("fonts/dream-bold.woff2") format("woff2");
-  font-weight: 700 800;
+  font-family: "나눔스퀘어";
+  src: url("fonts/square-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-205E,
+                 U+1100-11FF, U+3130-318F, U+AC00-D7A3;
+}
+
+@font-face {
+  font-family: "나눔스퀘어";
+  src: url("fonts/square-extrabold.woff2") format("woff2");
+  font-weight: 800;
   font-style: normal;
   font-display: swap;
   unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2027, U+2030-205E,
@@ -68,9 +78,9 @@
   --shadow: rgba(70, 48, 130, 0.08);
 
   /* 글씨체 (뒤쪽은 글씨체를 못 받았을 때 대신 쓸 것들) */
-  --font-body: "에스코어드림", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+  --font-body: "나눔스퀘어", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
                "Malgun Gothic", "맑은 고딕", sans-serif;
-  --font-title: "고운밤", "에스코어드림", -apple-system, "Apple SD Gothic Neo",
+  --font-title: "고운밤", "나눔스퀘어", -apple-system, "Apple SD Gothic Neo",
                 "Malgun Gothic", "맑은 고딕", sans-serif;
 }
 
@@ -524,8 +534,8 @@ h1 {
   gap: 13px;
   width: 100%;
   text-align: left;
-  font-size: 18px;
-  line-height: 1.45;
+  font-size: 17px;
+  line-height: 1.5;
   font-family: inherit;
   color: var(--text);
   background: var(--soft);
