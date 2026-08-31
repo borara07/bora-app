@@ -141,6 +141,15 @@ html, body {
   padding: 16px 16px 28px;
 }
 
+/* 바탕화면 앱으로 열었을 때, 아이폰 아래쪽 막대에 글이 가리지 않게 합니다 */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .app {
+    padding-left: calc(16px + env(safe-area-inset-left));
+    padding-right: calc(16px + env(safe-area-inset-right));
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+  }
+}
+
 h1 {
   font-family: var(--font-title);
   font-size: 32px;

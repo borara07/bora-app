@@ -1,0 +1,17 @@
+{
+  "name": "보라국어 어휘 테스트",
+  "short_name": "보라국어 어휘",
+  "description": "보라! 국어전문학원 어휘 테스트",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f5fd",
+  "theme_color": "#6f4ad4",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
