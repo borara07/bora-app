@@ -146,6 +146,7 @@
    그래서 획을 아주 조금 덧그려 굵게 보이게 합니다.
    굵기를 바꾸려면 맨 위 :root 의 --title-bold 값만 고치면 됩니다 */
 h1,
+.brand-name,
 .round-no,
 .retest-title,
 .chosen-round,
@@ -254,23 +255,6 @@ html.on-rounds .btn.btn-on-deep:hover { background: none; border-color: #ffffff;
 .brand-mark {
   width: 56px;
   height: auto;
-}
-
-/* 회차 화면에서는 로고만 작게 (이름은 아래에 따로 적습니다) */
-.brand-box-small {
-  gap: 0;
-  margin: 26px 0 16px;
-}
-
-.brand-box-small .brand-mark { width: 40px; }
-
-/* 회차 화면 맨 위 '김보라 학생 · 고등부' */
-.rounds-who {
-  margin: 0 0 16px;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.88);
 }
 
 .rounds-empty {

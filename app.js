@@ -196,9 +196,6 @@
       return r.title === homeworkRound;
     });
 
-    $('rounds-who').textContent = (state.student ? state.student.name + ' 학생' : '') +
-                                  (state.group ? ' · ' + state.group : '');
-
     var empty = $('rounds-empty');
     if (mine.length === 0) {
       empty.textContent = state.group + ' 시험이 아직 준비되지 않았습니다.\n선생님께 알려주세요.';
