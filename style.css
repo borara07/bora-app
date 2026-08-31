@@ -75,6 +75,7 @@
   --correct-bg: #e3f6ef;
   --wrong: #c8324f;
   --wrong-bg: #fdeaee;
+  --title-bold: 1.1px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
   --answer-right: #5b2d8e;  /* 틀린 문제 해설의 '정답' 글자색 (로고 보라) */
   --shadow: rgba(70, 48, 130, 0.08);
@@ -133,6 +134,22 @@
   --answer-mine: #a99cca;
   --answer-right: #cbb6ff;
   --shadow: rgba(0, 0, 0, 0.4);
+}
+
+/* 큰 글씨체(고운밤)에는 굵은 글씨 파일이 없습니다.
+   그래서 획을 아주 조금 덧그려 굵게 보이게 합니다.
+   굵기를 바꾸려면 맨 위 :root 의 --title-bold 값만 고치면 됩니다 */
+h1,
+#rounds-note,
+.retest-title,
+.round-title,
+.chosen-round,
+.question-word,
+.result-score,
+.section-title,
+.wrong-word,
+.history-round {
+  -webkit-text-stroke: var(--title-bold) currentColor;
 }
 
 * { box-sizing: border-box; }
