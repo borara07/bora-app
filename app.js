@@ -361,11 +361,11 @@
     if (percent === 100) {
       comment = '완벽합니다! 전부 맞혔어요.';
     } else if (percent >= 80) {
-      comment = '훌륭해요. 조금만 더 다듬으면 완벽합니다.';
+      comment = '훌륭해요.\n조금만 더 다듬으면 완벽합니다.';
     } else if (percent >= 60) {
-      comment = '기본기는 있어요. 틀린 어휘를 복습해봐요.';
+      comment = '기본기는 있어요.\n틀린 어휘를 복습해봐요.';
     } else {
-      comment = '아직 헷갈리는 어휘가 많아요. 해설을 꼭 읽어보세요.';
+      comment = '아직 헷갈리는 어휘가 많아요.\n해설을 꼭 읽어보세요.';
     }
     $('result-comment').textContent = comment;
 
@@ -406,7 +406,7 @@
 
     /* 안내 내용은 index.html 에 적혀 있고, 기준 개수만 여기서 채웁니다 */
     $('retest-title').textContent =
-      '정답이 ' + retestMax() + '개 이하예요. 재시험을 봐야 합니다.';
+      '정답이 ' + retestMax() + '개 이하예요.\n재시험을 봐야 합니다.';
     box.hidden = false;
   }
 

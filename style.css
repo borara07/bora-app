@@ -208,6 +208,7 @@ h1 {
   font-family: var(--font-title);
   margin: 0;
   font-size: 19px;
+  white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
   font-weight: 400;
   color: var(--primary);
   line-height: 1.5;
@@ -617,6 +618,7 @@ h1 {
 .result-comment {
   color: var(--text-2);
   font-size: 15px;
+  white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
   margin: 6px 0 0;
 }
 
@@ -632,10 +634,23 @@ h1 {
 }
 
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   font-family: var(--font-title);
-  font-size: 19px;
+  font-size: 21px;
   font-weight: 400;
-  margin: 30px 0 12px;
+  color: var(--text);
+  margin: 30px 0 14px;
+}
+
+/* 작은 제목 앞의 연보라 막대 */
+.section-title::before {
+  content: "";
+  flex: 0 0 4px;
+  height: 19px;
+  border-radius: 999px;
+  background: var(--primary);
 }
 
 .wrong-list {
