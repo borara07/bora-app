@@ -656,6 +656,12 @@ h1 {
   margin: 8px 0 20px;
 }
 
+/* 〈보기〉 처럼 아주 긴 제시문은 한 단계 더 줄입니다 */
+.question-word.is-long {
+  font-size: 19px;
+  line-height: 1.55;
+}
+
 /* 어휘 아래 한자 (hanja 를 비워두면 표시되지 않습니다) */
 .question-hanja {
   margin: -14px 0 20px;

@@ -330,6 +330,7 @@
     wordBox.textContent = q.word;
     wordBox.hidden = (q.word === '');
     wordBox.classList.toggle('is-sentence', q.word.length > 8);
+    wordBox.classList.toggle('is-long', q.word.length > 40);
 
     var hanjaBox = $('question-hanja');
     if (q.hanja) {
