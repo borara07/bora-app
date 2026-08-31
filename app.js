@@ -177,18 +177,11 @@
       title.textContent = round.title;
       card.appendChild(title);
 
-      if (round.subtitle) {
-        var sub = document.createElement('span');
-        sub.className = 'round-subtitle';
-        sub.textContent = round.subtitle;
-        card.appendChild(sub);
-      }
-
       var meta = document.createElement('span');
       meta.className = 'round-meta';
       var n = idiomsFor(round);
-      meta.textContent = countFor(round) + '문제' +
-                         (n > 0 ? ' · 한자성어 ' + n + '개' : '');
+      meta.textContent = countFor(round) + ' 문제' +
+                         (n > 0 ? ' / 수능필수 한자성어 ' + n + '개 포함' : '');
       card.appendChild(meta);
 
       card.addEventListener('click', function () {
