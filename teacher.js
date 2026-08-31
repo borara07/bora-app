@@ -43,7 +43,7 @@
       if (r.ok) {
         err.hidden = true;
         myPassword = password;
-        show(r.rows, '수파베이스에 쌓인 전체 학생 기록입니다.');
+        show(r.rows, '전체 학생 기록입니다.');
 
         loadHomework();
 
@@ -350,8 +350,6 @@
     }
 
     pick.value = current || '';
-    $('homework-now').textContent = group + ' — ' +
-      (current ? current : '지정 안 함 (모든 회차 열림)');
   }
 
   function loadHomework() {
@@ -384,8 +382,6 @@
              group + ' 학생에게는 이 회차만 열립니다.')
           : (group + ' 의 모든 회차를 열었습니다.\n' +
              group + ' 학생이 아무 회차나 고를 수 있습니다.');
-        $('homework-now').textContent = group + ' — ' +
-          (round ? round : '지정 안 함 (모든 회차 열림)');
         return;
       }
       box.className = 'check-state is-bad';

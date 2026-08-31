@@ -6,15 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>선생님용 - 어휘 테스트</title>
   <!-- 선생님용은 아이콘과 설치 설정을 따로 씁니다 (학생용과 헷갈리지 않게) -->
-  <link rel="manifest" href="teacher-manifest.json?v=20260902a">
-  <link rel="icon" href="teacher-favicon.png?v=20260902a">
-  <link rel="apple-touch-icon" href="teacher-apple-touch-icon.png?v=20260902a">
+  <link rel="manifest" href="teacher-manifest.json?v=20260902b">
+  <link rel="icon" href="teacher-favicon.png?v=20260902b">
+  <link rel="apple-touch-icon" href="teacher-apple-touch-icon.png?v=20260902b">
   <meta name="theme-color" content="#582b8d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라국어 선생님">
-  <link rel="stylesheet" href="style.css?v=20260902a">
+  <link rel="stylesheet" href="style.css?v=20260902b">
 </head>
 <body>
 
@@ -22,7 +22,10 @@
 
     <!-- 1. 비밀번호 화면 -->
     <section id="screen-login" class="screen">
-      <h1>선생님용</h1>
+      <div class="brand-box">
+        <img class="brand-mark" src="logo/mark.png?v=20260902b" alt="" width="450" height="397">
+        <p class="brand-name">보라! 어휘T</p>
+      </div>
       <p class="subtitle">학생들의 시험 결과를 봅니다.</p>
 
       <form id="login-form" class="card" autocomplete="off">
@@ -43,12 +46,14 @@
         <button type="button" id="btn-logout" class="btn-corner">나가기</button>
       </div>
 
-      <h1>선생님용</h1>
+      <div class="brand-box">
+        <img class="brand-mark" src="logo/mark.png?v=20260902b" alt="" width="450" height="397">
+        <p class="brand-name">보라! 어휘T</p>
+      </div>
       <p id="source-note" class="save-state"></p>
 
       <div class="card">
-        <p class="eyebrow">이번 주 숙제</p>
-        <p id="homework-now" class="chosen-round">확인하는 중…</p>
+        <p class="eyebrow">이번 주 어휘 시험</p>
         <p class="chosen-detail">고른 반의 학생에게는 여기서 정한 회차 하나만 열립니다.</p>
 
         <div class="field" style="margin-top:16px">
@@ -179,8 +184,8 @@
 
   </main>
 
-  <script src="questions.js?v=20260902a"></script>
-  <script src="storage.js?v=20260902a"></script>
-  <script src="teacher.js?v=20260902a"></script>
+  <script src="questions.js?v=20260902b"></script>
+  <script src="storage.js?v=20260902b"></script>
+  <script src="teacher.js?v=20260902b"></script>
 </body>
 </html>
