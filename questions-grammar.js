@@ -682,7 +682,7 @@ var GRAMMAR_ROUNDS = [
   {
     title: "03회 맞춤법 3",
     group: "고등부",             // 이 회차를 볼 반 (고등부 / 중등부)
-    subtitle: "여러 조항에서 골고루 41문제",
+    subtitle: "여러 조항에서 골고루 35문제",
     mix: { 단순: 16, 객관식: 4 },   // 한 번 시험에 OX 16개 + 객관식 4개 (모두 20문제)
     questions: [
       {
@@ -712,13 +712,6 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 1,
         explanation: "맞습니다. 체언 뒤에 붙어 정도를 나타내는 조사입니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'늴리리'는 '닐리리'로 적는다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. '늴리리'로 적습니다."
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
@@ -806,20 +799,6 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'국쑤'는 바른 표기이다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. '국수'가 바릅니다. 'ㄱ' 받침 뒤라 된소리로 적지 않습니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'하니바람'은 바른 표기이다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. '하늬바람'이 바릅니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
         sentence: "순서를 나타내거나 숫자와 어울려 쓰일 때에는 붙여 쓸 수 있다.",
         ox: true,
         answer: 1,
@@ -852,13 +831,6 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 2,
         explanation: "틀립니다. '머릿기름'이 바릅니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'베갯잇, 욧잇'은 'ㄴㄴ' 소리가 덧나 사이시옷을 적은 예이다.",
-        ox: true,
-        answer: 1,
-        explanation: "맞습니다. 제30항 1-(3)의 예입니다."
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
@@ -922,25 +894,6 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 1,
         explanation: "맞습니다. '깨끗이'로 적습니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'종이'는 소리와 표기가 일치하는 낱말이다.",
-        ox: true,
-        answer: 1,
-        explanation: "맞습니다. [종이]로 소리 납니다. '길이[기리], 높이[노피]'는 일치하지 않습니다."
-      },
-      {
-        ask: "다음 중 맞춤법에 맞는 것은?",
-        choices: [
-          "비률",
-          "선률",
-          "서렬",
-          "균렬",
-          "백분율"
-        ],
-        answer: 5,
-        explanation: "'백분율'이 바릅니다. 나머지는 비율 · 선율 · 서열 · 균열로 적어야 합니다. 모음이나 'ㄴ' 받침 뒤의 '렬, 률'은 '열, 율'로 적습니다."
       },
       {
         ask: "다음 중 맞춤법에 맞는 것은?",
