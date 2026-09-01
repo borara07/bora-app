@@ -197,10 +197,21 @@ var VocabStore = (function () {
 
   return {
     /* 마지막에 시험 본 학생 정보 (다음에 들어올 때 자동으로 채워 줍니다) */
-    /* 이름·학교·전화번호는 이 기기에 남기지 않습니다.
-       예전에 남아 있던 값이 있으면 지웁니다. */
-    rememberStudent: function () {
-      try { window.localStorage.removeItem(KEY_LAST); } catch (e) { /* 넘어갑니다 */ }
+    lastStudent: function () {
+      try {
+        var raw = window.localStorage.getItem(KEY_LAST);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    },
+
+    rememberStudent: function (student) {
+      try {
+        window.localStorage.setItem(KEY_LAST, JSON.stringify({
+          name: student.name, school: student.school, phone4: student.phone4
+        }));
+      } catch (e) { /* 저장 못 해도 그냥 넘어갑니다 */ }
     },
 
     /* 시험 결과 한 건 저장 */
