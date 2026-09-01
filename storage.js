@@ -90,7 +90,7 @@ var VocabStore = (function () {
     if (Array.isArray(v)) v = v[0];
     if (!v || typeof v !== 'object') return null;
     if (typeof v.ok !== 'boolean') return null;
-    return { ok: v.ok, group: String(v.group || '') };
+    return { ok: v.ok, group: String(v.group || ''), grade: String(v.grade || '') };
   }
 
   function bodyFor(record) {
@@ -450,7 +450,7 @@ var VocabStore = (function () {
           if (res.ok) {
             var answer = readGroup(text);
             if (answer === null) return { ok: false, code: 'error', detail: '답을 읽지 못했습니다.' };
-            return { ok: true, enrolled: answer.ok, group: answer.group };
+            return { ok: true, enrolled: answer.ok, group: answer.group, grade: answer.grade };
           }
           if (res.status === 404 || /check_enrolled|PGRST202/.test(text)) {
             return { ok: false, code: 'not-set-up' };
@@ -465,6 +465,7 @@ var VocabStore = (function () {
     /* 이번 주 숙제 회차를 읽어 옵니다.
        인터넷이 안 되면 지난번에 확인한 값을 씁니다. */
     homeworkRound: function (group, subject) {
+      /* 어휘는 반(고등부·중등부)으로, 문법은 학년(고1·중3 …)으로 회차를 정합니다 */
       var who = (subject && subject !== '어휘' ? subject + ':' : '') + (group || '고등부');
       var key = 'homework_round:' + who;
       var store = KEY_HOMEWORK + ':' + who;

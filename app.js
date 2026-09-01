@@ -33,6 +33,7 @@
   var state = {
     student: null, // { name, school, phone4 }
     group: '',     // 그 학생의 반 (고등부 / 중등부)
+    grade: '',     // 그 학생의 학년 (고1 / 중3 … 문법 회차를 고를 때 씁니다)
     round: null,   // 고른 회차
     list: [],      // 이번 시험에 출제된 문제들
     index: 0,      // 지금 몇 번째 문제인지 (0부터)
@@ -207,8 +208,18 @@
     return m ? { no: m[1], topic: m[2] } : { no: '', topic: title || '' };
   }
 
-  /* 그 반이 볼 회차만 고릅니다. 회차에 반이 안 적혀 있으면 고등부로 봅니다 */
+  /* 이번 주 회차를 어느 이름으로 찾을지 정합니다.
+     어휘는 반(고등부·중등부), 문법은 학년(고1·중3 …)입니다.
+     학년을 모르는 학생은 반 이름으로 찾습니다. */
+  function whoFor() {
+    if (SUBJECT === '문법' && state.grade) { return state.grade; }
+    return state.group || '고등부';
+  }
+
+  /* 그 반이 볼 회차만 고릅니다. 회차에 반이 안 적혀 있으면 고등부로 봅니다.
+     문법은 학년으로 회차를 정하므로 회차를 반으로 가르지 않습니다. */
   function roundsForGroup(group) {
+    if (SUBJECT === '문법') { return (allRounds() || []).slice(); }
     var want = group || '고등부';
     return (allRounds() || []).filter(function (r) {
       return (r.group || '고등부') === want;
@@ -234,7 +245,7 @@
 
     var empty = $('rounds-empty');
     if (mine.length === 0) {
-      empty.textContent = state.group + ' 시험이 아직 준비되지 않았습니다.\n선생님께 알려주세요.';
+      empty.textContent = whoFor() + ' 시험이 아직 준비되지 않았습니다.\n선생님께 알려주세요.';
       empty.hidden = false;
     } else {
       empty.hidden = true;
@@ -769,10 +780,11 @@
       if (r.ok && r.enrolled) {
         state.student = student;
         state.group = r.group || '고등부';
+        state.grade = r.grade || '';
         VocabStore.rememberStudent(student);
 
-        /* 그 반의 이번 주 숙제 회차를 읽은 뒤 회차 화면을 보여 줍니다 */
-        VocabStore.homeworkRound(state.group, SUBJECT).then(function (h) {
+        /* 어휘는 반, 문법은 학년으로 이번 주 회차를 읽습니다 */
+        VocabStore.homeworkRound(whoFor(), SUBJECT).then(function (h) {
           homeworkRound = h.round || '';
           renderRounds();
         });

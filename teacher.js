@@ -46,6 +46,7 @@
         myPassword = password;
         show(r.rows, '전체 학생 기록입니다.');
 
+        fillGroupPicker();
         loadHomework();
 
         VocabStore.fetchStudents(password).then(function (sr) {
@@ -333,12 +334,34 @@
 
   /* ---------- 이번 주 숙제 회차 ---------- */
 
-  function homeworkGroup() {
-    return $('homework-group').value || '고등부';
-  }
+  /* 어휘는 반(고등부·중등부)으로, 문법은 학년(중1~고3)으로 나눕니다 */
+  var GRADES = ['중1', '중2', '중3', '고1', '고2', '고3'];
+  var GROUPS = ['고등부', '중등부'];
 
   function homeworkSubject() {
     return $('homework-subject').value || '어휘';
+  }
+
+  function homeworkGroup() {
+    return $('homework-group').value || (homeworkSubject() === '문법' ? '고1' : '고등부');
+  }
+
+  /* 과목에 맞게 반 칸을 반 목록 또는 학년 목록으로 채웁니다 */
+  function fillGroupPicker() {
+    var box = $('homework-group');
+    var subject = homeworkSubject();
+    var list = (subject === '문법') ? GRADES : GROUPS;
+    var before = box.value;
+
+    $('homework-group-label').textContent = (subject === '문법') ? '학년' : '반';
+    box.innerHTML = '';
+    list.forEach(function (name) {
+      var op = document.createElement('option');
+      op.value = name;
+      op.textContent = name;
+      box.appendChild(op);
+    });
+    box.value = (list.indexOf(before) >= 0) ? before : list[(subject === '문법') ? 3 : 0];
   }
 
   /* 그 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS) */
@@ -360,9 +383,10 @@
     all.textContent = '모든 회차 열기 (숙제 지정 안 함)';
     pick.appendChild(all);
 
+    /* 문법은 학년으로 나누므로 회차를 반으로 거르지 않습니다 */
     var count = 0;
     roundsOf(subject).forEach(function (r) {
-      if ((r.group || '고등부') !== group) { return; }
+      if (subject !== '문법' && (r.group || '고등부') !== group) { return; }
       count += 1;
       var op = document.createElement('option');
       op.value = r.title;
@@ -405,7 +429,7 @@
         box.className = 'check-state is-ok';
         box.textContent = round
           ? (subject + ' · ' + group + ' 이번 주 시험을 ' + round + ' 로 정했습니다.\n' +
-             '그 반 학생에게는 이 회차만 열립니다.')
+             (subject === '문법' ? '그 학년' : '그 반') + ' 학생에게는 이 회차만 열립니다.')
           : (subject + ' · ' + group + ' 의 모든 회차를 열었습니다.\n' +
              '학생이 아무 회차나 고를 수 있습니다.');
         return;
@@ -544,11 +568,16 @@
   $('btn-homework').addEventListener('click', saveHomework);
 
   /* 반을 바꾸면 그 반의 회차 목록과 지금 정해진 회차를 다시 읽습니다 */
-  ['homework-group', 'homework-subject'].forEach(function (id) {
-    $(id).addEventListener('change', function () {
-      $('homework-state').hidden = true;
-      loadHomework();
-    });
+  /* 과목을 바꾸면 반 칸이 반 목록 또는 학년 목록으로 바뀝니다 */
+  $('homework-subject').addEventListener('change', function () {
+    $('homework-state').hidden = true;
+    fillGroupPicker();
+    loadHomework();
+  });
+
+  $('homework-group').addEventListener('change', function () {
+    $('homework-state').hidden = true;
+    loadHomework();
   });
 
   /* 통계에서 볼 반을 바꿉니다 */
