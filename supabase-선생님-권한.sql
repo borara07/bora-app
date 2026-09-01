@@ -28,9 +28,9 @@ grant execute on function public.teacher_role(text) to anon, authenticated;
 
 
 -- ▶ 다른 선생님 비밀번호를 새로 정하거나 바꾸려면 아래 한 줄에서
---   'borateacher2026' 만 원하는 말로 바꿔 실행하세요.
+--   'borat2026' 만 원하는 말로 바꿔 실행하세요.
 insert into public.admin_secret (id, password, role)
-values (2, 'borateacher2026', 'viewer')
+values (2, 'borat2026', 'viewer')
 on conflict (id) do update set password = excluded.password, role = excluded.role;
 
 
