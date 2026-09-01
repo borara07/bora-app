@@ -1657,7 +1657,7 @@ var GRAMMAR_ROUNDS = [
   {
     title: "05회 표준발음 1",
     group: "고등부",             // 이 회차를 볼 반 (고등부 / 중등부)
-    subtitle: "표준 발음법 네 영역에서 골고루 65문제",
+    subtitle: "표준 발음법 네 영역에서 골고루 61문제",
     mix: { 단순: 18, 객관식: 2 },   // 한 번 시험에 단순 18개 + 객관식 2개 (모두 20문제)
     questions: [
       {
@@ -1905,13 +1905,6 @@ var GRAMMAR_ROUNDS = [
         explanation: "'ㅎ' 뒤의 'ㅅ'은 [ㅆ]으로 발음하므로 [실쏘]입니다."
       },
       {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "단모음 'ㅚ'를 이중 모음으로 발음하면 [ㅞ]로 발음된다.",
-        ox: true,
-        answer: 1,
-        explanation: "맞습니다. 반모음 'ㅜ[w]'와 단모음 'ㅔ'를 이어 [ㅞ]로 발음합니다."
-      },
-      {
         ask: "표준 발음으로 바른 것은?",
         sentence: "떫지",
         choices: [
@@ -1957,13 +1950,6 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "표준 발음법에서 인정하는 동화는 비음화와 유음화이다.",
-        ox: true,
-        answer: 1,
-        explanation: "맞습니다. 조음 방법이 같아지는 동화만 인정합니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
         sentence: "표준 발음법에서 모음의 장단을 구별하는 것은 국어의 전통성을 고려한 것이다.",
         ox: true,
         answer: 1,
@@ -1985,16 +1971,6 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 1,
         explanation: "맞습니다. '있다[읻따]'처럼 대표음 [ㄷ]으로 바뀝니다."
-      },
-      {
-        ask: "표준 발음으로 바른 것은?",
-        sentence: "넋",
-        choices: [
-          "넉",
-          "넛"
-        ],
-        answer: 1,
-        explanation: "겹받침 'ㄳ'은 어말에서 [ㄱ]으로 발음하므로 [넉]입니다."
       },
       {
         ask: "표준 발음으로 바른 것은?",
@@ -2088,13 +2064,6 @@ var GRAMMAR_ROUNDS = [
         ],
         answer: 1,
         explanation: "겹받침이 [ㅂ]으로 바뀐 뒤 'ㄴ' 앞에서 [ㅁ]이 되어 [음는]입니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "국어의 합리성을 고려하여 단모음 'ㅐ'와 'ㅔ'를 구별하지 않고 발음하도록 규정하였다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. 전통성을 고려하여 'ㅐ'와 'ㅔ'를 구별하여 발음하도록 정하고 있습니다."
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
