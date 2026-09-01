@@ -102,7 +102,7 @@ var GRAMMAR_ROUNDS = [
   {
     title: "01회 맞춤법 1",
     group: "고등부",             // 이 회차를 볼 반 (고등부 / 중등부)
-    subtitle: "여러 조항에서 골고루 41문제",
+    subtitle: "여러 조항에서 골고루 36문제",
     mix: { 단순: 16, 객관식: 4 },   // 한 번 시험에 OX 16개 + 객관식 4개 (모두 20문제)
     questions: [
       {
@@ -254,13 +254,6 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'ㅎ'이 어간의 끝소리로 굳어진 것은 받침으로 적는다.",
-        ox: true,
-        answer: 1,
-        explanation: "맞습니다. 제40항 [붙임 1]입니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
         sentence: "'으뜸, 가끔, 어찌'는 두 모음 사이의 된소리를 적은 예이다.",
         ox: true,
         answer: 1,
@@ -282,31 +275,10 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'게시판'은 바른 표기이다.",
-        ox: true,
-        answer: 1,
-        explanation: "맞습니다. '계시판'이 아니라 '게시판'입니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'쌀전'은 바른 표기이다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. '싸전'이 바릅니다. '쌀'의 'ㄹ'이 떨어진 대로 적습니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
         sentence: "'횟수(回數)'는 바른 표기이다.",
         ox: true,
         answer: 1,
         explanation: "맞습니다. 사이시옷을 적는 두 음절 한자어 여섯 개 가운데 하나입니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "합성어의 뒤에 오는 말에는 두음 법칙이 적용되지 않는다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. '해외여행, 열역학'처럼 뒤에 와도 두음 법칙을 적용합니다."
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
@@ -335,13 +307,6 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 2,
         explanation: "틀립니다. '싹싹'이 바릅니다. 같은 음절이 겹쳐 나므로 된소리로 적습니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'으례'는 바른 표기이다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. '으레'가 바릅니다."
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
