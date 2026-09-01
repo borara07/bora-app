@@ -2714,7 +2714,7 @@ var GRAMMAR_ROUNDS = [
   {
     title: "07회 표준발음 3",
     group: "고등부",             // 이 회차를 볼 반 (고등부 / 중등부)
-    subtitle: "표준 발음법 네 영역에서 골고루 39문제",
+    subtitle: "표준 발음법 네 영역에서 골고루 82문제",
     mix: { 단순: 18, 객관식: 2 },   // 한 번 시험에 단순 18개 + 객관식 2개 (모두 20문제)
     questions: [
       {
@@ -3068,6 +3068,427 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 1,
         explanation: "맞습니다. '깎다[깍따], 삯돈[삭똔], 닭장[닥짱]'처럼 발음합니다."
+      }
+    ,
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "헛웃음",
+        choices: [
+          "허두슴",
+          "허수슴"
+        ],
+        answer: 1,
+        explanation: "대표음으로 바꾸어 옮기므로 [허두슴]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "맛없다",
+        choices: [
+          "마덥따",
+          "마섭따"
+        ],
+        answer: 1,
+        explanation: "실질 형태소 앞이라 대표음으로 바꾸어 [마덥따]로 발음합니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "값어치",
+        choices: [
+          "가버치",
+          "갑서치"
+        ],
+        answer: 1,
+        explanation: "실질 형태소 앞이라 [가버치]로 발음합니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "꽃 위",
+        choices: [
+          "꼬뒤",
+          "꼬취"
+        ],
+        answer: 1,
+        explanation: "'위'가 실질 형태소이므로 대표음으로 바꾸어 [꼬뒤]로 발음합니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "늙지",
+        choices: [
+          "늑찌",
+          "늘찌"
+        ],
+        answer: 1,
+        explanation: "겹받침 'ㄺ'은 자음 앞에서 [ㄱ]으로 발음하므로 [늑찌]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "삶",
+        choices: [
+          "삼ː",
+          "살ː"
+        ],
+        answer: 1,
+        explanation: "겹받침 'ㄻ'은 [ㅁ]으로 발음하므로 [삼ː]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "외곬",
+        choices: [
+          "외골",
+          "외곧"
+        ],
+        answer: 1,
+        explanation: "겹받침 'ㄽ'은 [ㄹ]로 발음하므로 [외골]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "없다",
+        choices: [
+          "업ː따",
+          "얻ː따"
+        ],
+        answer: 1,
+        explanation: "겹받침 'ㅄ'은 [ㅂ]으로 발음하므로 [업ː따]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "좋던",
+        choices: [
+          "조ː턴",
+          "조ː던"
+        ],
+        answer: 1,
+        explanation: "'ㅎ'과 'ㄷ'이 만나 거센소리가 되므로 [조ː턴]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "넓히다",
+        choices: [
+          "널피다",
+          "널비다"
+        ],
+        answer: 1,
+        explanation: "'ㅂ'과 'ㅎ'이 만나 거센소리가 되므로 [널피다]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "않은",
+        choices: [
+          "아는",
+          "안흔"
+        ],
+        answer: 1,
+        explanation: "'ㅎ' 뒤에 모음이 오면 'ㅎ'을 발음하지 않으므로 [아는]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "생산량",
+        choices: [
+          "생산냥",
+          "생살량"
+        ],
+        answer: 1,
+        explanation: "'ㄹ'을 [ㄴ]으로 발음하여 [생산냥]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "공권력",
+        choices: [
+          "공꿘녁",
+          "공꿜력"
+        ],
+        answer: 1,
+        explanation: "'ㄹ'을 [ㄴ]으로 발음하여 [공꿘녁]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "감기",
+        choices: [
+          "감기",
+          "강ː기"
+        ],
+        answer: 1,
+        explanation: "조음 위치가 같아지는 동화는 표준 발음으로 인정하지 않으므로 [감기]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "옷감",
+        choices: [
+          "옫깜",
+          "옥깜"
+        ],
+        answer: 1,
+        explanation: "조음 위치 동화는 인정하지 않으므로 [옫깜]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "색연필",
+        choices: [
+          "생년필",
+          "새견필"
+        ],
+        answer: 1,
+        explanation: "'ㄴ'이 첨가된 뒤 비음화가 일어나 [생년필]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "내복약",
+        choices: [
+          "내ː봉냑",
+          "내ː보갹"
+        ],
+        answer: 1,
+        explanation: "'ㄴ'이 첨가된 뒤 비음화가 일어나 [내ː봉냑]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "막일",
+        choices: [
+          "망닐",
+          "마길"
+        ],
+        answer: 1,
+        explanation: "'ㄴ'이 첨가된 뒤 비음화가 일어나 [망닐]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "신여성",
+        choices: [
+          "신녀성",
+          "시녀성"
+        ],
+        answer: 1,
+        explanation: "'ㄴ' 음이 첨가되어 [신녀성]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "들일",
+        choices: [
+          "들ː릴",
+          "드ː릴"
+        ],
+        answer: 1,
+        explanation: "'ㄹ' 뒤에 첨가된 'ㄴ'이 [ㄹ]로 바뀌어 [들ː릴]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "물엿",
+        choices: [
+          "물렫",
+          "물녇"
+        ],
+        answer: 1,
+        explanation: "'ㄹ' 뒤라서 [물렫]으로 발음합니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "휘발유",
+        choices: [
+          "휘발류",
+          "휘발유"
+        ],
+        answer: 1,
+        explanation: "'ㄹ' 뒤에 'ㄴ'이 첨가되고 [ㄹ]로 바뀌어 [휘발류]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "서울역",
+        choices: [
+          "서울력",
+          "서우력"
+        ],
+        answer: 1,
+        explanation: "[서울력]으로 발음합니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "할 일",
+        choices: [
+          "할릴",
+          "하릴"
+        ],
+        answer: 1,
+        explanation: "'ㄹ' 뒤라서 [할릴]로 발음합니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "식용유",
+        choices: [
+          "시굥뉴",
+          "시굥유"
+        ],
+        answer: 1,
+        explanation: "'ㄴ' 음이 첨가되어 [시굥뉴]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "한여름",
+        choices: [
+          "한녀름",
+          "한려름"
+        ],
+        answer: 1,
+        explanation: "'ㄴ' 음이 첨가되어 [한녀름]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "등용문",
+        choices: [
+          "등용문",
+          "등뇽문"
+        ],
+        answer: 1,
+        explanation: "'ㄴ'을 첨가하지 않고 [등용문]으로 발음합니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "콧날",
+        choices: [
+          "콘날",
+          "콛날"
+        ],
+        answer: 1,
+        explanation: "사이시옷 뒤에 'ㄴ'이 와서 [콘날]로 발음합니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "깻잎",
+        choices: [
+          "깬닙",
+          "깯닙"
+        ],
+        answer: 1,
+        explanation: "사이시옷 뒤에 '이' 음이 와서 [깬닙]으로 발음합니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "나뭇잎",
+        choices: [
+          "나문닙",
+          "나묻닙"
+        ],
+        answer: 1,
+        explanation: "[나문닙]으로 발음합니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "툇마루",
+        choices: [
+          "퇸ː마루",
+          "퇻ː마루"
+        ],
+        answer: 1,
+        explanation: "[퇸ː마루]로 발음합니다."
+      },
+      {
+        ask: "다음 설명이 맞으면 O, 틀리면 X",
+        sentence: "표준 발음법은 국어의 전통성과 합리성을 고려하여 정한다.",
+        ox: true,
+        answer: 1,
+        explanation: "맞습니다. 제1항입니다. 실제 발음을 따르되 전통성과 합리성을 함께 봅니다."
+      },
+      {
+        ask: "다음 설명이 맞으면 O, 틀리면 X",
+        sentence: "'ㅚ, ㅟ'는 이중 모음으로 발음할 수도 있다.",
+        ox: true,
+        answer: 1,
+        explanation: "맞습니다. 제4항 [붙임]입니다. 단모음으로 발음하는 것이 원칙입니다."
+      },
+      {
+        ask: "다음 설명이 맞으면 O, 틀리면 X",
+        sentence: "'참말'과 '쌍동밤'은 첫음절을 긴소리로 발음한다.",
+        ox: true,
+        answer: 2,
+        explanation: "틀립니다. [참말], [쌍동밤]으로 짧게 발음합니다."
+      },
+      {
+        ask: "다음 설명이 맞으면 O, 틀리면 X",
+        sentence: "'벌리다'는 첫음절을 긴소리로 발음한다.",
+        ox: true,
+        answer: 1,
+        explanation: "맞습니다. [벌ː리다]입니다. 다만 '떠벌리다'는 [떠벌리다]로 짧습니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "말씨",
+        choices: [
+          "말ː씨",
+          "말씨"
+        ],
+        answer: 1,
+        explanation: "첫음절에서 긴소리로 발음하므로 [말ː씨]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "밤나무",
+        choices: [
+          "밤ː나무",
+          "밤나무"
+        ],
+        answer: 1,
+        explanation: "첫음절에서 긴소리로 발음하므로 [밤ː나무]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "멀리",
+        choices: [
+          "멀ː리",
+          "멀리"
+        ],
+        answer: 1,
+        explanation: "첫음절에서 긴소리로 발음하므로 [멀ː리]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "닁큼",
+        choices: [
+          "닝큼",
+          "닁큼"
+        ],
+        answer: 1,
+        explanation: "자음을 첫소리로 가진 음절의 'ㅢ'는 [ㅣ]로 발음하므로 [닝큼]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "희떱다",
+        choices: [
+          "히떱따",
+          "희떱따"
+        ],
+        answer: 1,
+        explanation: "자음 뒤의 'ㅢ'는 [ㅣ]로 발음하므로 [히떱따]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "유희",
+        choices: [
+          "유히",
+          "유희"
+        ],
+        answer: 1,
+        explanation: "자음 뒤의 'ㅢ'는 [ㅣ]로 발음하므로 [유히]입니다."
+      },
+      {
+        ask: "표준 발음으로 바른 것은?",
+        sentence: "씌어",
+        choices: [
+          "씨어",
+          "씌어"
+        ],
+        answer: 1,
+        explanation: "자음 뒤의 'ㅢ'는 [ㅣ]로 발음하므로 [씨어]입니다."
+      },
+      {
+        ask: "다음 중 첫음절을 긴소리로 발음하지 않는 것은?",
+        choices: [
+          "말씨",
+          "밤나무",
+          "멀리",
+          "벌리다",
+          "참말"
+        ],
+        answer: 5,
+        explanation: "'참말'은 [참말]로 짧게 발음합니다. 나머지는 첫음절에서 긴소리로 발음합니다."
       }
     ]
   }

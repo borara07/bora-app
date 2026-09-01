@@ -18,7 +18,7 @@
 
 @font-face {
   font-family: "고운밤";
-  src: url("fonts/goun-bam.woff2?v=20260904j") format("woff2");
+  src: url("fonts/goun-bam.woff2?v=20260904k") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -28,7 +28,7 @@
 
 @font-face {
   font-family: "나눔스퀘어";
-  src: url("fonts/square.woff2?v=20260904j") format("woff2");
+  src: url("fonts/square.woff2?v=20260904k") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -38,7 +38,7 @@
 
 @font-face {
   font-family: "나눔스퀘어";
-  src: url("fonts/square-bold.woff2?v=20260904j") format("woff2");
+  src: url("fonts/square-bold.woff2?v=20260904k") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -48,7 +48,7 @@
 
 @font-face {
   font-family: "나눔스퀘어";
-  src: url("fonts/square-extrabold.woff2?v=20260904j") format("woff2");
+  src: url("fonts/square-extrabold.woff2?v=20260904k") format("woff2");
   font-weight: 800;
   font-style: normal;
   font-display: swap;
