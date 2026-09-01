@@ -962,7 +962,7 @@ var GRAMMAR_ROUNDS = [
   {
     title: "04회 맞춤법 4",
     group: "고등부",             // 이 회차를 볼 반 (고등부 / 중등부)
-    subtitle: "여러 조항에서 골고루 41문제",
+    subtitle: "여러 조항에서 골고루 37문제",
     mix: { 단순: 16, 객관식: 4 },   // 한 번 시험에 OX 16개 + 객관식 4개 (모두 20문제)
     questions: [
       {
@@ -971,13 +971,6 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 1,
         explanation: "맞습니다. 시간의 경과를 나타내는 의존 명사입니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'보았다'의 준말은 '봈다'이다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. '봤다'가 바릅니다."
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
@@ -1020,13 +1013,6 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 1,
         explanation: "맞습니다. 제30항 1-(1)의 예입니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'본의(本義)'는 [보니]로 소리 나더라도 '본의'로 적는다.",
-        ox: true,
-        answer: 1,
-        explanation: "맞습니다. 제9항의 예입니다."
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
@@ -1076,13 +1062,6 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 2,
         explanation: "틀립니다. 관형사형 뒤의 '대로'는 의존 명사라 '아는 대로'로 띄어 씁니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "연결형에서 쓰이는 '이요'는 '이오'로 적는다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. 연결형은 '이요'로 적습니다. (이것은 책이요, 저것은 붓이요)"
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
@@ -1209,18 +1188,6 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 1,
         explanation: "맞습니다. 'ㄱ' 받침 뒤라 된소리로 적지 않습니다."
-      },
-      {
-        ask: "다음 중 단어의 발음을 잘못 표기한 것은?",
-        choices: [
-          "꽃[꼳]",
-          "꽃이[꼬치]",
-          "꽃을[꼬슬]",
-          "꽃과[꼳꽈]",
-          "꽃나무[꼰나무]"
-        ],
-        answer: 3,
-        explanation: "'꽃을'은 [꼬츨]로 발음합니다. 홑받침이 모음으로 시작하는 형식 형태소를 만나면 본래 소리를 살려 뒤 음절의 첫소리로 옮겨 발음합니다."
       },
       {
         ask: "다음 중 띄어쓰기가 바른 것은?",
