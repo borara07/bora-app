@@ -44,7 +44,8 @@
   var historyBackTo = 'start';
 
   /* 이번 주 숙제 회차 (빈 값이면 모든 회차를 고를 수 있습니다) */
-  var homeworkRound = '';
+  var homeworkRound = '';   /* 선생님이 정한 회차 이름 ('' 이면 모든 회차 열기) */
+  var homeworkSet = false;  /* 선생님이 이 반(학년)의 회차를 정한 적이 있는지 */
 
   /* 문제 위에 놓이는 기본 물음 (문법 문제는 문제마다 따로 적습니다) */
   var defaultLabel = '다음 어휘의 뜻으로 알맞은 것은?';
@@ -226,8 +227,12 @@
     });
   }
 
-  /* 지금 풀 수 있는 회차인지 (선생님이 숙제 회차를 정했으면 그 회차만) */
+  /* 지금 풀 수 있는 회차인지
+       · 선생님이 아직 아무것도 정하지 않았으면  → 하나도 열지 않습니다
+       · '모든 회차 열기' 를 고르셨으면 (빈 값)   → 모두 엽니다
+       · 회차를 하나 정하셨으면                  → 그 회차만 엽니다 */
   function isOpen(round) {
+    if (!homeworkSet) { return false; }
     if (!homeworkRound) { return true; }
     return round.title === homeworkRound;
   }
@@ -237,22 +242,22 @@
     box.innerHTML = '';
 
     var mine = roundsForGroup(state.group);
-
-    /* 숙제 회차를 못 찾으면 모두 열어 둡니다 (학생이 아예 못 푸는 일이 없게) */
-    var found = !homeworkRound || mine.some(function (r) {
-      return r.title === homeworkRound;
-    });
+    var openCount = mine.filter(isOpen).length;
 
     var empty = $('rounds-empty');
     if (mine.length === 0) {
       empty.textContent = whoFor() + ' 시험이 아직 준비되지 않았습니다.\n선생님께 알려주세요.';
+      empty.hidden = false;
+    } else if (openCount === 0) {
+      /* 이번 주에 열린 회차가 없습니다 (아직 안 정하셨거나, 정한 회차 이름이 목록에 없음) */
+      empty.textContent = whoFor() + ' 이번 주 시험이 아직 정해지지 않았습니다.\n선생님께 알려주세요.';
       empty.hidden = false;
     } else {
       empty.hidden = true;
     }
 
     mine.forEach(function (round) {
-      var open = !found || isOpen(round);
+      var open = isOpen(round);
       var part = splitRoundTitle(round.title);
 
       var card = document.createElement('button');
@@ -791,6 +796,7 @@
         /* 어휘는 반, 문법은 학년으로 이번 주 회차를 읽습니다 */
         VocabStore.homeworkRound(whoFor(), SUBJECT).then(function (h) {
           homeworkRound = h.round || '';
+          homeworkSet = !!h.set;
           renderRounds();
         });
         return;

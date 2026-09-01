@@ -495,11 +495,18 @@ var VocabStore = (function () {
       var who = (subject && subject !== '어휘' ? subject + ':' : '') + (group || '고등부');
       var key = 'homework_round:' + who;
       var store = KEY_HOMEWORK + ':' + who;
+      /* 지난번에 읽어 둔 값. 아직 한 번도 못 읽었으면 null 입니다 */
       var cached = null;
       try { cached = window.localStorage.getItem(store); } catch (e) { cached = null; }
 
+      /* set = 선생님이 이 반(학년)의 회차를 정해 둔 적이 있는지
+         round = 정해진 회차 이름 ('' 이면 '모든 회차 열기' 를 고르신 것) */
+      function fromCache() {
+        return { ok: false, set: (cached !== null), round: cached || '' };
+      }
+
       if (!supabaseReady()) {
-        return Promise.resolve({ ok: false, round: cached });
+        return Promise.resolve(fromCache());
       }
 
       var url = SUPABASE.url.replace(/\/+$/, '') +
@@ -507,15 +514,19 @@ var VocabStore = (function () {
 
       return fetch(url, { headers: headersFor(workingWay || 'bearer') })
         .then(function (res) {
-          if (!res.ok) return { ok: false, round: cached };
+          if (!res.ok) return fromCache();
           return res.json().then(function (rows) {
-            var value = (rows && rows[0] && rows[0].value) || '';
-            try { window.localStorage.setItem(store, value); } catch (e) { /* 넘어갑니다 */ }
-            return { ok: true, round: value };
+            var has = !!(rows && rows.length);
+            var value = has ? (rows[0].value || '') : '';
+            try {
+              if (has) { window.localStorage.setItem(store, value); }
+              else { window.localStorage.removeItem(store); }
+            } catch (e) { /* 넘어갑니다 */ }
+            return { ok: true, set: has, round: value };
           });
         })
         .catch(function () {
-          return { ok: false, round: cached };
+          return fromCache();
         });
     },
 
