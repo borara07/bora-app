@@ -10,7 +10,7 @@
   "background_color": "#ece6fb",
   "theme_color": "#582b8d",
   "icons": [
-    { "src": "grammar-icon-192.png?v=20260903i", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "grammar-icon-512.png?v=20260903i", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "grammar-icon-192.png?v=20260903j", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "grammar-icon-512.png?v=20260903j", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }
