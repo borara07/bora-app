@@ -917,13 +917,9 @@
 
     $('btn-retry').addEventListener('click', startQuiz);
 
-    /* 지난번에 시험 본 학생이면 입력칸을 미리 채워 줍니다 */
-    var last = VocabStore.lastStudent();
-    if (last) {
-      $('student-name').value = last.name || '';
-      $('student-school').value = last.school || '';
-      $('student-phone4').value = last.phone4 || '';
-    }
+    /* 입력칸은 늘 비워 둡니다.
+       휴대폰을 빌려 쓰거나 형제가 같이 쓰는 경우에 앞사람 이름이 남아 있으면
+       그 이름으로 시험이 저장될 수 있어서, 미리 채우지 않습니다. */
     refreshHistoryButton();
     show('start');
   }
