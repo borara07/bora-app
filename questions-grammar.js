@@ -2229,7 +2229,7 @@ var GRAMMAR_ROUNDS = [
   {
     title: "06회 표준발음 2",
     group: "고등부",             // 이 회차를 볼 반 (고등부 / 중등부)
-    subtitle: "표준 발음법 네 영역에서 골고루 65문제",
+    subtitle: "표준 발음법 네 영역에서 골고루 54문제",
     mix: { 단순: 18, 객관식: 2 },   // 한 번 시험에 단순 18개 + 객관식 2개 (모두 20문제)
     questions: [
       {
@@ -2378,16 +2378,6 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "표준 발음으로 바른 것은?",
-        sentence: "있다",
-        choices: [
-          "읻따",
-          "잇따"
-        ],
-        answer: 1,
-        explanation: "쌍받침 'ㅆ'은 대표음 [ㄷ]으로 발음하므로 [읻따]입니다."
-      },
-      {
-        ask: "표준 발음으로 바른 것은?",
         sentence: "발전",
         choices: [
           "발쩐",
@@ -2463,23 +2453,6 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "표준 발음으로 바른 것은?",
-        sentence: "굳이",
-        choices: [
-          "구지",
-          "구디"
-        ],
-        answer: 1,
-        explanation: "받침 'ㄷ'이 접미사의 'ㅣ'를 만나 [ㅈ]으로 바뀌므로 [구지]입니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "받침 'ㄷ, ㅌ'이 조사나 접미사의 모음 'ㅣ'와 만나면 [ㅈ, ㅊ]으로 바뀌어 발음된다.",
-        ox: true,
-        answer: 1,
-        explanation: "맞습니다. 제17항 구개음화입니다."
-      },
-      {
-        ask: "표준 발음으로 바른 것은?",
         sentence: "앉다",
         choices: [
           "안따",
@@ -2497,26 +2470,6 @@ var GRAMMAR_ROUNDS = [
         ],
         answer: 1,
         explanation: "'ㄷ'과 'ㅎ'이 만나 거센소리가 되므로 [마텽]입니다."
-      },
-      {
-        ask: "표준 발음으로 바른 것은?",
-        sentence: "많다",
-        choices: [
-          "만ː타",
-          "만ː다"
-        ],
-        answer: 1,
-        explanation: "받침 'ㅎ'과 'ㄷ'이 만나 거센소리가 되므로 [만ː타]입니다."
-      },
-      {
-        ask: "표준 발음으로 바른 것은?",
-        sentence: "예절",
-        choices: [
-          "예절",
-          "에절"
-        ],
-        answer: 1,
-        explanation: "'예'의 'ㅖ'는 [ㅔ]로 발음하지 않으므로 [예절]입니다."
       },
       {
         ask: "다음 중 표준 발음이 바르지 않은 것은?",
@@ -2559,13 +2512,6 @@ var GRAMMAR_ROUNDS = [
         ],
         answer: 1,
         explanation: "받침이 [ㄷ]으로 바뀐 뒤 'ㅁ' 앞에서 [ㄴ]이 되어 [온맵씨]입니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'냇가'는 [내ː까]로만 발음해야 한다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. [내ː까]가 원칙이고 [낻ː까]도 허용합니다."
       },
       {
         ask: "표준 발음으로 바른 것은?",
@@ -2679,16 +2625,6 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "표준 발음으로 바른 것은?",
-        sentence: "쪄 (찌어의 준말)",
-        choices: [
-          "쩌",
-          "쪄"
-        ],
-        answer: 1,
-        explanation: "'쪄'는 [쩌]로 발음합니다."
-      },
-      {
-        ask: "표준 발음으로 바른 것은?",
         sentence: "넓다",
         choices: [
           "널따",
@@ -2753,23 +2689,6 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "다음 설명이 맞으면 O, 틀리면 X",
-        sentence: "'맏형[마텽]'은 비음화의 예이다.",
-        ox: true,
-        answer: 2,
-        explanation: "틀립니다. 'ㄷ'과 'ㅎ'이 합쳐진 거센소리되기(축약)입니다."
-      },
-      {
-        ask: "표준 발음으로 바른 것은?",
-        sentence: "칼날",
-        choices: [
-          "칼랄",
-          "칸날"
-        ],
-        answer: 1,
-        explanation: "'ㄴ'이 'ㄹ' 뒤에서 [ㄹ]로 바뀌므로 [칼랄]입니다."
-      },
-      {
-        ask: "다음 설명이 맞으면 O, 틀리면 X",
         sentence: "겹받침이 모음으로 시작된 조사나 어미와 만나면 뒤엣것만 옮겨 발음한다.",
         ox: true,
         answer: 1,
@@ -2781,28 +2700,6 @@ var GRAMMAR_ROUNDS = [
         ox: true,
         answer: 2,
         explanation: "틀립니다. 피동·사동 접미사에는 이 규정이 적용되지 않아 [신기다]로 발음합니다."
-      },
-      {
-        ask: "표준 발음법의 조항과 음운 변동을 잘못 연결한 것은?",
-        choices: [
-          "제17항 : 구개음화",
-          "제18항 : 비음화",
-          "제19항 : 비음화",
-          "제20항 : 유음화",
-          "제19항 : 된소리되기"
-        ],
-        answer: 5,
-        explanation: "제19항은 제18항과 마찬가지로 비음화에 관한 조항입니다."
-      },
-      {
-        ask: "표준 발음으로 바른 것은?",
-        sentence: "신라",
-        choices: [
-          "실라",
-          "신나"
-        ],
-        answer: 1,
-        explanation: "유음화가 일어나 [실라]로 발음합니다."
       },
       {
         ask: "표준 발음으로 바른 것은?",
