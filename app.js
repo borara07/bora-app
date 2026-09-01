@@ -351,7 +351,10 @@
       var choices = q.ox ? ['O', 'X'] : q.choices;
       return {
         ask: q.ask || '',                       // 물음 (문법 문제)
-        word: q.word || q.sentence || '',       // 큰 글씨로 보일 말
+        word: q.word || q.sentence || '',       // 큰 글씨로 보일 말 (없으면 안 보입니다)
+        /* 기록에 남길 이름. 화면에는 안 보이고 선생님 화면의 '문제별 정답률' 에서
+           문제를 서로 구분하는 데만 씁니다. 제시문이 없으면 정답을 이름으로 씁니다. */
+        name: q.word || q.sentence || choices[q.answer - 1] || q.ask || '',
         hanja: q.hanja || '',
         /* OX 는 O·X 순서가 정해져 있으니 섞지 않습니다 */
         choices: q.ox ? choices.slice() : shuffle(choices),
@@ -528,10 +531,12 @@
 
     var word = document.createElement('p');
     word.className = 'wrong-word';
+    /* 제시문이 없는 객관식은 물음을 대신 보여 줍니다 (빈 줄이 되지 않게) */
+    var title = q.word || q.ask || '';
     /* 문법 문제처럼 글이 길면 크기를 줄입니다 (문제 화면과 같은 규칙) */
-    if (q.word.length > 8) { word.className += ' is-sentence'; }
-    if (q.word.length > 40) { word.className += ' is-long'; }
-    word.textContent = q.word;
+    if (title.length > 8) { word.className += ' is-sentence'; }
+    if (title.length > 40) { word.className += ' is-long'; }
+    word.textContent = title;
     if (q.hanja) {
       var h = document.createElement('span');
       h.className = 'wrong-hanja';
@@ -654,7 +659,7 @@
       savedAt: new Date().toISOString(),
       items: state.list.map(function (q) {
         return {
-          word: q.word,
+          word: q.name || q.word,
           hanja: q.hanja,
           answer: q.correctText,
           myAnswer: q.myAnswer,

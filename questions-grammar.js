@@ -314,6 +314,7 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "맞춤법에 맞는 것은?",
+        sentence: "손바닥을 ○○ 비비다.",
         choices: ["싹싹", "싹삭"],
         answer: 1,
         explanation: "'싹싹'이 바릅니다. 같은 음절이 겹쳐 나므로 된소리로 적습니다."
@@ -707,6 +708,7 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "맞춤법에 맞는 것은?",
+        sentence: "가위로 ○○ 잘랐다.",
         choices: ["싹둑", "싹뚝"],
         answer: 1,
         explanation: "'싹둑'이 바릅니다. 'ㄱ' 받침 뒤에서 나는 된소리는 된소리로 적지 않습니다."
@@ -1056,6 +1058,7 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "맞춤법에 맞는 것은?",
+        sentence: "국물이 제법 ○○○○.",
         choices: ["짭짤하다", "짭잘하다"],
         answer: 1,
         explanation: "'짭짤하다'가 바릅니다. 같은 음절이 겹쳐 나므로 된소리로 적습니다."
@@ -1076,6 +1079,7 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "맞춤법에 맞는 것은?",
+        sentence: "커피 맛이 ○○○○.",
         choices: ["쌉쌀하다", "쌉살하다"],
         answer: 1,
         explanation: "'쌉쌀하다'가 바릅니다. 같은 음절이 겹쳐 나는 경우입니다."
@@ -1427,6 +1431,7 @@ var GRAMMAR_ROUNDS = [
       },
       {
         ask: "맞춤법에 맞는 것은?",
+        sentence: "시계가 ○○ 소리를 낸다.",
         choices: ["똑딱", "똑닥"],
         answer: 1,
         explanation: "'똑딱'이 바릅니다. 비슷한 음절이 겹쳐 나므로 된소리로 적습니다."

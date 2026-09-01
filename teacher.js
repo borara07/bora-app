@@ -482,21 +482,34 @@
   /* ---------- 문제 은행 올리기 ---------- */
 
   /* 앱에 들어 있는 문제를 수파베이스가 받을 모양으로 바꿉니다 */
+  /* 문제 은행에 올릴 목록을 만듭니다 (어휘 + 문법).
+     문법 기록은 회차 이름 앞에 '[문법] ' 이 붙어 저장되므로 여기서도 똑같이 붙입니다. */
   function allQuestions() {
-    if (typeof ROUNDS === 'undefined' || !Array.isArray(ROUNDS)) return [];
     var out = [];
-    ROUNDS.forEach(function (r) {
-      r.questions.forEach(function (q) {
-        out.push({
-          round_title: r.title,
-          word: q.word,
-          hanja: q.hanja || '',
-          correct_answer: q.choices[q.answer - 1],
-          choices: q.choices,
-          explanation: q.explanation || ''
+
+    function add(list, prefix) {
+      if (!Array.isArray(list)) return;
+      list.forEach(function (r) {
+        r.questions.forEach(function (q) {
+          var choices = q.ox ? ['O', 'X'] : (q.choices || []);
+          if (!choices.length) return;
+          /* 학생 앱이 기록에 남기는 이름과 똑같은 규칙이어야 통계가 맞습니다 */
+          var name = q.word || q.sentence || choices[q.answer - 1] || q.ask || '';
+          if (!name) return;
+          out.push({
+            round_title: prefix + r.title,
+            word: name,
+            hanja: q.hanja || '',
+            correct_answer: choices[q.answer - 1],
+            choices: choices,
+            explanation: q.explanation || ''
+          });
         });
       });
-    });
+    }
+
+    add(typeof ROUNDS !== 'undefined' ? ROUNDS : null, '');
+    add(typeof GRAMMAR_ROUNDS !== 'undefined' ? GRAMMAR_ROUNDS : null, '[문법] ');
     return out;
   }
 
