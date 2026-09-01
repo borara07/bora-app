@@ -365,9 +365,23 @@
 
   /* ---------- 이번 주 숙제 회차 ---------- */
 
-  /* 어휘는 반(고등부·중등부)으로, 문법은 학년(중1~고3)으로 나눕니다 */
-  var GRADES = ['중1', '중2', '중3', '고1', '고2', '고3'];
-  var GROUPS = ['고등부', '중등부'];
+  /* 어휘는 반(고등부·중등부)으로, 문법은 학년(중1~고3)으로 나눕니다.
+     명단 메모에 학년이 없는 사람(선생님 계정 등)은 반 이름으로 회차를 찾으므로
+     문법 목록 끝에 반 두 가지도 함께 둡니다. */
+  var GRADES = [
+    { value: '중1', label: '중1' },
+    { value: '중2', label: '중2' },
+    { value: '중3', label: '중3' },
+    { value: '고1', label: '고1' },
+    { value: '고2', label: '고2' },
+    { value: '고3', label: '고3' },
+    { value: '고등부', label: '고등부 (학년을 모를 때)' },
+    { value: '중등부', label: '중등부 (학년을 모를 때)' }
+  ];
+  var GROUPS = [
+    { value: '고등부', label: '고등부' },
+    { value: '중등부', label: '중등부' }
+  ];
 
   function homeworkSubject() {
     return $('homework-subject').value || '어휘';
@@ -386,13 +400,18 @@
 
     $('homework-group-label').textContent = (subject === '문법') ? '학년' : '반';
     box.innerHTML = '';
-    list.forEach(function (name) {
+    var values = list.map(function (it) { return it.value; });
+    list.forEach(function (it) {
       var op = document.createElement('option');
-      op.value = name;
-      op.textContent = name;
+      op.value = it.value;
+      op.textContent = it.label;
       box.appendChild(op);
     });
-    box.value = (list.indexOf(before) >= 0) ? before : list[(subject === '문법') ? 3 : 0];
+    /* 과목을 바꿔도 고르셨던 것이 목록에 있으면 그대로 둡니다.
+       다만 문법으로 바꿀 때는 반 이름이 아니라 학년부터 보여 줍니다. */
+    var keep = values.indexOf(before) >= 0 &&
+               !(subject === '문법' && (before === '고등부' || before === '중등부'));
+    box.value = keep ? before : values[(subject === '문법') ? 3 : 0];
   }
 
   /* 그 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS) */
@@ -460,7 +479,8 @@
         box.className = 'check-state is-ok';
         box.textContent = round
           ? (subject + ' · ' + group + ' 이번 주 시험을 ' + round + ' 로 정했습니다.\n' +
-             (subject === '문법' ? '그 학년' : '그 반') + ' 학생에게는 이 회차만 열립니다.')
+             ((subject === '문법' && group !== '고등부' && group !== '중등부')
+                ? '그 학년' : '그 반') + ' 학생에게는 이 회차만 열립니다.')
           : (subject + ' · ' + group + ' 의 모든 회차를 열었습니다.\n' +
              '학생이 아무 회차나 고를 수 있습니다.');
         return;
