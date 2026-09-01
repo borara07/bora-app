@@ -920,6 +920,16 @@ h1 {
   color: var(--muted);
 }
 
+/* 선생님 화면에서 어떤 권한으로 들어왔는지 알려 주는 줄 */
+.who-note {
+  margin: 8px 0 0;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--primary-dark);
+  font-size: 13px;
+}
+
 /* ---------- 저장 안내 ---------- */
 
 .save-state {

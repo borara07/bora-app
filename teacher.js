@@ -13,6 +13,7 @@
   var statGroup = '';   /* 통계에서 볼 반 (빈 값이면 전체) */
   var rows = [];        /* 지금 화면에 쓰는 시험 기록 (고른 반만) */
   var myPassword = '';  /* 이번에 들어올 때 쓴 비밀번호 (문제 올릴 때 다시 씁니다) */
+  var myRole = '';      /* 'admin' = 원장 선생님 (모든 것) / 'viewer' = 다른 선생님 (기록 보기만) */
   var roster = null;    /* 재원생 명단 기준 누적 (명단을 넣어 둔 경우에만) */
 
   var GRADE_ORDER = ['고3', '고2', '고1', '중3', '중2', '중1'];
@@ -46,13 +47,26 @@
         myPassword = password;
         show(r.rows, '전체 학생 기록입니다.');
 
-        fillGroupPicker();
-        loadHomework();
+        /* 어떤 권한으로 들어왔는지 확인해 화면을 맞춥니다 */
+        VocabStore.teacherRole(password).then(function (t) {
+          myRole = t.role || 'admin';   // 못 물어보면 예전처럼 모두 보여 줍니다
+          applyRole();
 
-        VocabStore.fetchStudents(password).then(function (sr) {
-          allRoster = sr.ok ? sr.rows : null;
-          applyGroup();
-          render();
+          if (myRole !== 'admin') {
+            allRoster = null;
+            applyGroup();
+            render();
+            return;
+          }
+
+          fillGroupPicker();
+          loadHomework();
+
+          VocabStore.fetchStudents(password).then(function (sr) {
+            allRoster = sr.ok ? sr.rows : null;
+            applyGroup();
+            render();
+          });
         });
         return;
       }
@@ -330,6 +344,23 @@
         });
       });
     });
+  }
+
+  /* 다른 선생님에게는 원장 선생님 전용 기능을 감춥니다.
+     감추기만 하는 것이 아니라 서버에서도 막혀 있습니다. */
+  function applyRole() {
+    var admin = (myRole === 'admin');
+
+    ['admin-homework', 'admin-tools', 'roster-area'].forEach(function (id) {
+      var box = $(id);
+      if (box) { box.hidden = !admin; }
+    });
+
+    var who = $('who-note');
+    if (who) {
+      who.hidden = admin;
+      who.textContent = admin ? '' : '학생 기록 보기 전용으로 들어오셨습니다.';
+    }
   }
 
   /* ---------- 이번 주 숙제 회차 ---------- */

@@ -359,6 +359,32 @@ var VocabStore = (function () {
 
     /* 선생님용: 비밀번호를 서버에 보내 맞을 때만 전체 기록을 받아옵니다.
        (비밀번호는 이 파일에 저장되지 않고, 서버에서 확인합니다) */
+    /* 이 비밀번호가 어떤 권한인지 물어봅니다.
+       'admin'  = 원장 선생님 (모든 것)
+       'viewer' = 다른 선생님 (기록 보기만)
+       ''       = 비밀번호가 틀림 */
+    teacherRole: function (password) {
+      if (!supabaseReady()) return Promise.resolve({ ok: false, role: '' });
+
+      var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/teacher_role';
+
+      return fetch(url, {
+        method: 'POST',
+        headers: headersFor(workingWay || 'bearer'),
+        body: JSON.stringify({ pass: password })
+      }).then(function (res) {
+        return res.text().then(function (text) {
+          if (!res.ok) return { ok: false, role: '' };
+          var v;
+          try { v = JSON.parse(text); } catch (e) { v = text; }
+          if (Array.isArray(v)) v = v[0];
+          return { ok: true, role: String(v == null ? '' : v).replace(/^"|"$/g, '') };
+        });
+      }).catch(function () {
+        return { ok: false, role: '' };
+      });
+    },
+
     fetchAll: function (password) {
       if (!supabaseReady()) {
         return Promise.resolve({ ok: false, code: 'no-server' });
