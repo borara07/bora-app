@@ -130,6 +130,8 @@
 - 재원생 확인은 `check_enrolled_group` 으로 합니다. 맞다/아니다와 **그 학생의 반만** 돌려줍니다.
   명단은 여전히 앱으로 내려보내지 않습니다.
 - 선생님 화면에서는 반을 골라 숙제 회차를 정하고, 통계도 반별로 볼 수 있습니다.
+- **재원생 명단은 학년마다 상자를 따로 만들어 보여 줍니다.** 상자는 `teacher.js` 의
+  `drawRosterByGrade` 가 명단을 보고 그때그때 만듭니다. 학년 순서는 `GRADE_ORDER` 로 정합니다.
 - 반을 늘리려면 `questions.js` 의 회차에 새 반 이름을 적고,
   `teacher.html` 의 `stat-group` 과 `teacher.js` 의 `GROUPS` 에 줄을 하나씩 더합니다.
 - 선생님 화면의 반/학년 칸은 `teacher.js` 의 `GRADES`·`GROUPS` 로 채웁니다.
