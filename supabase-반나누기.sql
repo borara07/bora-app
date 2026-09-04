@@ -150,9 +150,14 @@ as $$
 declare
   a int := 0; u int := 0; l int := 0; r int := 0;
 begin
+  -- 실수로 빈 명단을 넣어 전체가 사라지는 것을 막습니다
+  if roster is null or jsonb_typeof(roster) <> 'array' or jsonb_array_length(roster) = 0 then
+    raise exception '명단이 비어 있습니다. 실수로 전체가 사라지는 것을 막기 위해 중단합니다';
+  end if;
+
   create temp table _incoming on commit drop as
   select
-    btrim(coalesce(it->>'name', ''))                                   as name,
+    btrim(regexp_replace(coalesce(it->>'name', ''), '[A-Za-z]+$', ''))  as name,   -- 이름 뒤 영문 구분자(김도윤A)는 떼어냅니다
     nullif(btrim(coalesce(it->>'school', '')), '')                     as school,
     nullif(btrim(coalesce(it->>'parent_phone', '')), '')               as parent_phone,
     nullif(btrim(coalesce(it->>'student_phone', '')), '')              as student_phone,
@@ -183,11 +188,12 @@ begin
       left_at       = case when public.students.active = false then null   else public.students.left_at end,
       synced_at     = now()
     returning (xmax = 0) as is_new,
-              (rejoined_at is not null and rejoined_at > now() - interval '1 minute') as came_back
+              -- 이름을 came_back 으로 두면 돌려줄 칸 이름과 겹쳐서 오류가 납니다
+              (rejoined_at is not null and rejoined_at > now() - interval '1 minute') as is_back
   )
   select count(*) filter (where is_new),
          count(*) filter (where not is_new),
-         count(*) filter (where came_back and not is_new)
+         count(*) filter (where is_back and not is_new)
     into a, u, r
     from up;
 
@@ -195,6 +201,7 @@ begin
   update public.students s
      set active = false, left_at = coalesce(s.left_at, now())
    where s.active
+     and coalesce(s.memo, '') not like '선생님%'   -- 선생님 계정은 시트에 없어도 그대로 둡니다
      and not exists (
        select 1 from _incoming i
         where i.name_key = s.name_key and i.phone4 = s.parent_phone4);
