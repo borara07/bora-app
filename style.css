@@ -18,7 +18,7 @@
 
 @font-face {
   font-family: "고운밤";
-  src: url("fonts/goun-bam.woff2?v=20260904m") format("woff2");
+  src: url("fonts/goun-bam.woff2?v=20260907a") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -28,7 +28,7 @@
 
 @font-face {
   font-family: "나눔스퀘어";
-  src: url("fonts/square.woff2?v=20260904m") format("woff2");
+  src: url("fonts/square.woff2?v=20260907a") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -38,7 +38,7 @@
 
 @font-face {
   font-family: "나눔스퀘어";
-  src: url("fonts/square-bold.woff2?v=20260904m") format("woff2");
+  src: url("fonts/square-bold.woff2?v=20260907a") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -48,7 +48,7 @@
 
 @font-face {
   font-family: "나눔스퀘어";
-  src: url("fonts/square-extrabold.woff2?v=20260904m") format("woff2");
+  src: url("fonts/square-extrabold.woff2?v=20260907a") format("woff2");
   font-weight: 800;
   font-style: normal;
   font-display: swap;
@@ -1117,6 +1117,59 @@ select.input {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* ---------- 이코딩 파일 고르기 ---------- */
+
+/* 브라우저가 그리는 영어 단추(Choose File)를 감추고, 우리 단추를 대신 보여 줍니다 */
+.file-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.file-pick {
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* 파일을 고르면 단추 안 글씨가 파일 이름으로 바뀝니다 */
+.file-pick.has-file::after {
+  content: attr(data-file);
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+/* '들어옴 · 나감 · 반 바뀜' 이름표. 나가는 사람만 눈에 띄게 합니다 */
+.diff-kind {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.diff-kind.is-out {
+  background: var(--wrong-bg);
+  color: var(--wrong);
+}
+
+.diff-kind.is-in {
+  background: var(--correct-bg);
+  color: var(--correct);
+}
+
+#roster-diff .table-wrap { margin-top: 10px; }
+#roster-diff .btn { margin-top: 12px; }
 
 /* 표가 넓어도 페이지가 옆으로 밀리지 않게, 표 안에서만 좌우로 움직입니다 */
 .table-wrap {

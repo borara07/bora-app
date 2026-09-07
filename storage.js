@@ -177,6 +177,33 @@ var VocabStore = (function () {
   }
 
   /* 서버에서 받은 한 줄을 앱이 쓰는 모양으로 바꿉니다 */
+  /* 재원생 명단 함수를 부르는 공통 부분 (미리보기 · 맞추기) */
+  function callRoster(name, password, list, onOk) {
+    if (!supabaseReady()) return Promise.resolve({ ok: false, code: 'no-server' });
+
+    var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/' + name;
+
+    return fetch(url, {
+      method: 'POST',
+      headers: headersFor(workingWay || 'bearer'),
+      body: JSON.stringify({ pass: password, roster: list })
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        if (res.ok) {
+          var rows;
+          try { rows = JSON.parse(text); } catch (e) { rows = []; }
+          return onOk(rows);
+        }
+        if (/비밀번호|원장/.test(text)) return { ok: false, code: 'wrong-password' };
+        if (/명단이 비어/.test(text)) return { ok: false, code: 'empty' };
+        if (res.status === 404 || /PGRST202/.test(text)) return { ok: false, code: 'not-set-up' };
+        return { ok: false, code: 'error', detail: '[' + res.status + '] ' + text.slice(0, 200) };
+      });
+    }).catch(function () {
+      return { ok: false, code: 'offline' };
+    });
+  }
+
   function fromServerRow(row) {
     return {
       id: 'server-' + row.id,
@@ -581,6 +608,29 @@ var VocabStore = (function () {
         });
       }).catch(function () {
         return { ok: false, code: 'offline' };
+      });
+    },
+
+    /* 이코딩 학생 명단으로 재원생 명단을 맞추기 전에, 무엇이 달라지는지 미리 봅니다.
+       아무것도 바꾸지 않습니다. */
+    previewStudents: function (password, list) {
+      return callRoster('admin_preview_students', password, list, function (rows) {
+        return { ok: true, rows: rows };
+      });
+    },
+
+    /* 실제로 맞춥니다. 시트에 없는 학생은 지우지 않고 내려놓기만 합니다. */
+    syncStudents: function (password, list) {
+      return callRoster('admin_sync_students', password, list, function (rows) {
+        var r = rows[0] || {};
+        return {
+          ok: true,
+          added: r.added || 0,
+          updated: r.updated || 0,
+          leftOut: r.left_out || 0,
+          cameBack: r.came_back || 0,
+          total: r.total_active || 0
+        };
       });
     },
 

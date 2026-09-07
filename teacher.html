@@ -6,15 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>보라! 선생님</title>
   <!-- 선생님용은 아이콘과 설치 설정을 따로 씁니다 (학생용과 헷갈리지 않게) -->
-  <link rel="manifest" href="teacher-manifest.json?v=20260904m">
-  <link rel="icon" href="teacher-favicon.png?v=20260904m">
-  <link rel="apple-touch-icon" href="teacher-apple-touch-icon.png?v=20260904m">
+  <link rel="manifest" href="teacher-manifest.json?v=20260907a">
+  <link rel="icon" href="teacher-favicon.png?v=20260907a">
+  <link rel="apple-touch-icon" href="teacher-apple-touch-icon.png?v=20260907a">
   <meta name="theme-color" content="#582b8d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 선생님">
-  <link rel="stylesheet" href="style.css?v=20260904m">
+  <link rel="stylesheet" href="style.css?v=20260907a">
 </head>
 <body>
 
@@ -24,8 +24,8 @@
     <section id="screen-login" class="screen">
       <div class="brand-box">
         <picture>
-          <source srcset="logo/mark-white.png?v=20260904m" media="(prefers-color-scheme: dark)">
-          <img class="brand-mark" src="logo/mark.png?v=20260904m" alt="" width="450" height="397">
+          <source srcset="logo/mark-white.png?v=20260907a" media="(prefers-color-scheme: dark)">
+          <img class="brand-mark" src="logo/mark.png?v=20260907a" alt="" width="450" height="397">
         </picture>
         <p class="brand-name">보라! 선생님</p>
       </div>
@@ -51,8 +51,8 @@
 
       <div class="brand-box">
         <picture>
-          <source srcset="logo/mark-white.png?v=20260904m" media="(prefers-color-scheme: dark)">
-          <img class="brand-mark" src="logo/mark.png?v=20260904m" alt="" width="450" height="397">
+          <source srcset="logo/mark-white.png?v=20260907a" media="(prefers-color-scheme: dark)">
+          <img class="brand-mark" src="logo/mark.png?v=20260907a" alt="" width="450" height="397">
         </picture>
         <p class="brand-name">보라! 선생님</p>
         <p id="who-note" class="who-note" hidden></p>
@@ -177,6 +177,28 @@
       <p id="export-state" class="field-hint" hidden></p>
 
       <div id="admin-tools">
+        <h2 class="section-title">재원생 명단 맞추기</h2>
+        <p class="field-hint">
+          이코딩에서 받은 <b>학생 명단</b> 파일을 고르세요.
+          (출결 파일이 아니라 이름·학교·반·연락처가 있는 파일입니다)
+        </p>
+        <input type="file" id="roster-file" class="file-hidden" accept=".xls,.xlsx,.html,.htm">
+        <label for="roster-file" class="btn btn-quiet file-pick">파일 고르기</label>
+        <p id="roster-read" class="check-state" hidden></p>
+        <div id="roster-diff" hidden>
+          <p id="roster-summary" class="check-state"></p>
+          <div class="table-wrap">
+            <table class="data-table" id="table-roster-diff">
+              <thead>
+                <tr><th>어떻게</th><th>이름</th><th>학교</th><th>반</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <button type="button" id="btn-roster" class="btn btn-primary">이대로 명단 맞추기</button>
+        </div>
+        <p id="roster-state" class="check-state" hidden></p>
+
         <h2 class="section-title">문제 은행</h2>
         <p id="bank-note" class="field-hint"></p>
         <button type="button" id="btn-upload" class="btn btn-quiet">문제 은행에 올리기</button>
@@ -190,9 +212,9 @@
 
   </main>
 
-  <script src="questions.js?v=20260904m"></script>
-  <script src="questions-grammar.js?v=20260904m"></script>
-  <script src="storage.js?v=20260904m"></script>
-  <script src="teacher.js?v=20260904m"></script>
+  <script src="questions.js?v=20260907a"></script>
+  <script src="questions-grammar.js?v=20260907a"></script>
+  <script src="storage.js?v=20260907a"></script>
+  <script src="teacher.js?v=20260907a"></script>
 </body>
 </html>

@@ -628,6 +628,257 @@
     });
   }
 
+  /* ---------- 이코딩 학생 명단 파일로 재원생 명단 맞추기 ---------- */
+
+  /* 이코딩의 반 이름을 앱의 반 이름으로 바꾸는 표.
+     이코딩에 새 반이 생기면 여기에 줄을 하나 더합니다.
+     표에 없는 반은 이코딩 이름을 그대로 씁니다. (앞이 '고1'·'중3' 이라 학년은 제대로 읽힙니다) */
+  var CLASS_MAP = {
+    '고3(24) 토오전': '고3 토 오전 · 24기',
+    '고3(24) 토오후': '고3 토 오후 · 24기',
+    '고2(25)일10시': '고2 오전 · 25기',
+    '고2(25)일오후': '고2 오후 · 25기',
+    '고1수7시(동성)': '고1 수 · 26기',
+    '고1 목7시(경신성신)': '고1 목 · 26기',
+    '고1 금4 (용문)': '고1 금 · 26기',
+    '고1(26)토6:30(배화덕성)': '고1 토 · 26기',
+    '고1(26)일2시(경동한성)': '고1 일 · 26기',
+    '중3(27)토10시': '중3 토 오전 · 27기',
+    '중3(27)일2시': '중3 일 · 27기',
+    '중2(28)토2시': '중2 토 오후 · 28기'
+  };
+
+  var rosterList = null;    /* 파일에서 읽어낸 명단 */
+
+  /* 학교 이름을 짧게 맞춥니다 (홍익중학교 → 홍익중) */
+  function shortSchool(text) {
+    return String(text || '').replace(/\s/g, '')
+      .replace('중학교', '중').replace('고등학교', '고');
+  }
+
+  /* 01012345678 → 010-1234-5678 */
+  function prettyPhone(text) {
+    var digits = String(text || '').replace(/[^0-9]/g, '');
+    if (digits.length !== 11) { return String(text || '').trim(); }
+    return digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7);
+  }
+
+  /* 이코딩 파일은 확장자가 .xls 지만 실제로는 웹 표(HTML)입니다 */
+  function readEcodingFile(text) {
+    var doc = new DOMParser().parseFromString(text, 'text/html');
+    var trs = Array.prototype.slice.call(doc.querySelectorAll('tr'));
+    var out = { list: [], skipped: [], unknown: {}, kind: '' };
+
+    function cells(tr) {
+      return Array.prototype.slice.call(tr.querySelectorAll('td, th')).map(function (td) {
+        return (td.textContent || '').replace(/\s+/g, ' ').trim();
+      });
+    }
+
+    /* 머리글 줄을 찾습니다 */
+    var head = null, headAt = -1;
+    for (var i = 0; i < trs.length; i++) {
+      var c = cells(trs[i]);
+      if (c.indexOf('이름') !== -1 && c.indexOf('학부모전화') !== -1) { head = c; headAt = i; break; }
+      if (c.indexOf('이름') !== -1 && c.indexOf('횟수') !== -1) { out.kind = '출결'; return out; }
+    }
+    if (!head) { out.kind = '모름'; return out; }
+    out.kind = '명단';
+
+    var at = {
+      name: head.indexOf('이름'),
+      school: head.indexOf('학교'),
+      parent: head.indexOf('학부모전화'),
+      student: head.indexOf('학생전화'),
+      state: head.indexOf('상태'),
+      cls: -1
+    };
+    for (var h = 0; h < head.length; h++) {
+      if (head[h].indexOf('클래스') === 0) { at.cls = h; break; }
+    }
+
+    for (var r = headAt + 1; r < trs.length; r++) {
+      var row = cells(trs[r]);
+      var name = (row[at.name] || '').trim();
+      if (!name) { continue; }
+
+      var cls = at.cls >= 0 ? (row[at.cls] || '').trim() : '';
+      if (!cls) { out.skipped.push(name + ' — 반이 비어 있어 선생님으로 봅니다'); continue; }
+
+      var state = at.state >= 0 ? (row[at.state] || '') : '재원';
+      if (state && state.indexOf('재원') === -1) {
+        out.skipped.push(name + ' — 상태가 ' + state); continue;
+      }
+
+      var parent = prettyPhone(row[at.parent]);
+      if (parent.replace(/[^0-9]/g, '').length < 4) {
+        out.skipped.push(name + ' — 학부모 연락처가 없습니다'); continue;
+      }
+
+      if (!CLASS_MAP[cls]) { out.unknown[cls] = true; }
+
+      out.list.push({
+        name: name,
+        school: shortSchool(row[at.school]),
+        parent_phone: parent,
+        student_phone: at.student >= 0 ? prettyPhone(row[at.student]) : '',
+        memo: CLASS_MAP[cls] || cls
+      });
+    }
+    return out;
+  }
+
+  function rosterFileChosen(file) {
+    var read = $('roster-read');
+    var state = $('roster-state');
+
+    rosterList = null;
+    $('roster-diff').hidden = true;
+    state.hidden = true;
+    read.hidden = false;
+    read.className = 'check-state';
+    read.textContent = '파일을 읽는 중…';
+
+    var reader = new FileReader();
+
+    reader.onerror = function () {
+      read.className = 'check-state is-bad';
+      read.textContent = '파일을 읽지 못했습니다.';
+    };
+
+    reader.onload = function () {
+      var got;
+      try { got = readEcodingFile(String(reader.result || '')); }
+      catch (e) { got = { kind: '모름', list: [], skipped: [], unknown: {} }; }
+
+      if (got.kind === '출결') {
+        read.className = 'check-state is-bad';
+        read.textContent = '이 파일은 출결 파일입니다.\n이름·학교·반·연락처가 있는 학생 명단 파일을 올려 주세요.';
+        return;
+      }
+      if (got.kind !== '명단' || got.list.length === 0) {
+        read.className = 'check-state is-bad';
+        read.textContent = '학생 명단을 찾지 못했습니다.\n이코딩에서 받은 학생 명단 파일이 맞는지 봐 주세요.';
+        return;
+      }
+
+      rosterList = got.list;
+
+      var lines = ['학생 ' + got.list.length + '명을 읽었습니다.'];
+      var unknown = Object.keys(got.unknown);
+      if (unknown.length) {
+        lines.push('처음 보는 반: ' + unknown.join(', ') + '\n(반 이름을 그대로 씁니다. 알려 주시면 다듬겠습니다)');
+      }
+      if (got.skipped.length) {
+        lines.push('넣지 않는 사람 ' + got.skipped.length + '명 — ' + got.skipped.join(' / '));
+      }
+      read.className = 'check-state';
+      read.textContent = lines.join('\n');
+
+      showRosterDiff();
+    };
+
+    reader.readAsText(file, 'utf-8');
+  }
+
+  function showRosterDiff() {
+    var state = $('roster-state');
+    state.hidden = false;
+    state.className = 'check-state';
+    state.textContent = '무엇이 달라지는지 알아보는 중…';
+
+    VocabStore.previewStudents(myPassword, rosterList).then(function (r) {
+      if (!r.ok) { rosterFailed(state, r); return; }
+
+      var body = $('table-roster-diff').querySelector('tbody');
+      body.innerHTML = '';
+
+      r.rows.forEach(function (row) {
+        var tr = document.createElement('tr');
+        var chip = document.createElement('span');
+        chip.className = 'diff-kind' +
+          (row.kind === '나감' ? ' is-out' : (row.kind === '들어옴' || row.kind === '돌아옴' ? ' is-in' : ''));
+        chip.textContent = row.kind;
+
+        var td1 = document.createElement('td');
+        td1.appendChild(chip);
+        tr.appendChild(td1);
+
+        [row.name, row.school || '', row.was ? row.was + ' → ' + row.memo : (row.memo || '')]
+          .forEach(function (text) {
+            var td = document.createElement('td');
+            td.textContent = text;
+            tr.appendChild(td);
+          });
+        body.appendChild(tr);
+      });
+
+      if (r.rows.length === 0) {
+        state.className = 'check-state is-ok';
+        state.textContent = '달라지는 것이 없습니다. 이미 명단과 같습니다.';
+        $('roster-diff').hidden = true;
+        return;
+      }
+
+      $('roster-diff').hidden = false;
+
+      var out = r.rows.filter(function (x) { return x.kind === '나감'; }).length;
+      $('roster-summary').textContent = '달라지는 학생 ' + r.rows.length + '명입니다.' +
+        (out ? '\n명단에서 내려가는 학생 ' + out + '명은 지우지 않습니다. 시험 기록도 그대로 남습니다.' : '');
+      state.hidden = true;
+    });
+  }
+
+  function applyRoster() {
+    var state = $('roster-state');
+    state.hidden = false;
+    state.className = 'check-state';
+    state.textContent = '명단을 맞추는 중…';
+    $('btn-roster').disabled = true;
+
+    VocabStore.syncStudents(myPassword, rosterList).then(function (r) {
+      $('btn-roster').disabled = false;
+      if (!r.ok) { rosterFailed(state, r); return; }
+
+      state.className = 'check-state is-ok';
+      state.textContent =
+        '명단을 맞췄습니다.\n' +
+        '들어온 학생 ' + r.added + '명, 돌아온 학생 ' + r.cameBack + '명, ' +
+        '내려간 학생 ' + r.leftOut + '명.\n' +
+        '지금 재원생은 모두 ' + r.total + '명입니다. (선생님 계정 포함)';
+
+      $('roster-diff').hidden = true;
+      rosterList = null;
+      $('roster-file').value = '';
+      var pick = document.querySelector('.file-pick');
+      pick.classList.remove('has-file');
+      pick.removeAttribute('data-file');
+
+      /* 화면의 명단도 새로 불러옵니다 */
+      VocabStore.fetchStudents(myPassword).then(function (sr) {
+        allRoster = sr.ok ? sr.rows : null;
+        applyGroup();
+        render();
+      });
+    });
+  }
+
+  function rosterFailed(box, r) {
+    box.className = 'check-state is-bad';
+    if (r.code === 'not-set-up') {
+      box.textContent = '수파베이스에 설정이 아직 없습니다.\n' +
+                        'SQL Editor 에서 supabase-이코딩-명단.sql 을 실행해주세요.';
+    } else if (r.code === 'wrong-password') {
+      box.textContent = '원장 선생님만 명단을 맞출 수 있습니다.';
+    } else if (r.code === 'empty') {
+      box.textContent = '명단이 비어 있습니다.';
+    } else if (r.code === 'no-server' || r.code === 'offline') {
+      box.textContent = '수파베이스에 연결하지 못했습니다.';
+    } else {
+      box.textContent = '하지 못했습니다.\n' + (r.detail || '');
+    }
+  }
+
   /* ---------- 내려받기 ---------- */
 
   function exportCsv() {
@@ -686,6 +937,19 @@
   $('btn-logout').addEventListener('click', logout);
   $('btn-export').addEventListener('click', exportCsv);
   $('btn-upload').addEventListener('click', uploadQuestions);
+  $('roster-file').addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    var pick = document.querySelector('.file-pick');
+    if (file) {
+      pick.classList.add('has-file');
+      pick.setAttribute('data-file', file.name);
+      rosterFileChosen(file);
+    } else {
+      pick.classList.remove('has-file');
+      pick.removeAttribute('data-file');
+    }
+  });
+  $('btn-roster').addEventListener('click', applyRoster);
   $('btn-homework').addEventListener('click', saveHomework);
 
   /* 반을 바꾸면 그 반의 회차 목록과 지금 정해진 회차를 다시 읽습니다 */
