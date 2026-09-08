@@ -3408,7 +3408,7 @@ var GRAMMAR_ROUNDS = [
           "감탄사"
         ],
         answer: 1,
-        explanation: "조사 '도'가 붙었으므로 수사입니다."
+        explanation: "조사 '도'가 붙었으므로 수관형사가 아닌 수사입니다."
       },
       {
         ask: "다음 문장 중 괄호 친 말의 품사는?",
