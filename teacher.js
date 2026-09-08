@@ -11,6 +11,7 @@
   var allRows = [];     /* 서버에서 받아온 전체 시험 기록 */
   var allRoster = null; /* 서버에서 받아온 전체 명단 */
   var statGroup = '';   /* 통계에서 볼 반 (빈 값이면 전체) */
+  var statPeriod = '';  /* 통계에서 볼 기간 = 그 주 월요일 (빈 값이면 전체 누적) */
   var rows = [];        /* 지금 화면에 쓰는 시험 기록 (고른 반만) */
   var myPassword = '';  /* 이번에 들어올 때 쓴 비밀번호 (문제 올릴 때 다시 씁니다) */
   var myRole = '';      /* 'admin' = 원장 선생님 (모든 것) / 'viewer' = 다른 선생님 (기록 보기만) */
@@ -96,6 +97,7 @@
   function show(list, note) {
     allRows = list || [];
     allRoster = null;
+    fillPeriodPicker();
     applyGroup();
     $('source-note').textContent = note;
     $('export-state').hidden = true;
@@ -132,21 +134,125 @@
     return key + '|' + four;
   }
 
-  /* 고른 반의 기록·명단만 남깁니다 */
+  /* ---------- 주차(월요일~일요일) ---------- */
+
+  /* 그 날이 들어 있는 주의 월요일을 'YYYY-MM-DD' 로 돌려줍니다 */
+  function mondayOf(value) {
+    var d = new Date(value);
+    if (isNaN(d.getTime())) { return ''; }
+    var day = d.getDay();               /* 0=일 … 6=토 */
+    var back = (day === 0) ? 6 : day - 1; /* 일요일은 6일 전이 월요일 */
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - back);
+    var two = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate());
+  }
+
+  /* '2026-09-07' → '9월 7일~13일' */
+  function weekLabel(monday) {
+    var a = new Date(monday + 'T00:00:00');
+    var b = new Date(a.getTime());
+    b.setDate(b.getDate() + 6);
+    var same = (a.getMonth() === b.getMonth());
+    return (a.getMonth() + 1) + '월 ' + a.getDate() + '일~' +
+           (same ? '' : (b.getMonth() + 1) + '월 ') + b.getDate() + '일';
+  }
+
+  /* 기록이 있는 주를 새 것부터 늘어놓고, 이번 주는 기록이 없어도 넣습니다 */
+  function weekList() {
+    var seen = {};
+    allRows.forEach(function (r) {
+      var m = mondayOf(r.savedAt);
+      if (m) { seen[m] = (seen[m] || 0) + 1; }
+    });
+    var thisWeek = mondayOf(new Date());
+    if (thisWeek && !seen[thisWeek]) { seen[thisWeek] = 0; }
+    return Object.keys(seen).sort().reverse().map(function (m) {
+      return { monday: m, count: seen[m] };
+    });
+  }
+
+  function fillPeriodPicker() {
+    var pick = $('stat-period');
+    if (!pick) { return; }
+
+    var weeks = weekList();
+    var thisWeek = mondayOf(new Date());
+    var lastWeek = mondayOf(new Date(new Date(thisWeek + 'T00:00:00').getTime() - 7 * 86400000));
+
+    pick.innerHTML = '';
+    weeks.forEach(function (w) {
+      var opt = document.createElement('option');
+      opt.value = w.monday;
+      var when = (w.monday === thisWeek) ? ' (이번 주)'
+               : (w.monday === lastWeek) ? ' (지난 주)'
+               : '';
+      opt.textContent = weekLabel(w.monday) + when + ' · ' + w.count + '번';
+      pick.appendChild(opt);
+    });
+
+    var all = document.createElement('option');
+    all.value = '';
+    all.textContent = '전체 (누적)';
+    pick.appendChild(all);
+
+    /* 기본은 기록이 있는 가장 최근 주입니다.
+       매주 시험을 보므로 누적보다 이쪽이 쓸모 있습니다. */
+    var first = null;
+    for (var i = 0; i < weeks.length; i++) {
+      if (weeks[i].count > 0) { first = weeks[i].monday; break; }
+    }
+    statPeriod = first || (weeks.length ? weeks[0].monday : '');
+    pick.value = statPeriod;
+  }
+
+  /* 고른 기간의 기록인지 봅니다 */
+  function inPeriod(r) {
+    return !statPeriod || mondayOf(r.savedAt) === statPeriod;
+  }
+
+  function periodName() {
+    return statPeriod ? weekLabel(statPeriod) : '전체 기간';
+  }
+
+  /* 고른 반·기간의 기록만 남기고, 명단의 응시 수도 그 기간 것으로 다시 셉니다 */
   function applyGroup() {
     roster = allRoster;
-    rows = allRows;
+    rows = allRows.filter(inPeriod);
 
-    if (!statGroup) { return; }
-
-    if (allRoster) {
+    if (statGroup && allRoster) {
       roster = allRoster.filter(function (r) { return (r.group || '고등부') === statGroup; });
 
       /* 그 반 학생만 남기려면 누가 그 반인지 알아야 합니다 */
       var mine = {};
       roster.forEach(function (r) { mine[identityOf(r.name, r.parentPhone)] = true; });
-      rows = allRows.filter(function (r) { return mine[identityOf(r.name, r.phone4)]; });
+      rows = rows.filter(function (r) { return mine[identityOf(r.name, r.phone4)]; });
     }
+
+    if (roster) { roster = rosterForPeriod(roster); }
+  }
+
+  /* 명단에 붙어 오는 응시 수·평균은 '지금까지 전부' 입니다.
+     고른 기간만 보려면 여기서 다시 세어 줍니다. */
+  function rosterForPeriod(list) {
+    var byWho = {};
+    rows.forEach(function (r) {
+      var k = identityOf(r.name, r.phone4);
+      var m = byWho[k] || (byWho[k] = { count: 0, sum: 0, last: '' });
+      m.count += 1;
+      m.sum += r.percent;
+      if (r.savedAt > m.last) { m.last = r.savedAt; }
+    });
+
+    return list.map(function (r) {
+      var m = byWho[identityOf(r.name, r.parentPhone)];
+      var copy = {};
+      Object.keys(r).forEach(function (k) { copy[k] = r[k]; });
+      copy.count = m ? m.count : 0;
+      copy.avg = m ? Math.round(m.sum / m.count) : 0;
+      copy.last = m ? m.last : '';
+      return copy;
+    });
   }
 
   function roundStats() {
@@ -316,7 +422,8 @@
       area.hidden = false;
       var notYet = roster.filter(function (r) { return r.count === 0; }).length;
       $('roster-note').textContent =
-        '현재 재원생 ' + roster.length + '명 중 ' + (roster.length - notYet) + '명 응시' +
+        periodName() + ' · 재원생 ' + roster.length + '명 중 ' +
+        (roster.length - notYet) + '명 응시' +
         (notYet > 0 ? ' · 아직 안 본 학생 ' + notYet + '명' : '');
 
       fill('table-grade', sortRows(gradeStats(), sorts['table-grade']), function (r) {
@@ -330,6 +437,12 @@
     } else {
       area.hidden = true;
     }
+
+    /* 한 주만 보고 있을 때는 제목도 그렇게 바꿔 줍니다 */
+    $('summary-title').textContent = statPeriod ? periodName() + ' 요약' : '전체 요약';
+    $('title-rounds').textContent = statPeriod ? '회차별 평균 (' + periodName() + ')' : '회차별 평균';
+    $('title-students').textContent = statPeriod ? '학생별 (' + periodName() + ')' : '학생별 누적';
+    $('title-all').textContent = statPeriod ? '기록 (' + periodName() + ')' : '전체 기록';
 
     fill('table-rounds', sortRows(roundStats(), sorts['table-rounds']), function (r) {
       return [r.title, r.students + '명', r.count + '번', r.avg + '%'];
@@ -891,7 +1004,9 @@
     }
 
     note.textContent = '내려받는 중…';
-    downloadFile('어휘테스트_전체기록.csv', '﻿' + VocabStore.toCsv(rows)).then(function (ok) {
+    var name = statPeriod ? ('어휘테스트_' + statPeriod + '_주간기록.csv')
+                          : '어휘테스트_전체기록.csv';
+    downloadFile(name, '﻿' + VocabStore.toCsv(rows)).then(function (ok) {
       note.textContent = ok
         ? (rows.length + '개의 기록을 내려받았습니다.')
         : '이 화면에서는 파일을 내려받을 수 없습니다.';
@@ -968,6 +1083,13 @@
   /* 통계에서 볼 반을 바꿉니다 */
   $('stat-group').addEventListener('change', function () {
     statGroup = this.value;
+    applyGroup();
+    render();
+  });
+
+  /* 통계에서 볼 기간(주차)을 바꿉니다 */
+  $('stat-period').addEventListener('change', function () {
+    statPeriod = this.value;
     applyGroup();
     render();
   });

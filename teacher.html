@@ -6,15 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>보라! 선생님</title>
   <!-- 선생님용은 아이콘과 설치 설정을 따로 씁니다 (학생용과 헷갈리지 않게) -->
-  <link rel="manifest" href="teacher-manifest.json?v=20260907a">
-  <link rel="icon" href="teacher-favicon.png?v=20260907a">
-  <link rel="apple-touch-icon" href="teacher-apple-touch-icon.png?v=20260907a">
+  <link rel="manifest" href="teacher-manifest.json?v=20260908a">
+  <link rel="icon" href="teacher-favicon.png?v=20260908a">
+  <link rel="apple-touch-icon" href="teacher-apple-touch-icon.png?v=20260908a">
   <meta name="theme-color" content="#582b8d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 선생님">
-  <link rel="stylesheet" href="style.css?v=20260907a">
+  <link rel="stylesheet" href="style.css?v=20260908a">
 </head>
 <body>
 
@@ -24,8 +24,8 @@
     <section id="screen-login" class="screen">
       <div class="brand-box">
         <picture>
-          <source srcset="logo/mark-white.png?v=20260907a" media="(prefers-color-scheme: dark)">
-          <img class="brand-mark" src="logo/mark.png?v=20260907a" alt="" width="450" height="397">
+          <source srcset="logo/mark-white.png?v=20260908a" media="(prefers-color-scheme: dark)">
+          <img class="brand-mark" src="logo/mark.png?v=20260908a" alt="" width="450" height="397">
         </picture>
         <p class="brand-name">보라! 선생님</p>
       </div>
@@ -51,8 +51,8 @@
 
       <div class="brand-box">
         <picture>
-          <source srcset="logo/mark-white.png?v=20260907a" media="(prefers-color-scheme: dark)">
-          <img class="brand-mark" src="logo/mark.png?v=20260907a" alt="" width="450" height="397">
+          <source srcset="logo/mark-white.png?v=20260908a" media="(prefers-color-scheme: dark)">
+          <img class="brand-mark" src="logo/mark.png?v=20260908a" alt="" width="450" height="397">
         </picture>
         <p class="brand-name">보라! 선생님</p>
         <p id="who-note" class="who-note" hidden></p>
@@ -97,8 +97,17 @@
         </select>
       </div>
 
+      <!-- 주차 고르개: 매주 시험을 보므로 기본은 '가장 최근 주' 입니다.
+           여기서 고른 기간의 기록만 아래 모든 표에 나옵니다. -->
       <div class="card">
-        <p class="eyebrow">전체 요약</p>
+        <p class="eyebrow">통계에서 볼 기간</p>
+        <select id="stat-period" class="input"></select>
+        <p class="field-hint">고른 기간에 본 시험만 아래 표에 나옵니다.
+          한 주는 월요일부터 일요일까지입니다.</p>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow" id="summary-title">전체 요약</p>
         <div id="summary" class="summary-row"></div>
       </div>
 
@@ -126,7 +135,7 @@
 
       </section>
 
-      <h2 class="section-title">회차별 평균</h2>
+      <h2 class="section-title" id="title-rounds">회차별 평균</h2>
       <div class="table-wrap">
         <table class="data-table" id="table-rounds">
           <thead>
@@ -141,7 +150,7 @@
         </table>
       </div>
 
-      <h2 class="section-title">학생별 누적</h2>
+      <h2 class="section-title" id="title-students">학생별 누적</h2>
       <div class="table-wrap">
         <table class="data-table" id="table-students">
           <thead>
@@ -157,7 +166,7 @@
         </table>
       </div>
 
-      <h2 class="section-title">전체 기록</h2>
+      <h2 class="section-title" id="title-all">전체 기록</h2>
       <div class="table-wrap">
         <table class="data-table" id="table-all">
           <thead>
@@ -212,9 +221,9 @@
 
   </main>
 
-  <script src="questions.js?v=20260907a"></script>
-  <script src="questions-grammar.js?v=20260907a"></script>
-  <script src="storage.js?v=20260907a"></script>
-  <script src="teacher.js?v=20260907a"></script>
+  <script src="questions.js?v=20260908a"></script>
+  <script src="questions-grammar.js?v=20260908a"></script>
+  <script src="storage.js?v=20260908a"></script>
+  <script src="teacher.js?v=20260908a"></script>
 </body>
 </html>
