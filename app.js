@@ -305,19 +305,46 @@
     return Array.isArray(q.choices) && q.choices.length <= 2;
   }
 
+  /* 한 갈래(kind)가 너무 많이 나오지 않게 개수를 지키며 뽑습니다.
+     회차에 limit 이 적혀 있을 때만 쓰입니다. (예: limit: { 동사형용사: 5 })
+     used 는 갈래마다 지금까지 몇 개 뽑았는지 세는 상자입니다. */
+  function pickUpTo(list, want, limit, used) {
+    var out = [];
+    for (var i = 0; i < list.length && out.length < want; i++) {
+      var kind = list[i].kind;
+      if (kind && limit && limit[kind] != null) {
+        if ((used[kind] || 0) >= limit[kind]) { continue; }
+        used[kind] = (used[kind] || 0) + 1;
+      }
+      out.push(list[i]);
+    }
+    return out;
+  }
+
   /* 회차에 mix 가 적혀 있으면 그 개수만큼 골고루 뽑습니다.
-     (예: mix: { 단순: 12, 객관식: 3 }) */
-  function pickByMix(all, total, mix) {
+     (예: mix: { 단순: 12, 객관식: 3 })
+
+     회차에 limit 도 적혀 있으면 그 갈래는 한 시험에 그 개수까지만 나옵니다.
+     (예: limit: { 동사형용사: 5 } → '동사입니까 형용사입니까' 는 많아야 5문제)
+     문제에는 kind: "동사형용사" 처럼 갈래 이름을 적어 둡니다. */
+  function pickByMix(all, total, mix, limit) {
     var simple = shuffle(all.filter(isSimple));
     var choice = shuffle(all.filter(function (q) { return !isSimple(q); }));
+    var used = {};
 
-    var picked = simple.slice(0, Math.min(mix['단순'] || 0, simple.length))
-      .concat(choice.slice(0, Math.min(mix['객관식'] || 0, choice.length)));
+    var picked = pickUpTo(simple, mix['단순'] || 0, limit, used)
+      .concat(pickUpTo(choice, mix['객관식'] || 0, limit, used));
 
-    /* 한쪽이 모자라면 남은 문제로 채웁니다 */
+    /* 한쪽이 모자라면 남은 문제로 채웁니다 (이때도 갈래 개수를 지킵니다) */
     if (picked.length < total) {
       var rest = shuffle(all.filter(function (q) { return picked.indexOf(q) === -1; }));
-      picked = picked.concat(rest.slice(0, total - picked.length));
+      picked = picked.concat(pickUpTo(rest, total - picked.length, limit, used));
+    }
+
+    /* 그래도 모자라면 갈래를 따지지 않고 채웁니다 (문제 수가 줄어들지 않게) */
+    if (picked.length < total) {
+      var more = shuffle(all.filter(function (q) { return picked.indexOf(q) === -1; }));
+      picked = picked.concat(more.slice(0, total - picked.length));
     }
     return shuffle(picked.slice(0, total));
   }
@@ -328,7 +355,7 @@
     var wantIdioms = idiomsFor(state.round);
 
     if (state.round.mix) {
-      return toQuizItems(pickByMix(all, total, state.round.mix));
+      return toQuizItems(pickByMix(all, total, state.round.mix, state.round.limit));
     }
 
     /* 한자성어를 먼저 정해진 개수만큼 뽑고, 나머지는 일반 어휘로 채웁니다 */
