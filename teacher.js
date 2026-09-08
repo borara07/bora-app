@@ -685,8 +685,9 @@
         r.questions.forEach(function (q) {
           var choices = q.ox ? ['O', 'X'] : (q.choices || []);
           if (!choices.length) return;
-          /* 학생 앱이 기록에 남기는 이름과 똑같은 규칙이어야 통계가 맞습니다 */
-          var name = q.word || q.sentence || choices[q.answer - 1] || q.ask || '';
+          /* 학생 앱이 기록에 남기는 이름과 똑같은 규칙이어야 통계가 맞습니다
+             (app.js 의 toQuizItems 와 같은 줄입니다) */
+          var name = q.name || q.word || q.sentence || choices[q.answer - 1] || q.ask || '';
           if (!name) return;
           out.push({
             round_title: prefix + r.title,
