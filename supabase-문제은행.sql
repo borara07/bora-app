@@ -198,14 +198,17 @@ grant execute on function public.admin_question_stats(text) to anon;
 -- 회차를 새로 추가한 뒤 그 버튼을 누르면 보기와 해설까지 전부 채워집니다.
 -- =========================================================
 
-create or replace function public.sync_questions(pass text, payload jsonb)
-returns table (added int, updated int, total int)
+-- 돌려주는 값이 하나 늘어서(skipped) 먼저 지우고 다시 만듭니다
+drop function if exists public.sync_questions(text, jsonb);
+
+create function public.sync_questions(pass text, payload jsonb)
+returns table (added int, updated int, total int, skipped int)
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  a int := 0; u int := 0;
+  a int := 0; u int := 0; s int := 0;
 begin
   if not exists (select 1 from public.admin_secret where password = pass) then
     raise exception '비밀번호가 올바르지 않습니다';
@@ -215,19 +218,31 @@ begin
     raise exception '보낼 문제가 없습니다';
   end if;
 
-  with up as (
-    insert into public.questions
-      (round_title, word, hanja, correct_answer, choices, explanation, updated_at)
-    select it->>'round_title',
-           it->>'word',
-           nullif(it->>'hanja', ''),
-           it->>'correct_answer',
-           it->'choices',
-           nullif(it->>'explanation', ''),
-           now()
-      from jsonb_array_elements(payload) it
+  with sent as (
+    select it->>'round_title'            as round_title,
+           it->>'word'                   as word,
+           nullif(it->>'hanja', '')      as hanja,
+           it->>'correct_answer'         as correct_answer,
+           it->'choices'                 as choices,
+           nullif(it->>'explanation','') as explanation,
+           ord
+      from jsonb_array_elements(payload) with ordinality as t(it, ord)
      where coalesce(it->>'round_title', '') <> ''
        and coalesce(it->>'word', '') <> ''
+  ),
+  -- 한 회차 안에 이름이 같은 문제가 둘 이상이면 마지막 것만 올립니다.
+  -- 한 번에 올릴 때 같은 줄을 두 번 고칠 수는 없기 때문입니다.
+  -- (예전에는 이런 문제가 하나라도 있으면 올리기 전체가 실패했습니다)
+  uniq as (
+    select distinct on (round_title, word) *
+      from sent
+     order by round_title, word, ord desc
+  ),
+  up as (
+    insert into public.questions
+      (round_title, word, hanja, correct_answer, choices, explanation, updated_at)
+    select round_title, word, hanja, correct_answer, choices, explanation, now()
+      from uniq
     on conflict (round_title, word) do update set
       hanja          = excluded.hanja,
       correct_answer = excluded.correct_answer,
@@ -239,7 +254,16 @@ begin
   select count(*) filter (where is_new), count(*) filter (where not is_new)
     into a, u from up;
 
-  return query select a, u, (select count(*)::int from public.questions);
+  -- 이름이 겹쳐서 못 올린 개수
+  select coalesce(sum(cnt - 1), 0)::int into s
+    from (select it->>'round_title' as rt, it->>'word' as w, count(*) as cnt
+            from jsonb_array_elements(payload) it
+           where coalesce(it->>'round_title', '') <> ''
+             and coalesce(it->>'word', '') <> ''
+           group by 1, 2
+          having count(*) > 1) d;
+
+  return query select a, u, (select count(*)::int from public.questions), s;
 end;
 $$;
 

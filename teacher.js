@@ -726,7 +726,9 @@
       if (r.ok) {
         box.className = 'check-state is-ok';
         box.textContent = '올렸습니다.\n새로 들어간 문제 ' + r.added + '개, 내용을 새로 맞춘 문제 ' +
-                          r.updated + '개.\n문제 은행에 모두 ' + r.total + '문제가 들어 있습니다.';
+                          r.updated + '개.\n문제 은행에 모두 ' + r.total + '문제가 들어 있습니다.' +
+                          (r.skipped ? '\n\n같은 회차에 이름이 겹치는 문제가 ' + r.skipped +
+                                       '개 있어 하나씩만 올렸습니다.' : '');
         return;
       }
       box.className = 'check-state is-bad';

@@ -600,7 +600,8 @@ var VocabStore = (function () {
             var rows;
             try { rows = JSON.parse(text); } catch (e) { rows = []; }
             var r = rows[0] || {};
-            return { ok: true, added: r.added || 0, updated: r.updated || 0, total: r.total || 0 };
+            return { ok: true, added: r.added || 0, updated: r.updated || 0,
+                     total: r.total || 0, skipped: r.skipped || 0 };
           }
           if (/비밀번호/.test(text)) return { ok: false, code: 'wrong-password' };
           if (res.status === 404 || /sync_questions|PGRST202/.test(text)) return { ok: false, code: 'not-set-up' };
