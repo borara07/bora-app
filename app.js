@@ -44,7 +44,7 @@
   var historyBackTo = 'start';
 
   /* 이번 주 숙제 회차 (빈 값이면 모든 회차를 고를 수 있습니다) */
-  var homeworkRound = '';   /* 선생님이 정한 회차 이름 ('' 이면 모든 회차 열기) */
+  var homeworkRound = '';   /* 선생님이 정한 회차 이름 (여러 개면 '|' 로 이어짐, '' 이면 모든 회차 열기) */
   var homeworkSet = false;  /* 선생님이 이 반(학년)의 회차를 정한 적이 있는지 */
 
   /* 문제 위에 놓이는 기본 물음 (문법 문제는 문제마다 따로 적습니다) */
@@ -230,11 +230,17 @@
   /* 지금 풀 수 있는 회차인지
        · 선생님이 아직 아무것도 정하지 않았으면  → 하나도 열지 않습니다
        · '모든 회차 열기' 를 고르셨으면 (빈 값)   → 모두 엽니다
-       · 회차를 하나 정하셨으면                  → 그 회차만 엽니다 */
+       · 회차를 고르셨으면                       → 고른 회차만 엽니다
+     여러 회차를 고르면 이름이 '|' 로 이어져 옵니다 (01회 …|02회 …) */
+  function openTitles() {
+    return String(homeworkRound || '').split('|').filter(function (s) { return s !== ''; });
+  }
+
   function isOpen(round) {
     if (!homeworkSet) { return false; }
-    if (!homeworkRound) { return true; }
-    return round.title === homeworkRound;
+    var titles = openTitles();
+    if (titles.length === 0) { return true; }
+    return titles.indexOf(round.title) >= 0;
   }
 
   function renderRounds() {

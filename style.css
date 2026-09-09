@@ -1253,3 +1253,52 @@ select.input {
 }
 
 .config-list li { margin-bottom: 6px; }
+
+/* ---------- 회차 여러 개 고르기 (선생님 화면) ---------- */
+
+.pick-list {
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.pick-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.pick-row + .pick-row { border-top: 1px solid var(--line); }
+
+/* '모든 회차 열기' 는 맨 위에 두고 조금 다르게 보이게 합니다 */
+.pick-row.is-all {
+  font-weight: 700;
+  color: var(--primary-dark);
+  background: var(--chip);
+  border-radius: 13px 13px 0 0;
+}
+
+.pick-row input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  accent-color: var(--primary);
+  /* 어두운 화면에서 빈 네모가 하얗게 튀지 않게 합니다 */
+  color-scheme: light dark;
+}
+
+:root[data-theme="dark"] .pick-row input { color-scheme: dark; }
+:root[data-theme="light"] .pick-row input { color-scheme: light; }
+
+.pick-row.is-off {
+  opacity: 0.45;
+  cursor: default;
+}

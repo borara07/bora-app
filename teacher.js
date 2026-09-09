@@ -594,38 +594,112 @@
     return Array.isArray(list) ? list : [];
   }
 
+  /* 저장된 값은 회차 이름을 '|' 로 이어 붙인 글자입니다.
+     빈 글자는 '모든 회차 열기' 입니다. (회차 이름에는 '|' 를 쓰지 않습니다) */
+  function splitRounds(value) {
+    return String(value || '').split('|').filter(function (s) { return s !== ''; });
+  }
+
+  /* 지금 켜져 있는 회차 이름들 (모두 열기를 켜 두었으면 빈 목록) */
+  function pickedRounds() {
+    if ($('homework-all') && $('homework-all').checked) { return []; }
+    var out = [];
+    var boxes = $('homework-pick').querySelectorAll('input[data-round]');
+    Array.prototype.forEach.call(boxes, function (b) {
+      if (b.checked) { out.push(b.getAttribute('data-round')); }
+    });
+    return out;
+  }
+
+  /* 고른 개수를 아래에 적어 줍니다 */
+  function showHomeworkCount() {
+    var note = $('homework-count');
+    if (!note) { return; }
+    var all = $('homework-all') && $('homework-all').checked;
+    var n = pickedRounds().length;
+    note.textContent = all
+      ? '모든 회차가 열립니다.'
+      : (n === 0 ? '아직 고른 회차가 없습니다. 이대로 정하면 아무 회차도 열리지 않습니다.'
+                 : n + '개 회차를 골랐습니다.');
+  }
+
+  /* 회차 한 줄 (네모 + 이름) 을 만듭니다 */
+  function pickRow(id, label, value, checked, isAll) {
+    var row = document.createElement('label');
+    row.className = 'pick-row' + (isAll ? ' is-all' : '');
+
+    var box = document.createElement('input');
+    box.type = 'checkbox';
+    box.id = id;
+    box.checked = checked;
+    if (!isAll) { box.setAttribute('data-round', value); }
+    row.appendChild(box);
+
+    var text = document.createElement('span');
+    text.textContent = label;
+    row.appendChild(text);
+
+    return { row: row, box: box };
+  }
+
   function fillHomeworkPicker(current) {
     var pick = $('homework-pick');
     var group = homeworkGroup();
     var subject = homeworkSubject();
+    var chosen = splitRounds(current);
     pick.innerHTML = '';
 
-    var all = document.createElement('option');
-    all.value = '';
-    all.textContent = '모든 회차 열기 (숙제 지정 안 함)';
-    pick.appendChild(all);
+    /* 맨 위 '모든 회차 열기' — 켜면 아래 회차들은 흐려집니다 */
+    var all = pickRow('homework-all', '모든 회차 열기 (숙제 지정 안 함)', '', chosen.length === 0, true);
+    pick.appendChild(all.row);
 
     /* 문법은 학년으로 나누므로 회차를 반으로 거르지 않습니다 */
+    var rows = [];
     var count = 0;
     roundsOf(subject).forEach(function (r) {
       if (subject !== '문법' && (r.group || '고등부') !== group) { return; }
       count += 1;
-      var op = document.createElement('option');
-      op.value = r.title;
-      op.textContent = r.title;
-      pick.appendChild(op);
+      var one = pickRow('hw-' + count, r.title, r.title, chosen.indexOf(r.title) >= 0, false);
+      one.box.addEventListener('change', function () {
+        /* 회차를 하나라도 켜면 '모든 회차 열기' 는 저절로 꺼집니다 */
+        if (one.box.checked) { all.box.checked = false; }
+        paintRows();
+        showHomeworkCount();
+      });
+      rows.push(one);
+      pick.appendChild(one.row);
+    });
+
+    function paintRows() {
+      rows.forEach(function (one) {
+        one.row.classList.toggle('is-off', all.box.checked);
+        one.box.disabled = all.box.checked;
+      });
+    }
+
+    all.box.addEventListener('change', function () {
+      if (all.box.checked) {
+        rows.forEach(function (one) { one.box.checked = false; });
+      }
+      paintRows();
+      showHomeworkCount();
     });
 
     if (count === 0) {
-      all.textContent = subject + ' ' + group + ' 회차가 아직 없습니다';
+      all.row.querySelector('span').textContent = subject + ' ' + group + ' 회차가 아직 없습니다';
     }
 
-    pick.value = current || '';
+    paintRows();
+    showHomeworkCount();
+
+    /* 켜져 있는 회차가 목록 아래쪽에 있으면 보이도록 내려 줍니다 */
+    var first = rows.filter(function (one) { return one.box.checked; })[0];
+    if (first) { pick.scrollTop = Math.max(0, first.row.offsetTop - pick.offsetTop - 60); }
   }
 
   function loadHomework() {
     VocabStore.homeworkRound(homeworkGroup(), homeworkSubject()).then(function (r) {
-      fillHomeworkPicker(r.round || '');
+      fillHomeworkPicker(r.set ? (r.round || '') : '__none__');
       if (!r.ok) {
         var box = $('homework-state');
         box.hidden = false;
@@ -638,7 +712,8 @@
 
   function saveHomework() {
     var box = $('homework-state');
-    var round = $('homework-pick').value;
+    var picked = pickedRounds();
+    var round = picked.join('|');   /* 여러 회차는 '|' 로 이어 붙여 저장합니다 */
     var group = homeworkGroup();
     var subject = homeworkSubject();
 
@@ -649,10 +724,11 @@
     VocabStore.setHomeworkRound(myPassword, round, group, subject).then(function (r) {
       if (r.ok) {
         box.className = 'check-state is-ok';
-        box.textContent = round
-          ? (subject + ' · ' + group + ' 이번 주 시험을 ' + round + ' 로 정했습니다.\n' +
-             ((subject === '문법' && group !== '고등부' && group !== '중등부')
-                ? '그 학년' : '그 반') + ' 학생에게는 이 회차만 열립니다.')
+        var 누구 = (subject === '문법' && group !== '고등부' && group !== '중등부') ? '그 학년' : '그 반';
+        box.textContent = picked.length
+          ? (subject + ' · ' + group + ' 이번 주 시험을 이렇게 정했습니다.\n' +
+             picked.join(' · ') + '\n' +
+             누구 + ' 학생에게는 이 ' + picked.length + '개 회차만 열립니다.')
           : (subject + ' · ' + group + ' 의 모든 회차를 열었습니다.\n' +
              '학생이 아무 회차나 고를 수 있습니다.');
         return;
