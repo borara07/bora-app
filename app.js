@@ -944,6 +944,15 @@
       show(historyBackTo === 'result' ? 'result' : 'start');
     });
 
+    /* 결과 화면의 '처음으로 돌아가기'
+       회차 고르기 화면으로 갑니다. 이름은 이미 확인했으므로 다시 묻지 않습니다.
+       (서버에 다시 물으면 인터넷이 끊겼을 때 학생이 막히게 됩니다)
+       기록은 결과 화면이 뜰 때 이미 저장되었으므로 여기서 잃는 것은 없습니다 */
+    $('btn-home').addEventListener('click', function () {
+      $('save-state').hidden = true;   // 지난 시험의 저장 안내를 지웁니다
+      renderRounds();
+    });
+
     // 지난번에 못 보낸 기록이 있으면 조용히 다시 보냅니다
     VocabStore.resend();
 
