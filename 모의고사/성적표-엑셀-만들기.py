@@ -3,12 +3,16 @@
 # -*- coding: utf-8 -*-
 """모의고사 성적표 엑셀 만들기 (A안)"""
 import datetime
+import os
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter as CL
 from openpyxl.worksheet.datavalidation import DataValidation
-from openpyxl.formatting.rule import CellIsRule
+from openpyxl.formatting.rule import CellIsRule, FormulaRule
+from openpyxl.drawing.text import ParagraphProperties, CharacterProperties
 from openpyxl.worksheet.pagebreak import Break
+from openpyxl.drawing.image import Image as XLImage
+from openpyxl.chart import BarChart, Reference
 
 exec(open('30차-정답.py', encoding='utf-8').read())
 
@@ -134,9 +138,10 @@ put(cfg, 4, 1, "확인", F(11, True), fill=LIGHT, align=C, border=BOX)
 put(cfg, 4, 2,
     '=IF(AND(SUM($C$32:$C$65)+SUM($G$32:$G$42)=100,SUM($C$32:$C$65)+SUM($K$32:$K$42)=100,'
     'MIN(자동계산!$F$4:$F$48)=1,MAX(자동계산!$F$4:$F$48)=1,'
-    'MIN(자동계산!$G$4:$G$48)=1,MAX(자동계산!$G$4:$G$48)=1),'
+    'MIN(자동계산!$G$4:$G$48)=1,MAX(자동계산!$G$4:$G$48)=1,'
+    'MAX($F$13:$F$27)<=11,MAX($G$13:$G$27)<=11),'
     '"정상입니다 — 배점 합계 100점, 영역 표가 45문항을 빠짐없이 덮습니다",'
-    '"확인이 필요합니다 — 배점 합계가 100점인지, 영역 표의 시작·끝 번호가 겹치거나 빠지지 않았는지 보세요")',
+    '"확인이 필요합니다 — 배점 합계가 100점인지, 영역 표의 시작·끝 번호가 겹치거나 빠지지 않았는지, 한 선택과목의 영역이 11개를 넘지 않는지 보세요")',
     F(11, True), align=L, border=BOX)
 merge(cfg, 4, 2, 4, 8)
 cfg.conditional_formatting.add("B4", CellIsRule(
@@ -333,142 +338,226 @@ gr.freeze_panes = "E3"
 
 # ============================================================ 성적표 만들기
 BLOCK_H = 41          # 학생 한 명이 차지하는 줄 수 (쪽 나눔 포함)
-HC, SC_ = 18, 19      # 도우미 칸이 들어갈 열 (R, S) — 인쇄 범위 밖
+HC, SC_ = 18, 19      # 도우미 칸 (R, S) — 숨김
+TC_, UC_, VC_ = 20, 21, 22   # 그래프용 (T, U), 분류 원본 (V)
+
+BAND  = "EDE9FE"      # 제목 띠
+TAB   = "DDD6FE"      # 작은 이름표
+TH    = "EDE9FE"      # 표 머리
+TD    = "FBFAFF"      # 값 칸
+SUM_  = "E9E4FF"      # 합계 줄
+EDGE  = "D8D0F5"      # 옅은 테두리
+INK   = "3B0764"      # 진한 보라 글씨
+BAR   = "8B5CF6"      # 막대 색
+
+_edge = Side(style="thin", color=EDGE)
+SOFT  = Border(left=_edge, right=_edge, top=_edge, bottom=_edge)
+
+# 로고를 성적표 크기로 줄여 둔다
+LOGO = "로고-성적표.png"
+if not os.path.exists(LOGO):
+    from PIL import Image as _Im
+    src = _Im.open(os.path.join("..", "logo", "logo-h.png"))
+    w = 228
+    src.resize((w, round(src.height * w / src.width)), _Im.LANCZOS).save(LOGO)
+
+def tab(ws, r, c1, c2, text):
+    """작은 이름표 (1. 학생정보 …)"""
+    put(ws, r, c1, text, F(12, True, INK), fill=TAB, align=L)
+    merge(ws, r, c1, r, c2)
+    ws.row_dimensions[r].height = 21
+
+def head(ws, r, groups, redcol=None):
+    """표 머리 한 줄. groups = [(글자, 시작열, 끝열), …]"""
+    for t, c1, c2 in groups:
+        cell = put(ws, r, c1, t, F(11, True, INK), fill=TH, align=C, border=SOFT)
+        if redcol is not None and c1 == redcol:
+            cell.fill = FILL(TAB)
+        if c2 > c1:
+            merge(ws, r, c1, r, c2)
+        for c in range(c1, c2 + 1):
+            ws.cell(r, c).border = SOFT
+    ws.row_dimensions[r].height = 20
 
 def build_report(ws, top, srow_formula, name_dropdown=False):
-    hr = top + 2
+    hr = top + 3
     RH   = f"$R${hr}"
     SUB  = f"$R${hr+1}"
     CUTS = [f"$R${hr+2+i}" for i in range(4)]
-    SET_ = [f"$S${hr+i}" for i in range(12)]
+    SET_ = [f"$S${hr+i}" for i in range(11)]
 
     # --- 도우미 칸 (인쇄 범위 밖) ---
     put(ws, hr, HC, srow_formula, F(9, False, GRAY))
     put(ws, hr+1, HC, f'=IF({RH}="","",INDEX(전체채점!$B${R1}:$B${R2},{RH}))', F(9, False, GRAY))
     for i, col in enumerate("BCDE"):
-        put(ws, hr+2+i, HC, f'=IF({SUB}="언어와 매체",회차설정!${col}$9,회차설정!${col}$8)', F(9, False, GRAY))
-    for k in range(12):
+        put(ws, hr+2+i, HC, f'=IF({SUB}="언어와 매체",회차설정!${col}$9,회차설정!${col}$8)',
+            F(9, False, GRAY))
+    for k in range(11):
         put(ws, hr+k, SC_,
             f'=IF({SUB}="","",IFERROR(IF({SUB}="언어와 매체",MATCH({k+1},회차설정!$G$13:$G$27,0),'
             f'MATCH({k+1},회차설정!$F$13:$F$27,0)),""))', F(9, False, GRAY))
 
-    # --- 제목 ---
-    put(ws, top, 1, f'=IF({RH}="","",회차설정!$B$2&" 성적표")', F(20, True, "FFFFFF"),
-        fill=DEEP, align=C)
-    merge(ws, top, 1, top, 16); ws.row_dimensions[top].height = 34
+    # --- 로고 + 제목 띠 ---
+    ws.row_dimensions[top].height = 33
+    img = XLImage(LOGO); img.anchor = f"A{top}"
+    ws.add_image(img)
+    put(ws, top+1, 1, f'=IF({RH}="","",회차설정!$B$2&" 성적표")', F(16, True, INK), fill=BAND, align=L)
+    merge(ws, top+1, 1, top+1, 16)
+    ws.row_dimensions[top+1].height = 30
+    ws.row_dimensions[top+2].height = 7
 
     # --- 1. 학생정보 ---
-    put(ws, top+2, 1, "1. 학생정보", F(12, True, PRI), align=L)
+    tab(ws, top+3, 1, 3, "1. 학생정보")
     info = [("성명", 1, 3), ("선택과목", 4, 7), ("학년", 8, 11), ("시행일", 12, 16)]
-    for t, c1, c2 in info:
-        put(ws, top+3, c1, t, F(11, True, "FFFFFF"), fill=PRI, align=C, border=BOX)
-        merge(ws, top+3, c1, top+3, c2)
+    head(ws, top+4, info)
     vals = [f'=IF({RH}="","",INDEX(답안입력!$A${R1}:$A${R2},{RH}))',
             f'=IF({RH}="","",INDEX(답안입력!$C${R1}:$C${R2},{RH}))',
             f'=IF({RH}="","",INDEX(답안입력!$B${R1}:$B${R2},{RH}))',
-            "=회차설정!$B$3"]
+            f'=IF({RH}="","",회차설정!$B$3)']
     for (t, c1, c2), v in zip(info, vals):
-        cell = put(ws, top+4, c1, v, F(13, True), align=C, border=BOX)
+        cell = put(ws, top+5, c1, v, F(14, True, INK), fill=TD, align=C, border=SOFT)
         if t == "시행일": cell.number_format = "yyyy-mm-dd"
-        merge(ws, top+4, c1, top+4, c2)
-    ws.row_dimensions[top+4].height = 26
+        if c2 > c1: merge(ws, top+5, c1, top+5, c2)
+        for c in range(c1, c2 + 1): ws.cell(top+5, c).border = SOFT
+    ws.row_dimensions[top+5].height = 28
     if name_dropdown:
-        ws.cell(top+4, 1).fill = FILL(WARN)
+        ws.cell(top+5, 1).fill = FILL(WARN)
+    ws.row_dimensions[top+6].height = 7
 
     # --- 2. 성적 ---
-    put(ws, top+6, 1, "2. 성적", F(12, True, PRI), align=L)
-    sc = [("점수 (100점 만점)", 1, 5), ("등급", 6, 8), ("등급컷", 9, 12), ("같은 선택과목 평균", 13, 16)]
-    for t, c1, c2 in sc:
-        put(ws, top+7, c1, t, F(11, True, "FFFFFF"), fill=PRI, align=C, border=BOX)
-        merge(ws, top+7, c1, top+7, c2)
+    tab(ws, top+7, 1, 3, "2. 성적")
+    sc = [("점수 (100점 만점)", 1, 5), ("등급", 6, 8), ("등급컷", 9, 12),
+          ("같은 선택과목 평균", 13, 16)]
+    head(ws, top+8, sc)
     svals = [
-        (f'=IF({RH}="","",INDEX(전체채점!$C${R1}:$C${R2},{RH}))', "0", F(24, True, DEEP)),
-        (f'=IF({RH}="","",INDEX(전체채점!$D${R1}:$D${R2},{RH}))', "General", F(18, True, DEEP)),
-        (f'=IF({RH}="","",{CUTS[0]}&"-"&{CUTS[1]}&"-"&{CUTS[2]}&"-"&{CUTS[3]})', "General", F(13)),
-        (f'=IFERROR(AVERAGEIF(전체채점!$B${R1}:$B${R2},{SUB},전체채점!$C${R1}:$C${R2}),"")', "0.0", F(13)),
+        (f'=IF({RH}="","",INDEX(전체채점!$C${R1}:$C${R2},{RH}))', "0", F(26, True, PRI)),
+        (f'=IF({RH}="","",INDEX(전체채점!$D${R1}:$D${R2},{RH}))', "General", F(19, True, PRI)),
+        (f'=IF({RH}="","",{CUTS[0]}&"-"&{CUTS[1]}&"-"&{CUTS[2]}&"-"&{CUTS[3]})', "General", F(13, False, INK)),
+        (f'=IFERROR(AVERAGEIF(전체채점!$B${R1}:$B${R2},{SUB},전체채점!$C${R1}:$C${R2}),"")',
+         "0.0", F(13, False, INK)),
     ]
     for (t, c1, c2), (v, fmt, fnt) in zip(sc, svals):
-        put(ws, top+8, c1, v, fnt, align=C, border=BOX, fmt=fmt)
-        merge(ws, top+8, c1, top+8, c2)
-    ws.row_dimensions[top+8].height = 34
+        put(ws, top+9, c1, v, fnt, fill=TD, align=C, border=SOFT, fmt=fmt)
+        if c2 > c1: merge(ws, top+9, c1, top+9, c2)
+        for c in range(c1, c2 + 1): ws.cell(top+9, c).border = SOFT
+    ws.row_dimensions[top+9].height = 36
+    ws.row_dimensions[top+10].height = 7
 
     # --- 3. 영역분류별 성취도 ---
-    put(ws, top+10, 1, "3. 영역분류별 성취도 분석", F(12, True, PRI), align=L)
-    put(ws, top+10, 6,
+    tab(ws, top+11, 1, 5, "3. 영역분류별 성취도 분석")
+    put(ws, top+11, 6,
         f'=IF(OR({RH}="",$E{top+24}=""),"",IF($E{top+24}=INDEX(전체채점!$C${R1}:$C${R2},{RH}),"",'
         f'"※ 회차설정의 영역 표를 확인하세요 — 영역 합계와 점수가 다릅니다"))',
         F(10, True, "B91C1C"), align=L)
-    merge(ws, top+10, 6, top+10, 16)
-    hd = [("분류", 1, 1), ("영역", 2, 3), ("배점", 4, 4), ("득점", 5, 5),
-          ("성취도(%)", 6, 7), ("", 8, 16)]
-    for t, c1, c2 in hd:
-        put(ws, top+11, c1, t, F(11, True, "FFFFFF"), fill=PRI, align=C, border=BOX)
-        if c2 > c1: merge(ws, top+11, c1, top+11, c2)
+    merge(ws, top+11, 6, top+11, 16)
+    head(ws, top+12, [("분류", 1, 1), ("영역", 2, 3), ("배점", 4, 4), ("득점", 5, 5),
+                      ("성취도(%)", 6, 7)], redcol=5)
     A = "자동계산!$A$4:$A$48"
-    for k in range(12):
-        r = top + 12 + k
+    for k in range(11):
+        r = top + 13 + k
         S = SET_[k]
         st = f"INDEX(회차설정!$C$13:$C$27,{S})"
         en = f"INDEX(회차설정!$D$13:$D$27,{S})"
-        put(ws, r, 1, f'=IF({S}="","",INDEX(회차설정!$A$13:$A$27,{S}))', F(11), align=C, border=BOX)
-        put(ws, r, 2, f'=IF({S}="","",INDEX(회차설정!$B$13:$B$27,{S}))', F(11), align=C, border=BOX)
-        merge(ws, r, 2, r, 3)
+        put(ws, r, VC_, f'=IF({S}="","",INDEX(회차설정!$A$13:$A$27,{S}))', F(9, False, GRAY))
+        put(ws, r, 1, f'=IF({S}="","",IF($V{r}=$V{r-1},"",$V{r}))', F(11, True, INK),
+            fill=TD, align=C, border=SOFT)
+        put(ws, r, 2, f'=IF({S}="","",INDEX(회차설정!$B$13:$B$27,{S}))', F(12), align=C, border=SOFT)
+        merge(ws, r, 2, r, 3); ws.cell(r, 3).border = SOFT
         put(ws, r, 4,
             f'=IF({S}="","",IF({SUB}="언어와 매체",'
             f'SUMPRODUCT(({A}>={st})*({A}<={en})*자동계산!$E$4:$E$48),'
-            f'SUMPRODUCT(({A}>={st})*({A}<={en})*자동계산!$C$4:$C$48)))', F(11), align=C, border=BOX)
+            f'SUMPRODUCT(({A}>={st})*({A}<={en})*자동계산!$C$4:$C$48)))', F(12), align=C, border=SOFT)
         put(ws, r, 5,
             f'=IF(OR({S}="",{RH}=""),"",'
-            f'SUM(OFFSET(전체채점!${CL(GR_P0-1)}$2,{RH},{st},1,{en}-{st}+1)))', F(11), align=C, border=BOX)
+            f'SUM(OFFSET(전체채점!${CL(GR_P0-1)}$2,{RH},{st},1,{en}-{st}+1)))',
+            F(12, True, INK), fill=TD, align=C, border=SOFT)
         put(ws, r, 6, f'=IF(OR({S}="",$D{r}=0,$D{r}="",$E{r}=""),"",$E{r}/$D{r}*100)',
-            F(11, True), align=C, border=BOX, fmt="0.0")
-        merge(ws, r, 6, r, 7)
-        put(ws, r, 8, f'=IF($F{r}="","",REPT("■",ROUND($F{r}/5,0)))', F(11, False, PRI), align=L, border=BOX)
-        merge(ws, r, 8, r, 16)
+            F(12, True, PRI), align=C, border=SOFT, fmt="0.0")
+        merge(ws, r, 6, r, 7); ws.cell(r, 7).border = SOFT
+        # 그래프용
+        put(ws, r, TC_, f'=IF({S}="","",INDEX(회차설정!$B$13:$B$27,{S}))', F(9, False, GRAY))
+        put(ws, r, UC_, f'=IF($F{r}="",NA(),$F{r})', F(9, False, GRAY), fmt="0.0")
+        ws.row_dimensions[r].height = 19
     rs = top + 24
-    put(ws, rs, 1, f'=IF({RH}="","","합계")', F(11, True), fill=LIGHT, align=C, border=BOX)
+    topline = Border(left=_edge, right=_edge, bottom=_edge,
+                     top=Side(style="medium", color="A78BFA"))
+    put(ws, rs, 1, f'=IF({RH}="","","합계")', F(12, True, INK), fill=SUM_, align=C, border=topline)
     merge(ws, rs, 1, rs, 3)
-    put(ws, rs, 4, f'=IF({RH}="","",SUM(D{top+12}:D{top+23}))', F(11, True), fill=LIGHT,
-        align=C, border=BOX)
-    put(ws, rs, 5, f'=IF({RH}="","",SUM(E{top+12}:E{top+23}))', F(11, True), fill=LIGHT,
-        align=C, border=BOX)
-    put(ws, rs, 6, f'=IF(OR($D{rs}=0,$D{rs}=""),"",$E{rs}/$D{rs}*100)', F(11, True), fill=LIGHT,
-        align=C, border=BOX, fmt="0.0"); merge(ws, rs, 6, rs, 7)
-    put(ws, rs, 8, f'=IF($F{rs}="","",REPT("■",ROUND($F{rs}/5,0)))', F(11, False, DEEP),
-        fill=LIGHT, align=L, border=BOX); merge(ws, rs, 8, rs, 16)
+    for c in (2, 3): ws.cell(rs, c).border = topline
+    put(ws, rs, 4, f'=IF({RH}="","",SUM(D{top+13}:D{top+23}))', F(12, True, INK), fill=SUM_,
+        align=C, border=topline)
+    put(ws, rs, 5, f'=IF({RH}="","",SUM(E{top+13}:E{top+23}))', F(12, True, INK), fill=SUM_,
+        align=C, border=topline)
+    put(ws, rs, 6, f'=IF(OR($D{rs}=0,$D{rs}=""),"",$E{rs}/$D{rs}*100)', F(12, True, PRI),
+        fill=SUM_, align=C, border=topline, fmt="0.0")
+    merge(ws, rs, 6, rs, 7); ws.cell(rs, 7).border = topline
+    ws.row_dimensions[rs].height = 22
+
+    # 막대그래프
+    ch = BarChart()
+    ch.type = "col"
+    ch.title = "영역별 성취도 (%)"
+    try:
+        ch.title.tx.rich.p[0].pPr = ParagraphProperties(
+            defRPr=CharacterProperties(sz=1150, b=True, solidFill=INK, latin=None))
+    except Exception:
+        pass
+    ch.legend = None
+    ch.gapWidth = 55
+    ch.height, ch.width = 6.6, 9.6
+    data = Reference(ws, min_col=UC_, min_row=top+13, max_row=top+23)
+    cats = Reference(ws, min_col=TC_, min_row=top+13, max_row=top+23)
+    ch.add_data(data, titles_from_data=False)
+    ch.set_categories(cats)
+    ser = ch.series[0]
+    ser.graphicalProperties.solidFill = BAR
+    ser.graphicalProperties.line.noFill = True
+    ch.y_axis.scaling.min = 0
+    ch.y_axis.scaling.max = 100
+    ch.y_axis.majorUnit = 20
+    ch.y_axis.delete = False
+    ch.x_axis.delete = False
+    ch.dispBlanksAs = "gap"
+    ws.add_chart(ch, f"I{top+12}")
+    ws.row_dimensions[top+25].height = 7
 
     # --- 4. 문항 채점표 ---
-    put(ws, top+26, 1, "4. 문항 채점표", F(12, True, PRI), align=L)
+    tab(ws, top+26, 1, 3, "4. 문항 채점표")
     for b in range(3):
         r0 = top + 27 + 4 * b
         for j, t in enumerate(["문항 번호", "정답", "학생답안", "정오"]):
-            put(ws, r0 + j, 1, t, F(10, True, "FFFFFF"), fill=PRI if j == 0 else GRAY,
-                align=C, border=BOX)
+            put(ws, r0 + j, 1, t, F(10, True, INK), fill=TH if j == 0 else TD,
+                align=C, border=SOFT)
+            ws.row_dimensions[r0 + j].height = 18
         for j in range(15):
             q = b * 15 + j + 1
             c = 2 + j
             au_r = 3 + q
-            put(ws, r0, c, q, F(10, True), fill=LIGHT, align=C, border=BOX)
-            put(ws, r0+1, c, f'=IF({SUB}="","",IF({SUB}="언어와 매체",자동계산!$D${au_r},자동계산!$B${au_r}))',
-                F(10), align=C, border=BOX)
-            put(ws, r0+2, c, f'=IF({RH}="","",INDEX(전체채점!{CL(GR_A0+q-1)}${R1}:{CL(GR_A0+q-1)}${R2},{RH}))',
-                F(10), align=C, border=BOX)
-            put(ws, r0+3, c, f'=IF({RH}="","",INDEX(전체채점!{CL(GR_P0+q-1)}${R1}:{CL(GR_P0+q-1)}${R2},{RH}))',
-                F(10), align=C, border=BOX)
+            put(ws, r0, c, q, F(10, True, INK), fill=TH, align=C, border=SOFT)
+            put(ws, r0+1, c,
+                f'=IF({SUB}="","",IF({SUB}="언어와 매체",자동계산!$D${au_r},자동계산!$B${au_r}))',
+                F(10), align=C, border=SOFT)
+            put(ws, r0+2, c,
+                f'=IF({RH}="","",INDEX(전체채점!{CL(GR_A0+q-1)}${R1}:{CL(GR_A0+q-1)}${R2},{RH}))',
+                F(10), align=C, border=SOFT)
+            put(ws, r0+3, c,
+                f'=IF({RH}="","",INDEX(전체채점!{CL(GR_P0+q-1)}${R1}:{CL(GR_P0+q-1)}${R2},{RH}))',
+                F(10), align=C, border=SOFT)
         ws.conditional_formatting.add(
             f"B{r0+3}:P{r0+3}",
-            CellIsRule(operator="equal", formula=["0"], fill=FILL("FEE2E2"),
-                       font=Font(name="맑은 고딕", size=10, bold=True, color="B91C1C")))
+            CellIsRule(operator="equal", formula=["0"], fill=FILL("FDE8E8"),
+                       font=Font(name="맑은 고딕", size=10, bold=True, color="C81E1E")))
 
 def style_report_sheet(ws):
     ws.sheet_view.showGridLines = False
-    ws.column_dimensions["A"].width = 11
+    ws.column_dimensions["A"].width = 10.5
     for c in range(2, 17):
         ws.column_dimensions[CL(c)].width = 5.6
-    ws.column_dimensions["B"].width = 5.6
-    for c in (HC, SC_):
+    for c in (HC, SC_, VC_):
         ws.column_dimensions[CL(c)].width = 5
         ws.column_dimensions[CL(c)].hidden = True
+    for c in (TC_, UC_):
+        ws.column_dimensions[CL(c)].width = 11
     ws.page_setup.orientation = "portrait"
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
     ws.sheet_properties.pageSetUpPr.fitToPage = True
@@ -478,15 +567,15 @@ def style_report_sheet(ws):
 
 # ---- 성적표 (한 명) ----
 rp = wb.create_sheet("성적표")
-build_report(rp, 1, f'=IFERROR(MATCH($A$5,답안입력!$A${R1}:$A${R2},0),"")', name_dropdown=True)
+build_report(rp, 1, f'=IFERROR(MATCH($A$6,답안입력!$A${R1}:$A${R2},0),"")', name_dropdown=True)
 style_report_sheet(rp)
 rp.page_setup.fitToHeight = 1
 rp.print_area = "A1:P39"
 dv_name = DataValidation(type="list", formula1=f"=답안입력!$A${R1}:$A${R2}", allow_blank=True)
-rp.add_data_validation(dv_name); dv_name.add("A5")
-put(rp, 41, 1, "※ 위 노란 칸(성명)을 누르면 학생 목록이 펼쳐집니다. 고르면 성적표가 그 학생 것으로 바뀝니다.",
+rp.add_data_validation(dv_name); dv_name.add("A6")
+put(rp, 1, TC_, "※ 노란 칸(성명)을 누르면 학생 목록이 펼쳐집니다. 고르면 성적표가 그 학생 것으로 바뀝니다.",
     F(11, False, "B45309"), align=L)
-merge(rp, 41, 1, 41, 16)
+put(rp, 2, TC_, "※ T·U열은 그래프가 쓰는 칸입니다. 인쇄되지 않습니다.", F(10, False, GRAY), align=L)
 
 # ---- 성적표(전원) ----
 al = wb.create_sheet("성적표(전원)")
