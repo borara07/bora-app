@@ -10,7 +10,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.worksheet.pagebreak import Break
 
-exec(open('27차-정답.py', encoding='utf-8').read())
+exec(open('30차-정답.py', encoding='utf-8').read())
 
 MAXS = 60                 # 학생 수 상한 (답안입력 3행 ~ 62행)
 R1, R2 = 3, 2 + MAXS      # 학생 데이터 시작/끝 행
@@ -57,12 +57,12 @@ ws = wb.active; ws.title = "사용법"
 ws.sheet_view.showGridLines = False
 ws.column_dimensions["A"].width = 3
 ws.column_dimensions["B"].width = 104
-put(ws, 2, 2, "모의고사 성적표 (2026 고3 심화 모의평가 27차)", F(20, True, DEEP), align=L)
+put(ws, 2, 2, "모의고사 성적표 (30차 심화모의고사)", F(20, True, DEEP), align=L)
 guide = [
  ("", ""),
  ("h", "이 파일 하나로 한 회차가 끝납니다"),
  ("p", "회차마다 새 파일을 만들지 마시고, 이 파일을 복사해서 이름만 바꿔 쓰십시오.\n"
-       "(예: 모의고사-성적표-28차.xlsx)"),
+       "(예: 모의고사-성적표-31차.xlsx)"),
  ("", ""),
  ("h", "1단계 · 회차설정 시트  — 회차마다 여기만 고칩니다"),
  ("p", "· 시험 이름, 시행일, 등급컷을 적습니다.\n"
@@ -70,7 +70,7 @@ guide = [
        "· 문항별 정답·배점: 답지를 보고 그대로 옮겨 적습니다.\n"
        "· 다 적으면 맨 위 '확인' 칸에 '정상입니다'가 뜹니다. 빨간 글씨가 뜨면 배점 합계나\n"
        "  영역 표의 시작·끝 번호를 다시 보십시오. (이 확인이 지난 시트의 118% 오류를 막아 줍니다)\n"
-       "· 27차 값은 이미 채워 넣었습니다. 등급컷만 확인해 주십시오."),
+       "· 30차 정답·배점·영역·등급컷은 이미 채워 넣었습니다. 시행일만 적어 주십시오."),
  ("", ""),
  ("h", "2단계 · 답안입력 시트  — 학생 OMR을 옮겨 적습니다"),
  ("p", "· 한 줄에 학생 한 명입니다. 이름 / 학년 / 선택과목을 적고 1~45번 답을 적습니다.\n"
@@ -123,7 +123,7 @@ put(cfg, 1, 1, "회차 설정 — 회차마다 이 시트만 고치면 됩니다
 merge(cfg, 1, 1, 1, 6)
 
 put(cfg, 2, 1, "시험 이름", F(11, True), fill=LIGHT, align=C, border=BOX)
-put(cfg, 2, 2, "2026 고3 심화 모의평가 27차", F(12), align=L, border=BOX); merge(cfg, 2, 2, 2, 5)
+put(cfg, 2, 2, "30차 심화모의고사", F(12), align=L, border=BOX); merge(cfg, 2, 2, 2, 5)
 put(cfg, 3, 1, "시행일", F(11, True), fill=LIGHT, align=C, border=BOX)
 put(cfg, 3, 2, None, F(12), align=L, border=BOX, fmt="yyyy-mm-dd"); merge(cfg, 3, 2, 3, 5)
 cfg["B3"].fill = FILL(WARN)
@@ -149,11 +149,11 @@ cfg.conditional_formatting.add("B4", CellIsRule(
 put(cfg, 6, 1, "■ 등급컷  (이 점수 이상이면 그 등급입니다)", F(12, True, PRI), align=L); merge(cfg, 6, 1, 6, 5)
 for c, t in enumerate(["선택과목", "1등급", "2등급", "3등급", "4등급"], start=1):
     put(cfg, 7, c, t, F(11, True, "FFFFFF"), fill=PRI, align=C, border=BOX)
-for i, (name, cuts) in enumerate([("화법과 작문", [90, 84, 76, 62]), ("언어와 매체", [90, 84, 76, 62])]):
+for i, (name, cuts) in enumerate([("화법과 작문", [95, 88, 77, 64]), ("언어와 매체", [92, 85, 74, 62])]):
     put(cfg, 8 + i, 1, name, F(11), align=C, border=BOX)
     for j, v in enumerate(cuts):
         put(cfg, 8 + i, 2 + j, v, F(11), fill=WARN, align=C, border=BOX)
-put(cfg, 8, 6, "← 지난 26차 값입니다. 이번 회차 등급컷으로 고쳐 주세요", F(10, False, "B45309"), align=L)
+put(cfg, 8, 6, "← 30차 등급컷입니다. 회차가 바뀌면 이 네 칸을 고쳐 주세요", F(10, False, "B45309"), align=L)
 merge(cfg, 8, 6, 9, 9)
 
 # 영역 표
@@ -583,5 +583,5 @@ order = ["사용법", "회차설정", "답안입력", "성적표", "성적표(�
 wb._sheets = [wb[n] for n in order]
 wb.active = 0
 wb.calculation.fullCalcOnLoad = True
-wb.save("모의고사-성적표-27차.xlsx")
+wb.save("모의고사-성적표-30차.xlsx")
 print("만들었습니다")
