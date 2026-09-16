@@ -402,12 +402,12 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
             f'MATCH({k+1},회차설정!$F$13:$F$27,0)),""))', F(9, False, GRAY))
 
     # --- 로고 + 제목 띠 ---
-    ws.row_dimensions[top].height = 28
+    ws.row_dimensions[top].height = 40      # 로고 아래 여백
     img = XLImage(LOGO); img.anchor = f"A{top}"
     ws.add_image(img)
     put(ws, top+1, 1, f'=IF({RH}="","",회차설정!$B$2&" 성적표")', F(16, True, INK), fill=BAND, align=L)
     merge(ws, top+1, 1, top+1, 16)
-    ws.row_dimensions[top+1].height = 28
+    ws.row_dimensions[top+1].height = 26
     ws.row_dimensions[top+2].height = 13
 
     # --- 1. 학생정보 ---
@@ -423,9 +423,7 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
         if t == "시행일": cell.number_format = "yyyy-mm-dd"
         if c2 > c1: merge(ws, top+5, c1, top+5, c2)
         for c in range(c1, c2 + 1): ws.cell(top+5, c).border = SOFT
-    ws.row_dimensions[top+5].height = 28
-    if name_dropdown:
-        ws.cell(top+5, 1).fill = FILL(WARN)
+    ws.row_dimensions[top+5].height = 24
     ws.row_dimensions[top+6].height = 13
 
     # --- 2. 성적 ---
@@ -435,7 +433,7 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
     head(ws, top+8, sc)
     svals = [
         (f'=IF({RH}="","",INDEX(전체채점!$C${R1}:$C${R2},{RH}))', "0", F(24, True, PRI)),
-        (f'=IF({RH}="","",INDEX(전체채점!$D${R1}:$D${R2},{RH}))', "General", F(18, True, PRI)),
+        (f'=IF({RH}="","",INDEX(전체채점!$D${R1}:$D${R2},{RH}))', "General", F(11, True, INK)),
         (f'=IF({RH}="","",{CUTS[0]}&"-"&{CUTS[1]}&"-"&{CUTS[2]}&"-"&{CUTS[3]})', "General", F(11, True, INK)),
         (f'=IFERROR(AVERAGEIF(전체채점!$B${R1}:$B${R2},{SUB},전체채점!$C${R1}:$C${R2}),"")',
          "0.0", F(11, True, INK)),
@@ -495,7 +493,7 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
     put(ws, rs, 6, f'=IF(OR($D{rs}=0,$D{rs}=""),"",$E{rs}/$D{rs}*100)', F(11, True, PRI),
         fill=SUM_, align=C, border=topline, fmt="0.0")
     merge(ws, rs, 6, rs, 7); ws.cell(rs, 7).border = topline
-    ws.row_dimensions[rs].height = 22
+    ws.row_dimensions[rs].height = 20
 
     # 막대그래프
     ch = BarChart()
@@ -558,8 +556,8 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
                 F(11, True, INK), align=C, border=SOFT)
         ws.conditional_formatting.add(
             f"B{r0+3}:P{r0+3}",
-            CellIsRule(operator="equal", formula=["0"], fill=FILL("FDE8E8"),
-                       font=Font(name=FAM, size=11, bold=True, color="C81E1E")))
+            CellIsRule(operator="equal", formula=["0"], fill=FILL("FDE68A"),
+                       font=Font(name=FAM, size=11, bold=True, color="78350F")))
 
 def style_report_sheet(ws):
     ws.sheet_view.showGridLines = False
@@ -588,7 +586,7 @@ rp.page_setup.fitToHeight = 1
 rp.print_area = "A1:P39"
 dv_name = DataValidation(type="list", formula1=f"=답안입력!$A${R1}:$A${R2}", allow_blank=True)
 rp.add_data_validation(dv_name); dv_name.add("A6")
-put(rp, 1, TC_, "※ 노란 칸(성명)을 누르면 학생 목록이 펼쳐집니다. 고르면 성적표가 그 학생 것으로 바뀝니다.",
+put(rp, 1, TC_, "※ 성명 칸(A6)을 누르면 학생 목록이 펼쳐집니다. 고르면 성적표가 그 학생 것으로 바뀝니다.",
     F(11, False, "B45309"), align=L)
 put(rp, 2, TC_, "※ T·U열은 그래프가 쓰는 칸입니다. 인쇄되지 않습니다.", F(10, False, GRAY), align=L)
 
