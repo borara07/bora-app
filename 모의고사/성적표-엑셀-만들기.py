@@ -408,7 +408,7 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
     put(ws, top+1, 1, f'=IF({RH}="","",회차설정!$B$2&" 성적표")', F(16, True, INK), fill=BAND, align=L)
     merge(ws, top+1, 1, top+1, 16)
     ws.row_dimensions[top+1].height = 26
-    ws.row_dimensions[top+2].height = 13
+    ws.row_dimensions[top+2].height = 17
 
     # --- 1. 학생정보 ---
     tab(ws, top+3, 1, 3, "1. 학생정보")
@@ -424,7 +424,7 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
         if c2 > c1: merge(ws, top+5, c1, top+5, c2)
         for c in range(c1, c2 + 1): ws.cell(top+5, c).border = SOFT
     ws.row_dimensions[top+5].height = 24
-    ws.row_dimensions[top+6].height = 13
+    ws.row_dimensions[top+6].height = 17
 
     # --- 2. 성적 ---
     tab(ws, top+7, 1, 3, "2. 성적")
@@ -443,7 +443,7 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
         if c2 > c1: merge(ws, top+9, c1, top+9, c2)
         for c in range(c1, c2 + 1): ws.cell(top+9, c).border = SOFT
     ws.row_dimensions[top+9].height = 32
-    ws.row_dimensions[top+10].height = 13
+    ws.row_dimensions[top+10].height = 17
 
     # --- 3. 영역분류별 성취도 ---
     tab(ws, top+11, 1, 5, "3. 영역분류별 성취도 분석")
@@ -527,10 +527,10 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
     _axfont(ch.x_axis, 800)
     _axfont(ch.y_axis, 850)
     ws.add_chart(ch, f"H{top+12}")
-    ws.row_dimensions[top+25].height = 13
+    ws.row_dimensions[top+25].height = 17
 
-    ws.row_dimensions[top+39].height = 2
-    ws.row_dimensions[top+40].height = 2
+    ws.row_dimensions[top+39].height = 1
+    ws.row_dimensions[top+40].height = 1
 
     # --- 4. 문항 채점표 ---
     tab(ws, top+26, 1, 3, "4. 문항 채점표")
@@ -577,6 +577,8 @@ def style_report_sheet(ws):
     ws.page_margins.left = ws.page_margins.right = 0.55
     ws.page_margins.top = ws.page_margins.bottom = 0.6
     ws.page_margins.header = ws.page_margins.footer = 0.2
+    ws.print_options.horizontalCentered = True
+    ws.print_options.verticalCentered = True
 
 # ---- 성적표 (한 명) ----
 rp = wb.create_sheet("성적표")
