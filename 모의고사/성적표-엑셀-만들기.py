@@ -13,6 +13,9 @@ from openpyxl.drawing.text import ParagraphProperties, CharacterProperties
 from openpyxl.worksheet.pagebreak import Break
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.chart import BarChart, Reference
+from openpyxl.chart.text import RichText
+from openpyxl.drawing.text import RichTextProperties, Paragraph
+from openpyxl.worksheet.properties import PageSetupProperties
 
 exec(open('30차-정답.py', encoding='utf-8').read())
 
@@ -28,7 +31,8 @@ LINE   = "C4B5FD"
 GRAY   = "6B7280"
 WARN   = "FEF3C7"
 
-def F(sz=11, b=False, c="1F2937"): return Font(name="맑은 고딕", size=sz, bold=b, color=c)
+FAM = "나눔스퀘어라운드"   # 학원 성적표에 쓰던 글꼴 (없으면 컴퓨터 기본 글꼴로 대체됩니다)
+def F(sz=11, b=False, c="1F2937"): return Font(name=FAM, size=sz, bold=b, color=c)
 def FILL(c): return PatternFill("solid", fgColor=c)
 thin = Side(style="thin", color=LINE)
 BOX  = Border(left=thin, right=thin, top=thin, bottom=thin)
@@ -145,10 +149,10 @@ put(cfg, 4, 2,
     F(11, True), align=L, border=BOX)
 merge(cfg, 4, 2, 4, 8)
 cfg.conditional_formatting.add("B4", CellIsRule(
-    operator="beginsWith", formula=['"확인"'], font=Font(name="맑은 고딕", bold=True, color="B91C1C"),
+    operator="beginsWith", formula=['"확인"'], font=Font(name=FAM, bold=True, color="B91C1C"),
     fill=FILL("FEE2E2")))
 cfg.conditional_formatting.add("B4", CellIsRule(
-    operator="beginsWith", formula=['"정상"'], font=Font(name="맑은 고딕", bold=True, color="166534"),
+    operator="beginsWith", formula=['"정상"'], font=Font(name=FAM, bold=True, color="166534"),
     fill=FILL("DCFCE7")))
 
 # 등급컷
@@ -377,7 +381,7 @@ def head(ws, r, groups, redcol=None):
             merge(ws, r, c1, r, c2)
         for c in range(c1, c2 + 1):
             ws.cell(r, c).border = SOFT
-    ws.row_dimensions[r].height = 20
+    ws.row_dimensions[r].height = 18
 
 def build_report(ws, top, srow_formula, name_dropdown=False):
     hr = top + 3
@@ -398,13 +402,13 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
             f'MATCH({k+1},회차설정!$F$13:$F$27,0)),""))', F(9, False, GRAY))
 
     # --- 로고 + 제목 띠 ---
-    ws.row_dimensions[top].height = 33
+    ws.row_dimensions[top].height = 28
     img = XLImage(LOGO); img.anchor = f"A{top}"
     ws.add_image(img)
     put(ws, top+1, 1, f'=IF({RH}="","",회차설정!$B$2&" 성적표")', F(16, True, INK), fill=BAND, align=L)
     merge(ws, top+1, 1, top+1, 16)
-    ws.row_dimensions[top+1].height = 30
-    ws.row_dimensions[top+2].height = 7
+    ws.row_dimensions[top+1].height = 28
+    ws.row_dimensions[top+2].height = 13
 
     # --- 1. 학생정보 ---
     tab(ws, top+3, 1, 3, "1. 학생정보")
@@ -415,14 +419,14 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
             f'=IF({RH}="","",INDEX(답안입력!$B${R1}:$B${R2},{RH}))',
             f'=IF({RH}="","",회차설정!$B$3)']
     for (t, c1, c2), v in zip(info, vals):
-        cell = put(ws, top+5, c1, v, F(14, True, INK), fill=TD, align=C, border=SOFT)
+        cell = put(ws, top+5, c1, v, F(11, True, INK), fill=TD, align=C, border=SOFT)
         if t == "시행일": cell.number_format = "yyyy-mm-dd"
         if c2 > c1: merge(ws, top+5, c1, top+5, c2)
         for c in range(c1, c2 + 1): ws.cell(top+5, c).border = SOFT
     ws.row_dimensions[top+5].height = 28
     if name_dropdown:
         ws.cell(top+5, 1).fill = FILL(WARN)
-    ws.row_dimensions[top+6].height = 7
+    ws.row_dimensions[top+6].height = 13
 
     # --- 2. 성적 ---
     tab(ws, top+7, 1, 3, "2. 성적")
@@ -430,18 +434,18 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
           ("같은 선택과목 평균", 13, 16)]
     head(ws, top+8, sc)
     svals = [
-        (f'=IF({RH}="","",INDEX(전체채점!$C${R1}:$C${R2},{RH}))', "0", F(26, True, PRI)),
-        (f'=IF({RH}="","",INDEX(전체채점!$D${R1}:$D${R2},{RH}))', "General", F(19, True, PRI)),
-        (f'=IF({RH}="","",{CUTS[0]}&"-"&{CUTS[1]}&"-"&{CUTS[2]}&"-"&{CUTS[3]})', "General", F(13, False, INK)),
+        (f'=IF({RH}="","",INDEX(전체채점!$C${R1}:$C${R2},{RH}))', "0", F(24, True, PRI)),
+        (f'=IF({RH}="","",INDEX(전체채점!$D${R1}:$D${R2},{RH}))', "General", F(18, True, PRI)),
+        (f'=IF({RH}="","",{CUTS[0]}&"-"&{CUTS[1]}&"-"&{CUTS[2]}&"-"&{CUTS[3]})', "General", F(11, True, INK)),
         (f'=IFERROR(AVERAGEIF(전체채점!$B${R1}:$B${R2},{SUB},전체채점!$C${R1}:$C${R2}),"")',
-         "0.0", F(13, False, INK)),
+         "0.0", F(11, True, INK)),
     ]
     for (t, c1, c2), (v, fmt, fnt) in zip(sc, svals):
         put(ws, top+9, c1, v, fnt, fill=TD, align=C, border=SOFT, fmt=fmt)
         if c2 > c1: merge(ws, top+9, c1, top+9, c2)
         for c in range(c1, c2 + 1): ws.cell(top+9, c).border = SOFT
-    ws.row_dimensions[top+9].height = 36
-    ws.row_dimensions[top+10].height = 7
+    ws.row_dimensions[top+9].height = 32
+    ws.row_dimensions[top+10].height = 13
 
     # --- 3. 영역분류별 성취도 ---
     tab(ws, top+11, 1, 5, "3. 영역분류별 성취도 분석")
@@ -451,7 +455,7 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
         F(10, True, "B91C1C"), align=L)
     merge(ws, top+11, 6, top+11, 16)
     head(ws, top+12, [("분류", 1, 1), ("영역", 2, 3), ("배점", 4, 4), ("득점", 5, 5),
-                      ("성취도(%)", 6, 7)], redcol=5)
+                      ("성취도%", 6, 7)], redcol=5)
     A = "자동계산!$A$4:$A$48"
     for k in range(11):
         r = top + 13 + k
@@ -461,18 +465,18 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
         put(ws, r, VC_, f'=IF({S}="","",INDEX(회차설정!$A$13:$A$27,{S}))', F(9, False, GRAY))
         put(ws, r, 1, f'=IF({S}="","",IF($V{r}=$V{r-1},"",$V{r}))', F(11, True, INK),
             fill=TD, align=C, border=SOFT)
-        put(ws, r, 2, f'=IF({S}="","",INDEX(회차설정!$B$13:$B$27,{S}))', F(12), align=C, border=SOFT)
+        put(ws, r, 2, f'=IF({S}="","",INDEX(회차설정!$B$13:$B$27,{S}))', F(11, True, INK), align=C, border=SOFT)
         merge(ws, r, 2, r, 3); ws.cell(r, 3).border = SOFT
         put(ws, r, 4,
             f'=IF({S}="","",IF({SUB}="언어와 매체",'
             f'SUMPRODUCT(({A}>={st})*({A}<={en})*자동계산!$E$4:$E$48),'
-            f'SUMPRODUCT(({A}>={st})*({A}<={en})*자동계산!$C$4:$C$48)))', F(12), align=C, border=SOFT)
+            f'SUMPRODUCT(({A}>={st})*({A}<={en})*자동계산!$C$4:$C$48)))', F(11, True, INK), align=C, border=SOFT)
         put(ws, r, 5,
             f'=IF(OR({S}="",{RH}=""),"",'
             f'SUM(OFFSET(전체채점!${CL(GR_P0-1)}$2,{RH},{st},1,{en}-{st}+1)))',
-            F(12, True, INK), fill=TD, align=C, border=SOFT)
+            F(11, True, INK), fill=TD, align=C, border=SOFT)
         put(ws, r, 6, f'=IF(OR({S}="",$D{r}=0,$D{r}="",$E{r}=""),"",$E{r}/$D{r}*100)',
-            F(12, True, PRI), align=C, border=SOFT, fmt="0.0")
+            F(11, True, PRI), align=C, border=SOFT, fmt="0.0")
         merge(ws, r, 6, r, 7); ws.cell(r, 7).border = SOFT
         # 그래프용
         put(ws, r, TC_, f'=IF({S}="","",INDEX(회차설정!$B$13:$B$27,{S}))', F(9, False, GRAY))
@@ -481,14 +485,14 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
     rs = top + 24
     topline = Border(left=_edge, right=_edge, bottom=_edge,
                      top=Side(style="medium", color="A78BFA"))
-    put(ws, rs, 1, f'=IF({RH}="","","합계")', F(12, True, INK), fill=SUM_, align=C, border=topline)
+    put(ws, rs, 1, f'=IF({RH}="","","합계")', F(11, True, INK), fill=SUM_, align=C, border=topline)
     merge(ws, rs, 1, rs, 3)
     for c in (2, 3): ws.cell(rs, c).border = topline
-    put(ws, rs, 4, f'=IF({RH}="","",SUM(D{top+13}:D{top+23}))', F(12, True, INK), fill=SUM_,
+    put(ws, rs, 4, f'=IF({RH}="","",SUM(D{top+13}:D{top+23}))', F(11, True, INK), fill=SUM_,
         align=C, border=topline)
-    put(ws, rs, 5, f'=IF({RH}="","",SUM(E{top+13}:E{top+23}))', F(12, True, INK), fill=SUM_,
+    put(ws, rs, 5, f'=IF({RH}="","",SUM(E{top+13}:E{top+23}))', F(11, True, INK), fill=SUM_,
         align=C, border=topline)
-    put(ws, rs, 6, f'=IF(OR($D{rs}=0,$D{rs}=""),"",$E{rs}/$D{rs}*100)', F(12, True, PRI),
+    put(ws, rs, 6, f'=IF(OR($D{rs}=0,$D{rs}=""),"",$E{rs}/$D{rs}*100)', F(11, True, PRI),
         fill=SUM_, align=C, border=topline, fmt="0.0")
     merge(ws, rs, 6, rs, 7); ws.cell(rs, 7).border = topline
     ws.row_dimensions[rs].height = 22
@@ -499,12 +503,12 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
     ch.title = "영역별 성취도 (%)"
     try:
         ch.title.tx.rich.p[0].pPr = ParagraphProperties(
-            defRPr=CharacterProperties(sz=1150, b=True, solidFill=INK, latin=None))
+            defRPr=CharacterProperties(sz=1100, b=True, solidFill=INK, latin=None))
     except Exception:
         pass
     ch.legend = None
     ch.gapWidth = 55
-    ch.height, ch.width = 6.6, 9.6
+    ch.height, ch.width = 8.2, 9.3
     data = Reference(ws, min_col=UC_, min_row=top+13, max_row=top+23)
     cats = Reference(ws, min_col=TC_, min_row=top+13, max_row=top+23)
     ch.add_data(data, titles_from_data=False)
@@ -518,39 +522,48 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
     ch.y_axis.delete = False
     ch.x_axis.delete = False
     ch.dispBlanksAs = "gap"
-    ws.add_chart(ch, f"I{top+12}")
-    ws.row_dimensions[top+25].height = 7
+    def _axfont(ax, pt):
+        ax.txPr = RichText(bodyPr=RichTextProperties(),
+                           p=[Paragraph(pPr=ParagraphProperties(
+                               defRPr=CharacterProperties(sz=pt, latin=None)))])
+    _axfont(ch.x_axis, 800)
+    _axfont(ch.y_axis, 850)
+    ws.add_chart(ch, f"H{top+12}")
+    ws.row_dimensions[top+25].height = 13
+
+    ws.row_dimensions[top+39].height = 2
+    ws.row_dimensions[top+40].height = 2
 
     # --- 4. 문항 채점표 ---
     tab(ws, top+26, 1, 3, "4. 문항 채점표")
     for b in range(3):
         r0 = top + 27 + 4 * b
         for j, t in enumerate(["문항 번호", "정답", "학생답안", "정오"]):
-            put(ws, r0 + j, 1, t, F(10, True, INK), fill=TH if j == 0 else TD,
+            put(ws, r0 + j, 1, t, F(11, True, INK), fill=TH if j == 0 else TD,
                 align=C, border=SOFT)
-            ws.row_dimensions[r0 + j].height = 18
+            ws.row_dimensions[r0 + j].height = 16
         for j in range(15):
             q = b * 15 + j + 1
             c = 2 + j
             au_r = 3 + q
-            put(ws, r0, c, q, F(10, True, INK), fill=TH, align=C, border=SOFT)
+            put(ws, r0, c, q, F(11, True, INK), fill=TH, align=C, border=SOFT)
             put(ws, r0+1, c,
                 f'=IF({SUB}="","",IF({SUB}="언어와 매체",자동계산!$D${au_r},자동계산!$B${au_r}))',
-                F(10), align=C, border=SOFT)
+                F(11), align=C, border=SOFT)
             put(ws, r0+2, c,
                 f'=IF({RH}="","",INDEX(전체채점!{CL(GR_A0+q-1)}${R1}:{CL(GR_A0+q-1)}${R2},{RH}))',
-                F(10), align=C, border=SOFT)
+                F(11), align=C, border=SOFT)
             put(ws, r0+3, c,
                 f'=IF({RH}="","",INDEX(전체채점!{CL(GR_P0+q-1)}${R1}:{CL(GR_P0+q-1)}${R2},{RH}))',
-                F(10), align=C, border=SOFT)
+                F(11, True, INK), align=C, border=SOFT)
         ws.conditional_formatting.add(
             f"B{r0+3}:P{r0+3}",
             CellIsRule(operator="equal", formula=["0"], fill=FILL("FDE8E8"),
-                       font=Font(name="맑은 고딕", size=10, bold=True, color="C81E1E")))
+                       font=Font(name=FAM, size=11, bold=True, color="C81E1E")))
 
 def style_report_sheet(ws):
     ws.sheet_view.showGridLines = False
-    ws.column_dimensions["A"].width = 10.5
+    ws.column_dimensions["A"].width = 11.5
     for c in range(2, 17):
         ws.column_dimensions[CL(c)].width = 5.6
     for c in (HC, SC_, VC_):
@@ -560,10 +573,12 @@ def style_report_sheet(ws):
         ws.column_dimensions[CL(c)].width = 11
     ws.page_setup.orientation = "portrait"
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
-    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.sheet_properties.pageSetUpPr = PageSetupProperties(fitToPage=True)
+    ws.sheet_format.customHeight = True      # 정한 줄 높이를 그대로 쓰게 함
     ws.page_setup.fitToWidth = 1
-    ws.page_margins.left = ws.page_margins.right = 0.3
-    ws.page_margins.top = ws.page_margins.bottom = 0.4
+    ws.page_margins.left = ws.page_margins.right = 0.55
+    ws.page_margins.top = ws.page_margins.bottom = 0.6
+    ws.page_margins.header = ws.page_margins.footer = 0.2
 
 # ---- 성적표 (한 명) ----
 rp = wb.create_sheet("성적표")
@@ -666,7 +681,7 @@ for q in range(1, 46):
     put(an, r, 7, f'=IF($B{r}="","",REPT("■",ROUND($B{r}/5,0)))', F(10, False, PRI), align=L, border=BOX)
     an.conditional_formatting.add(f"B{r}", CellIsRule(
         operator="lessThan", formula=["50"], fill=FILL("FEE2E2"),
-        font=Font(name="맑은 고딕", size=10, bold=True, color="B91C1C")))
+        font=Font(name=FAM, size=11, bold=True, color="B91C1C")))
 an.freeze_panes = "A28"
 
 order = ["사용법", "회차설정", "답안입력", "성적표", "성적표(전원)", "분석", "자동계산", "전체채점"]
