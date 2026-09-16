@@ -70,7 +70,7 @@ guide = [
        "· 문항별 정답·배점: 답지를 보고 그대로 옮겨 적습니다.\n"
        "· 다 적으면 맨 위 '확인' 칸에 '정상입니다'가 뜹니다. 빨간 글씨가 뜨면 배점 합계나\n"
        "  영역 표의 시작·끝 번호를 다시 보십시오. (이 확인이 지난 시트의 118% 오류를 막아 줍니다)\n"
-       "· 30차 정답·배점·영역·등급컷은 이미 채워 넣었습니다. 시행일만 적어 주십시오."),
+       "· 30차 정답·배점·영역·등급컷·시행일은 이미 채워 넣었습니다."),
  ("", ""),
  ("h", "2단계 · 답안입력 시트  — 학생 OMR을 옮겨 적습니다"),
  ("p", "· 한 줄에 학생 한 명입니다. 이름 / 학년 / 선택과목을 적고 1~45번 답을 적습니다.\n"
@@ -125,9 +125,10 @@ merge(cfg, 1, 1, 1, 6)
 put(cfg, 2, 1, "시험 이름", F(11, True), fill=LIGHT, align=C, border=BOX)
 put(cfg, 2, 2, "30차 심화모의고사", F(12), align=L, border=BOX); merge(cfg, 2, 2, 2, 5)
 put(cfg, 3, 1, "시행일", F(11, True), fill=LIGHT, align=C, border=BOX)
-put(cfg, 3, 2, None, F(12), align=L, border=BOX, fmt="yyyy-mm-dd"); merge(cfg, 3, 2, 3, 5)
+put(cfg, 3, 2, datetime.date(2026, 9, 12), F(12), align=L, border=BOX, fmt="yyyy-mm-dd")
+merge(cfg, 3, 2, 3, 5)
 cfg["B3"].fill = FILL(WARN)
-put(cfg, 3, 6, "← 시험 본 날짜를 적어 주세요", F(10, False, GRAY), align=L)
+put(cfg, 3, 6, "← 회차가 바뀌면 시험 본 날짜를 고쳐 주세요", F(10, False, GRAY), align=L)
 
 put(cfg, 4, 1, "확인", F(11, True), fill=LIGHT, align=C, border=BOX)
 put(cfg, 4, 2,
