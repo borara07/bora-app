@@ -352,7 +352,7 @@ TD    = "FBFAFF"      # 값 칸
 SUM_  = "E9E4FF"      # 합계 줄
 EDGE  = "D8D0F5"      # 옅은 테두리
 INK   = "3B0764"      # 진한 보라 글씨
-BAR   = "8B5CF6"      # 막대 색
+BAR   = "8064A2"      # 막대 색 (보내 주신 원본 그래프와 같은 차분한 보라)
 
 _edge = Side(style="thin", color=EDGE)
 SOFT  = Border(left=_edge, right=_edge, top=_edge, bottom=_edge)
@@ -556,8 +556,8 @@ def build_report(ws, top, srow_formula, name_dropdown=False):
                 F(11, True, INK), align=C, border=SOFT)
         ws.conditional_formatting.add(
             f"B{r0+3}:P{r0+3}",
-            CellIsRule(operator="equal", formula=["0"], fill=FILL("FDE68A"),
-                       font=Font(name=FAM, size=11, bold=True, color="78350F")))
+            CellIsRule(operator="equal", formula=["0"], fill=FILL("B8E6E0"),
+                       font=Font(name=FAM, size=11, bold=True, color="0F4F49")))
 
 def style_report_sheet(ws):
     ws.sheet_view.showGridLines = False
