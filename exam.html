@@ -4,17 +4,17 @@
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>어휘 테스트</title>
+  <title>모의고사</title>
 
   <!-- 휴대폰 바탕화면에 앱처럼 놓기 위한 설정 -->
-  <link rel="manifest" href="manifest.json?v=20260917a">
+  <link rel="manifest" href="exam-manifest.json?v=20260917a">
   <meta name="theme-color" content="#5b2d8e">
-  <link rel="icon" href="favicon.png?v=20260917a">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260917a">
+  <link rel="icon" href="exam-favicon.png?v=20260917a">
+  <link rel="apple-touch-icon" href="exam-apple-touch-icon.png?v=20260917a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="보라! 어휘">
+  <meta name="apple-mobile-web-app-title" content="보라! 모의고사">
 
   <link rel="stylesheet" href="style.css?v=20260917a">
 </head>
@@ -24,10 +24,9 @@
 
     <!-- 1. 학생 정보 입력 화면 -->
     <section id="screen-start" class="screen">
-      <!-- 바탕이 진한 보라라서 흰색 로고를 씁니다 -->
       <div class="brand-box">
         <img class="brand-mark" src="logo/mark-white.png?v=20260917a" alt="" width="450" height="397">
-        <h1 class="brand-name">보라! 어휘</h1>
+        <h1 class="brand-name">보라! 모의고사</h1>
       </div>
 
       <form id="start-form" class="card" autocomplete="off">
@@ -58,7 +57,7 @@
     <section id="screen-rounds" class="screen" hidden>
       <div class="brand-box">
         <img class="brand-mark" src="logo/mark-white.png?v=20260917a" alt="" width="450" height="397">
-        <p class="brand-name">보라! 어휘</p>
+        <p class="brand-name">보라! 모의고사</p>
       </div>
 
       <div id="round-list" class="round-list"></div>
@@ -67,67 +66,67 @@
       <button type="button" id="btn-back-start" class="btn btn-quiet btn-on-deep">이름 다시 입력</button>
     </section>
 
-    <!-- 3. 문제 풀이 화면 -->
-    <section id="screen-quiz" class="screen" hidden>
-      <header class="quiz-head">
-        <p id="quiz-round" class="quiz-round"></p>
-        <div class="progress-text">
-          <span id="progress-now">1</span> / <span id="progress-total">10</span>
-        </div>
-        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
-      </header>
+    <!-- 3. 선택과목 고르기 화면 -->
+    <section id="screen-subject" class="screen" hidden>
+      <button type="button" id="btn-back-rounds" class="btn-back">회차 다시 고르기</button>
 
       <div class="card">
-        <p id="question-label" class="question-label">다음 어휘의 뜻으로 알맞은 것은?</p>
-        <p id="question-word" class="question-word">어휘</p>
-        <p id="question-hanja" class="question-hanja" hidden></p>
-
-        <div id="choices" class="choices"></div>
+        <p class="eyebrow">선택과목</p>
+        <p id="subject-round" class="chosen-round"></p>
+        <p class="chosen-detail">시험에서 푼 선택과목을 고르세요. 35~45번이 이 과목의 정답표로 채점됩니다.</p>
       </div>
 
-      <button id="btn-next" class="btn btn-primary" disabled>다음 문제</button>
+      <div id="subject-list" class="subject-list"></div>
     </section>
 
-    <!-- 4. 결과 화면 -->
+    <!-- 4. 답 입력 화면 (OMR) -->
+    <section id="screen-sheet" class="screen" hidden>
+      <header class="quiz-head">
+        <p id="sheet-round" class="quiz-round"></p>
+        <div class="progress-text">
+          <span id="sheet-done">0</span> / <span id="sheet-total">45</span> 입력
+        </div>
+        <div class="progress-bar"><div id="sheet-fill" class="progress-fill"></div></div>
+      </header>
+
+      <p class="sheet-guide">답안지에 칠한 번호를 그대로 눌러 주세요. 잘못 눌렀으면 다시 누르면 지워집니다.</p>
+
+      <div id="sheet-list" class="sheet-list"></div>
+
+      <p id="sheet-error" class="error" hidden></p>
+      <button id="btn-submit" class="btn btn-primary">채점하기</button>
+      <button type="button" id="btn-back-subject" class="btn btn-quiet">선택과목 다시 고르기</button>
+    </section>
+
+    <!-- 5. 결과 화면 -->
     <section id="screen-result" class="screen" hidden>
       <div class="card result-card">
         <p id="result-round" class="result-round"></p>
         <p id="result-name" class="result-name"></p>
         <p class="result-score">
-          <span id="result-correct">0</span><span class="result-total">/<span id="result-total">10</span></span>
+          <span id="result-score">0</span><span class="result-total">점</span>
         </p>
-        <p id="result-percent" class="result-percent"></p>
+        <p id="result-grade" class="result-percent"></p>
         <p id="result-comment" class="result-comment"></p>
       </div>
 
-      <div id="retest-note" class="retest-note" hidden>
-        <p id="retest-title" class="retest-title"></p>
-        <ol class="retest-list">
-          <li>
-            <span class="retest-step">바로 재시험을 보려면</span>
-            틀린 문제 해설을 읽고 '다시 보기' 를 눌러 한 번 더 풀어 주세요.
-          </li>
-          <li>
-            <span class="retest-step">나중에 재시험을 보려면</span>
-            충분히 공부한 뒤에 이 링크를 다시 열어 처음부터 풀어 주세요.
-          </li>
-        </ol>
-      </div>
+      <section>
+        <h2 class="section-title">영역별 성취도</h2>
+        <div id="area-list" class="area-list"></div>
+      </section>
 
       <section id="wrong-area">
-        <h2 class="section-title">틀린 문제 해설</h2>
+        <h2 class="section-title">틀린 문항</h2>
         <div id="wrong-list" class="wrong-list"></div>
       </section>
 
       <p id="save-state" class="save-state" hidden></p>
 
-      <button id="btn-retry" class="btn btn-primary">다시 보기</button>
       <button id="btn-history" class="btn btn-quiet">내 기록 보기</button>
-      <!-- 시험을 마친 학생이 앱을 닫지 않고 회차 화면으로 돌아갑니다 -->
       <button id="btn-home" class="btn btn-quiet">처음으로 돌아가기</button>
     </section>
 
-    <!-- 5. 내 기록 화면 -->
+    <!-- 6. 내 기록 화면 -->
     <section id="screen-history" class="screen" hidden>
       <button type="button" id="btn-back-from-history" class="btn-back">돌아가기</button>
 
@@ -138,24 +137,22 @@
       </div>
 
       <div id="history-list" class="history-list"></div>
-
     </section>
 
-    <!-- 오류 안내 (문제 파일에 실수가 있을 때만 보입니다) -->
+    <!-- 오류 안내 (회차 파일에 실수가 있을 때만 보입니다) -->
     <section id="screen-error" class="screen" hidden>
       <div class="card">
-        <h2 class="section-title">문제 파일을 확인해주세요</h2>
-        <p class="hint">questions.js 파일에서 아래 부분을 고쳐주세요.</p>
+        <h2 class="section-title">회차 파일을 확인해주세요</h2>
+        <p class="hint">exams.js 파일에서 아래 부분을 고쳐주세요.</p>
         <ul id="error-list" class="error-list"></ul>
       </div>
     </section>
 
   </main>
 
-  <!-- 이 페이지는 어휘 문제를 씁니다 -->
-  <script>var APP_SUBJECT = "어휘";</script>
-  <script src="questions.js?v=20260917a"></script>
+  <script>var APP_SUBJECT = "모의고사";</script>
+  <script src="exams.js?v=20260917a"></script>
   <script src="storage.js?v=20260917a"></script>
-  <script src="app.js?v=20260917a"></script>
+  <script src="exam.js?v=20260917a"></script>
 </body>
 </html>

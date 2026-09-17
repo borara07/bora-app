@@ -1225,6 +1225,189 @@ select.input {
 
 #grade-wrap { margin-bottom: 14px; }
 
+/* =========================================================
+   모의고사 화면 (exam.html)
+   ========================================================= */
+
+/* ---------- 선택과목 고르기 ---------- */
+
+.subject-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.subject-btn {
+  min-height: 64px;
+  padding: 16px 18px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--text);
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 400;
+  -webkit-text-stroke: var(--title-bold) currentColor;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.subject-btn:hover { border-color: var(--primary); }
+
+.subject-btn:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---------- 답 입력 (OMR) ---------- */
+
+.sheet-guide {
+  margin: 12px 2px 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.sheet-list {
+  display: grid;
+  gap: 6px;
+  padding: 10px 8px;
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 2px;
+  border-radius: 12px;
+}
+
+/* 다섯 문항마다 옅은 줄을 넣어 눈이 줄을 놓치지 않게 합니다 */
+.sheet-row:nth-child(5n) { border-bottom: 1px dashed var(--line); padding-bottom: 7px; }
+
+.sheet-no {
+  flex: none;
+  width: 34px;
+  text-align: right;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.sheet-marks {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sheet-mark {
+  min-height: 48px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sheet-mark:hover { border-color: var(--primary); }
+
+.sheet-mark:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.sheet-mark.is-marked {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+/* ---------- 결과: 영역별 성취도 ---------- */
+
+.area-list {
+  display: grid;
+  gap: 12px;
+  padding: 16px 16px 18px;
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.area-row { display: grid; gap: 6px; }
+
+.area-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.area-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.area-score {
+  flex: none;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.area-track {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.area-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
+/* ---------- 결과: 틀린 문항 ---------- */
+
+.wrong-q {
+  padding: 14px 16px 12px;
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.wrong-q + .wrong-q { margin-top: 10px; }
+
+.wrong-q-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.wrong-q-no {
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--primary);
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+.wrong-q-area {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+
 /* ---------- 작은 화면(휴대폰) ---------- */
 
 @media (max-width: 380px) {
@@ -1236,10 +1419,17 @@ select.input {
   .data-table { font-size: 14px; }
   .data-table th, .data-table td { padding: 11px 11px; }
   .summary-value { font-size: 19px; }
+
+  /* 모의고사 답 입력 — 다섯 칸이 줄을 벗어나지 않게 조금 줄입니다 */
+  .sheet-no { width: 28px; font-size: 14px; }
+  .sheet-marks { gap: 5px; }
+  .sheet-mark { font-size: 16px; }
+  .subject-btn { font-size: 20px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .progress-fill { transition: none; }
+  .area-fill { transition: none; }
 }
 
 /* ---------- 연결 확인 페이지 ---------- */

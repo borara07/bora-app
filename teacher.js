@@ -559,18 +559,23 @@
     return $('homework-subject').value || '어휘';
   }
 
+  /* 학년으로 나누는 과목인지 (문법·모의고사는 학년, 어휘는 반) */
+  function byGrade(subject) {
+    return subject === '문법' || subject === '모의고사';
+  }
+
   function homeworkGroup() {
-    return $('homework-group').value || (homeworkSubject() === '문법' ? '고1' : '고등부');
+    return $('homework-group').value || (byGrade(homeworkSubject()) ? '고3' : '고등부');
   }
 
   /* 과목에 맞게 반 칸을 반 목록 또는 학년 목록으로 채웁니다 */
   function fillGroupPicker() {
     var box = $('homework-group');
     var subject = homeworkSubject();
-    var list = (subject === '문법') ? GRADES : GROUPS;
+    var list = byGrade(subject) ? GRADES : GROUPS;
     var before = box.value;
 
-    $('homework-group-label').textContent = (subject === '문법') ? '학년' : '반';
+    $('homework-group-label').textContent = byGrade(subject) ? '학년' : '반';
     box.innerHTML = '';
     var values = list.map(function (it) { return it.value; });
     list.forEach(function (it) {
@@ -582,15 +587,22 @@
     /* 과목을 바꿔도 고르셨던 것이 목록에 있으면 그대로 둡니다.
        다만 문법으로 바꿀 때는 반 이름이 아니라 학년부터 보여 줍니다. */
     var keep = values.indexOf(before) >= 0 &&
-               !(subject === '문법' && (before === '고등부' || before === '중등부'));
-    box.value = keep ? before : values[(subject === '문법') ? 3 : 0];
+               !(byGrade(subject) && (before === '고등부' || before === '중등부'));
+    /* 문법은 고1(4번째), 모의고사는 고3(6번째)부터 보여 줍니다 */
+    var first = (subject === '모의고사') ? 5 : (subject === '문법' ? 3 : 0);
+    box.value = keep ? before : values[first];
   }
 
   /* 그 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS) */
   function roundsOf(subject) {
-    var list = (subject === '문법')
-      ? (typeof GRAMMAR_ROUNDS !== 'undefined' ? GRAMMAR_ROUNDS : [])
-      : (typeof ROUNDS !== 'undefined' ? ROUNDS : []);
+    var list;
+    if (subject === '문법') {
+      list = (typeof GRAMMAR_ROUNDS !== 'undefined') ? GRAMMAR_ROUNDS : [];
+    } else if (subject === '모의고사') {
+      list = (typeof EXAMS !== 'undefined') ? EXAMS : [];
+    } else {
+      list = (typeof ROUNDS !== 'undefined') ? ROUNDS : [];
+    }
     return Array.isArray(list) ? list : [];
   }
 
@@ -657,7 +669,7 @@
     var rows = [];
     var count = 0;
     roundsOf(subject).forEach(function (r) {
-      if (subject !== '문법' && (r.group || '고등부') !== group) { return; }
+      if (!byGrade(subject) && (r.group || '고등부') !== group) { return; }
       count += 1;
       var one = pickRow('hw-' + count, r.title, r.title, chosen.indexOf(r.title) >= 0, false);
       one.box.addEventListener('change', function () {
@@ -724,7 +736,7 @@
     VocabStore.setHomeworkRound(myPassword, round, group, subject).then(function (r) {
       if (r.ok) {
         box.className = 'check-state is-ok';
-        var 누구 = (subject === '문법' && group !== '고등부' && group !== '중등부') ? '그 학년' : '그 반';
+        var 누구 = (byGrade(subject) && group !== '고등부' && group !== '중등부') ? '그 학년' : '그 반';
         box.textContent = picked.length
           ? (subject + ' · ' + group + ' 이번 주 시험을 이렇게 정했습니다.\n' +
              picked.join(' · ') + '\n' +
