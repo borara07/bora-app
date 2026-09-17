@@ -339,9 +339,10 @@ var SUPABASE = {
 학생 화면과 **완전히 다른 주소**입니다.
 
 ```
-학생 어휘   https://borara07.github.io/bora-app/
-학생 문법   https://borara07.github.io/bora-app/grammar.html
-선생님용    https://borara07.github.io/bora-app/teacher.html
+학생 어휘     https://borara07.github.io/bora-app/
+학생 문법     https://borara07.github.io/bora-app/grammar.html
+학생 모의고사 https://borara07.github.io/bora-app/exam.html
+선생님용      https://borara07.github.io/bora-app/teacher.html
 ```
 
 **학생 화면에는 선생님용으로 들어가는 통로가 전혀 없습니다.**
