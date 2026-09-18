@@ -36,9 +36,6 @@
 
   var historyBackTo = 'start';
 
-  /* 빈 칸 안내를 이미 한 번 했는지 (한 번 더 누르면 그대로 채점합니다) */
-  var warnedOnce = false;
-
   var homeworkRound = '';
   var homeworkSet = false;
 
@@ -146,7 +143,8 @@
         problems.push(where + '의 내용이 비어 있습니다.');
         return;
       }
-      if (!exam.title) { problems.push(where + '에 title(회차 이름)이 없습니다.'); }
+      if (!exam.title) { problems.push(where + '에 title(모의고사 이름)이 없습니다.'); }
+      if (!exam.grade) { problems.push(where + '에 grade(학년)가 없습니다. "고3" 처럼 적어 주세요.'); }
       if (String(exam.title || '').indexOf('|') >= 0) {
         problems.push(where + '의 이름에 | 가 들어 있습니다. 다른 글자로 바꿔 주세요.');
       }
@@ -246,10 +244,6 @@
 
   /* ---------- 회차 고르기 ---------- */
 
-  function splitRoundTitle(title) {
-    var m = /^\s*(\d+)\s*회\s*(.*)$/.exec(title || '');
-    return m ? { no: m[1], topic: m[2] } : { no: '', topic: title || '' };
-  }
 
   /* 모의고사는 학년으로 회차를 엽니다. 학년을 모르면 반 이름으로 찾습니다. */
   function whoFor() {
@@ -270,6 +264,8 @@
   function renderRounds() {
     var box = $('round-list');
     box.innerHTML = '';
+    /* 모의고사 이름이 길어서 한 줄에 하나씩 넓게 놓습니다 */
+    box.classList.add('is-wide');
 
     var mine = allExams();
     var openCount = mine.filter(isOpen).length;
@@ -287,23 +283,21 @@
 
     mine.forEach(function (exam) {
       var open = isOpen(exam);
-      var part = splitRoundTitle(exam.title);
 
       var card = document.createElement('button');
       card.type = 'button';
       card.className = 'round-btn' + (open ? '' : ' is-locked');
 
+      /* 위에는 학년을 크게, 아래에는 모의고사 이름을 작게 씁니다 */
       var no = document.createElement('span');
       no.className = 'round-no';
-      no.textContent = part.no || exam.title;
+      no.textContent = exam.grade || '';
       card.appendChild(no);
 
-      if (part.no) {
-        var topic = document.createElement('span');
-        topic.className = 'round-topic';
-        topic.textContent = part.topic;
-        card.appendChild(topic);
-      }
+      var topic = document.createElement('span');
+      topic.className = 'round-topic';
+      topic.textContent = exam.title;
+      card.appendChild(topic);
 
       if (open) {
         card.addEventListener('click', function () { chooseExam(exam); });
@@ -318,6 +312,11 @@
     show('rounds');
   }
 
+  /* 화면에 보여 줄 회차 이름 ("고3 · 30차 심화모의고사") */
+  function examLabel(exam) {
+    return (exam.grade ? exam.grade + ' · ' : '') + exam.title;
+  }
+
   function chooseExam(exam) {
     state.exam = exam;
     renderSubject();
@@ -326,7 +325,7 @@
   /* ---------- 선택과목 고르기 ---------- */
 
   function renderSubject() {
-    $('subject-round').textContent = state.exam.title;
+    $('subject-round').textContent = examLabel(state.exam);
 
     var box = $('subject-list');
     box.innerHTML = '';
@@ -353,10 +352,9 @@
   /* ---------- 답 입력 (OMR) ---------- */
 
   function renderSheet() {
-    $('sheet-round').textContent = state.exam.title + ' · ' + state.choice;
+    $('sheet-round').textContent = examLabel(state.exam) + ' · ' + state.choice;
     $('sheet-total').textContent = String(questionCount());
     $('sheet-error').hidden = true;
-    warnedOnce = false;
 
     var box = $('sheet-list');
     box.innerHTML = '';
@@ -427,15 +425,14 @@
     var total = questionCount();
     $('sheet-done').textContent = String(done);
     $('sheet-fill').style.width = Math.round((done / total) * 100) + '%';
-  }
 
-  /* 아직 안 누른 문항 번호들 */
-  function blanks() {
-    var out = [];
-    state.answers.forEach(function (n, i) {
-      if (!(n >= 1 && n <= 5)) { out.push(i + 1); }
-    });
-    return out;
+    /* 안 누른 칸이 있으면 몇 개가 '못 푼 문제' 로 들어가는지 미리 알려 줍니다 */
+    var left = total - done;
+    var note = $('sheet-left');
+    if (!note) { return; }
+    note.textContent = left === 0
+      ? '45문항을 모두 눌렀습니다.'
+      : ('안 누른 ' + left + '문항은 못 푼 문제로 표시됩니다. 다 못 풀었어도 그대로 채점할 수 있습니다.');
   }
 
   /* ---------- 채점 ---------- */
@@ -450,15 +447,19 @@
     var items = [];
     var score = 0;
     var correctCount = 0;
+    var blankCount = 0;
 
     for (var q = 1; q <= total; q++) {
       var mine = state.answers[q - 1];
-      var right = (mine === key[q - 1]);
+      var empty = !(mine >= 1 && mine <= 5);   /* 안 누른 칸 = 못 푼 문항 */
+      var right = (!empty && mine === key[q - 1]);
       if (right) { score += pts[q - 1]; correctCount += 1; }
+      if (empty) { blankCount += 1; }
       items.push({
         no: q,
         answer: key[q - 1],
         myAnswer: mine,
+        blank: empty,
         correct: right,
         points: pts[q - 1],
         area: areaNameOf(q)
@@ -474,6 +475,8 @@
     return {
       score: score,
       correct: correctCount,
+      blank: blankCount,                 /* 못 푼 문항 수 */
+      wrong: total - correctCount - blankCount,   /* 풀었지만 틀린 문항 수 */
       total: total,
       grade: grade,
       cuts: cuts,
@@ -515,7 +518,7 @@
   function renderResult() {
     var r = state.result;
 
-    $('result-round').textContent = state.exam.title + ' · ' + state.choice;
+    $('result-round').textContent = examLabel(state.exam) + ' · ' + state.choice;
     $('result-name').textContent = state.student.name + ' 학생';
     $('result-score').textContent = String(r.score);
     $('result-grade').textContent = r.grade + '  (등급컷 ' + r.cuts.join('-') + ')';
@@ -529,9 +532,11 @@
   }
 
   function commentFor(r) {
-    var wrong = r.total - r.correct;
-    if (wrong === 0) { return '만점입니다. 정말 잘했어요!'; }
-    if (r.score >= r.cuts[0]) { return '아주 잘했습니다. 틀린 ' + wrong + '문항만 확인해 두세요.'; }
+    if (r.wrong === 0 && r.blank === 0) { return '만점입니다. 정말 잘했어요!'; }
+    if (r.blank > 0 && r.wrong === 0) {
+      return '푼 문항은 다 맞혔습니다. 못 푼 ' + r.blank + '문항을 시간 안에 푸는 연습을 해 볼까요?';
+    }
+    if (r.score >= r.cuts[0]) { return '아주 잘했습니다. 틀린 ' + r.wrong + '문항만 확인해 두세요.'; }
     if (r.score >= r.cuts[1]) { return '잘했습니다. 아래 약한 영역을 한 번 더 보면 좋겠어요.'; }
     var weak = r.areas.slice().sort(function (a, b) { return a.percent - b.percent; })[0];
     return weak ? ('오늘은 ' + weak.name + ' 영역이 가장 약했습니다. 이 영역부터 다시 볼까요?')
@@ -579,19 +584,28 @@
     var box = $('wrong-list');
     box.innerHTML = '';
 
-    var wrong = items.filter(function (it) { return !it.correct; });
+    var missed = items.filter(function (it) { return !it.correct; });
+    var r = state.result;
 
-    if (wrong.length === 0) {
-      var none = document.createElement('p');
-      none.className = 'chosen-detail';
-      none.textContent = '틀린 문항이 없습니다.';
-      box.appendChild(none);
-      return;
+    /* 몇 개를 틀리고 몇 개를 못 풀었는지 한 줄로 적어 줍니다 */
+    var count = $('wrong-count');
+    if (count) {
+      if (missed.length === 0) {
+        count.textContent = '틀린 문항이 없습니다.';
+      } else if (r.blank === 0) {
+        count.textContent = '틀린 문항 ' + r.wrong + '개';
+      } else if (r.wrong === 0) {
+        count.textContent = '못 푼 문항 ' + r.blank + '개';
+      } else {
+        count.textContent = '틀린 문항 ' + r.wrong + '개 · 못 푼 문항 ' + r.blank + '개';
+      }
     }
 
-    wrong.forEach(function (it) {
+    if (missed.length === 0) { return; }
+
+    missed.forEach(function (it) {
       var card = document.createElement('div');
-      card.className = 'wrong-q';
+      card.className = 'wrong-q' + (it.blank ? ' is-blank' : '');
 
       var head = document.createElement('div');
       head.className = 'wrong-q-head';
@@ -606,9 +620,17 @@
       area.textContent = it.area + ' · ' + it.points + '점';
       head.appendChild(area);
 
+      /* 못 푼 문항은 틀린 문항과 눈에 다르게 보이게 표를 붙입니다 */
+      if (it.blank) {
+        var flag = document.createElement('span');
+        flag.className = 'wrong-q-flag';
+        flag.textContent = '못 푼 문제';
+        head.appendChild(flag);
+      }
+
       card.appendChild(head);
 
-      card.appendChild(answerRow('내 답', it.myAnswer ? String(it.myAnswer) : '안 씀', 'my-answer'));
+      card.appendChild(answerRow('내 답', it.blank ? '표시 안 함' : String(it.myAnswer), 'my-answer'));
       card.appendChild(answerRow('정답', String(it.answer), 'real-answer'));
 
       box.appendChild(card);
@@ -638,7 +660,7 @@
      선생님 화면에서 어휘·문법과 섞이지 않게 하려는 것입니다. */
   function recordTitle() {
     var short = (state.choice === '언어와 매체') ? '언매' : '화작';
-    return '[모의고사] ' + state.exam.title + ' · ' + short;
+    return '[모의고사] ' + examLabel(state.exam) + ' · ' + short;
   }
 
   function saveResult(r) {
@@ -660,8 +682,9 @@
         return {
           word: it.no + '번',
           answer: String(it.answer),
-          myAnswer: it.myAnswer ? String(it.myAnswer) : '',
+          myAnswer: it.blank ? '' : String(it.myAnswer),
           correct: it.correct,
+          blank: it.blank,          /* 시간이 없어 표시하지 못한 문항 */
           area: it.area,
           points: it.points
         };
@@ -893,21 +916,9 @@
       renderRounds();
     });
 
-    /* 안 누른 문항이 있으면 한 번 알려 주고, 한 번 더 누르면 그대로 채점합니다 */
+    /* 45번까지 다 누르지 않아도 바로 채점합니다.
+       시간 안에 못 푼 문항은 '못 푼 문제' 로 표시됩니다. */
     $('btn-submit').addEventListener('click', function () {
-      var note = $('sheet-error');
-      var empty = blanks();
-
-      if (empty.length > 0 && !warnedOnce) {
-        warnedOnce = true;
-        note.hidden = false;
-        note.textContent = '아직 안 누른 문항이 ' + empty.length + '개 있습니다. (' +
-                           empty.slice(0, 10).join(', ') + (empty.length > 10 ? ' …' : '') + '번)\n' +
-                           '빈 칸은 틀린 것으로 채점됩니다. 그대로 채점하려면 한 번 더 누르세요.';
-        return;
-      }
-
-      note.hidden = true;
       state.result = gradeSheet();
       renderResult();
     });

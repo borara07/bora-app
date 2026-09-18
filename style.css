@@ -1229,6 +1229,30 @@ select.input {
    모의고사 화면 (exam.html)
    ========================================================= */
 
+/* ---------- 회차 고르기 (한 줄에 하나) ----------
+   모의고사는 이름이 길어서 세 칸으로 나누지 않고 한 줄을 다 씁니다. */
+
+.round-list.is-wide {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.round-list.is-wide .round-btn {
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 62px;
+  padding: 14px 18px;
+}
+
+.round-list.is-wide .round-no { font-size: 24px; }
+
+.round-list.is-wide .round-topic {
+  font-size: 16px;
+  text-align: left;
+}
+
 /* ---------- 선택과목 고르기 ---------- */
 
 .subject-list {
@@ -1405,6 +1429,36 @@ select.input {
 .wrong-q-area {
   font-size: 14px;
   color: var(--muted);
+}
+
+/* 못 푼 문항 — 시간이 없어 표시하지 못한 문항입니다 (틀린 것과 구분해 줍니다) */
+.wrong-q-flag {
+  margin-left: auto;
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.wrong-q.is-blank .wrong-q-no { color: var(--muted); }
+
+/* 입력 화면 아래에 조용히 놓이는 안내 */
+.sheet-left {
+  margin: 12px 2px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* 결과 화면: 틀린 문항 수 · 못 푼 문항 수 */
+.wrong-count {
+  margin: 0 2px 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-2);
 }
 
 
