@@ -518,29 +518,17 @@
   function renderResult() {
     var r = state.result;
 
-    $('result-round').textContent = examLabel(state.exam) + ' · ' + state.choice;
+    /* 회차와 선택과목은 줄을 나눠 적습니다 (한 줄로 붙이면 낱말 가운데가 끊어집니다) */
+    $('result-round').textContent = examLabel(state.exam) + '\n' + state.choice;
     $('result-name').textContent = state.student.name + ' 학생';
     $('result-score').textContent = String(r.score);
     $('result-grade').textContent = r.grade + '  (등급컷 ' + r.cuts.join('-') + ')';
-    $('result-comment').textContent = commentFor(r);
 
     renderAreas(r.areas);
     renderWrong(r.items);
 
     show('result');
     saveResult(r);
-  }
-
-  function commentFor(r) {
-    if (r.wrong === 0 && r.blank === 0) { return '만점입니다. 정말 잘했어요!'; }
-    if (r.blank > 0 && r.wrong === 0) {
-      return '푼 문항은 다 맞혔습니다. 못 푼 ' + r.blank + '문항을 시간 안에 푸는 연습을 해 볼까요?';
-    }
-    if (r.score >= r.cuts[0]) { return '아주 잘했습니다. 틀린 ' + r.wrong + '문항만 확인해 두세요.'; }
-    if (r.score >= r.cuts[1]) { return '잘했습니다. 아래 약한 영역을 한 번 더 보면 좋겠어요.'; }
-    var weak = r.areas.slice().sort(function (a, b) { return a.percent - b.percent; })[0];
-    return weak ? ('오늘은 ' + weak.name + ' 영역이 가장 약했습니다. 이 영역부터 다시 볼까요?')
-                : '틀린 문항을 다시 확인해 보세요.';
   }
 
   function renderAreas(areas) {

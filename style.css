@@ -1462,6 +1462,27 @@ select.input {
 }
 
 
+/* 결과 카드 맨 위 이름표 — 모의고사는 회차와 선택과목을 두 줄로 나눠 적습니다.
+   한 줄로 붙이면 '화법과 작 문' 처럼 낱말 가운데가 끊어집니다 */
+.result-round.is-stacked {
+  max-width: 100%;
+  padding: 8px 16px;
+  border-radius: 16px;
+  white-space: pre-line;   /* 줄바꿈을 그대로 보여 줍니다 */
+  word-break: keep-all;    /* 낱말 가운데에서 끊지 않습니다 */
+  line-height: 1.5;
+}
+
+/* 등급 — 바로 위 점수와 같은 글씨체로 맞춥니다 */
+.result-grade {
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+
 /* ---------- 작은 화면(휴대폰) ---------- */
 
 @media (max-width: 380px) {
