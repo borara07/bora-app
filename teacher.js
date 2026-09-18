@@ -11,6 +11,7 @@
   var allRows = [];     /* 서버에서 받아온 전체 시험 기록 */
   var allRoster = null; /* 서버에서 받아온 전체 명단 */
   var statGroup = '';   /* 통계에서 볼 반 (빈 값이면 전체) */
+  var statSubject = ''; /* 통계에서 볼 과목 (빈 값이면 전체) */
   var statPeriod = '';  /* 통계에서 볼 기간 = 그 주 월요일 (빈 값이면 전체 누적) */
   var rows = [];        /* 지금 화면에 쓰는 시험 기록 (고른 반만) */
   var myPassword = '';  /* 이번에 들어올 때 쓴 비밀번호 (문제 올릴 때 다시 씁니다) */
@@ -161,11 +162,15 @@
   }
 
   /* 기록이 있는 주를 새 것부터 늘어놓고, 이번 주는 기록이 없어도 넣습니다 */
+  /* 주차 고르개에 적히는 횟수도 고른 과목만 셉니다 */
   function weekList() {
     var seen = {};
     allRows.forEach(function (r) {
       var m = mondayOf(r.savedAt);
-      if (m) { seen[m] = (seen[m] || 0) + 1; }
+      if (!m) { return; }
+      /* 주는 다 보여 주고(빈 주도 고를 수 있게), 횟수만 고른 과목으로 셉니다 */
+      if (seen[m] === undefined) { seen[m] = 0; }
+      if (inSubject(r)) { seen[m] += 1; }
     });
     var thisWeek = mondayOf(new Date());
     if (thisWeek && !seen[thisWeek]) { seen[thisWeek] = 0; }
@@ -174,7 +179,15 @@
     });
   }
 
-  function fillPeriodPicker() {
+  /* 과목을 바꿨을 때 주차 고르개의 횟수만 다시 적습니다 (보던 주는 그대로) */
+  function refreshPeriodCounts() {
+    var pick = $('stat-period');
+    if (!pick) { return; }
+    var keep = pick.value;
+    fillPeriodPicker(keep);
+  }
+
+  function fillPeriodPicker(keep) {
     var pick = $('stat-period');
     if (!pick) { return; }
 
@@ -198,7 +211,14 @@
     all.textContent = '전체 (누적)';
     pick.appendChild(all);
 
-    /* 기본은 기록이 있는 가장 최근 주입니다.
+    /* 과목만 바꾼 것이면 보던 주를 그대로 둡니다 */
+    if (keep !== undefined && keep !== null) {
+      statPeriod = keep;
+      pick.value = keep;
+      return;
+    }
+
+    /* 처음 들어왔을 때의 기본은 기록이 있는 가장 최근 주입니다.
        매주 시험을 보므로 누적보다 이쪽이 쓸모 있습니다. */
     var first = null;
     for (var i = 0; i < weeks.length; i++) {
@@ -206,6 +226,26 @@
     }
     statPeriod = first || (weeks.length ? weeks[0].monday : '');
     pick.value = statPeriod;
+  }
+
+  /* 이 기록이 어느 과목인지 봅니다.
+     기록을 저장할 때 회차 이름 앞에 '[문법] ' · '[모의고사] ' 를 붙여 두었습니다.
+     아무것도 안 붙은 것은 어휘입니다. */
+  function subjectOf(record) {
+    var title = String(record.roundTitle || '');
+    if (title.indexOf('[모의고사]') === 0) { return '모의고사'; }
+    if (title.indexOf('[문법]') === 0) { return '문법'; }
+    return '어휘';
+  }
+
+  /* 표에 적을 회차 이름. 과목을 골라 보고 있으면 앞머리를 떼어 짧게 씁니다 */
+  function roundName(title) {
+    if (!statSubject) { return title; }
+    return String(title || '').replace(/^\[[^\]]+\]\s*/, '');
+  }
+
+  function inSubject(r) {
+    return !statSubject || subjectOf(r) === statSubject;
   }
 
   /* 고른 기간의 기록인지 봅니다 */
@@ -220,7 +260,7 @@
   /* 고른 반·기간의 기록만 남기고, 명단의 응시 수도 그 기간 것으로 다시 셉니다 */
   function applyGroup() {
     roster = allRoster;
-    rows = allRows.filter(inPeriod);
+    rows = allRows.filter(function (r) { return inPeriod(r) && inSubject(r); });
 
     if (statGroup && allRoster) {
       roster = allRoster.filter(function (r) { return (r.group || '고등부') === statGroup; });
@@ -404,7 +444,9 @@
     [
       ['학생', students.length + '명'],
       ['시험', rows.length + '번'],
-      ['평균 정답률', (rows.length ? Math.round(sum / rows.length) : 0) + '%']
+      /* 모의고사는 정답률이 아니라 100점 만점 점수입니다 */
+      [statSubject === '모의고사' ? '평균 점수' : '평균 정답률',
+       (rows.length ? Math.round(sum / rows.length) : 0) + (statSubject === '모의고사' ? '점' : '%')]
     ].forEach(function (pair) {
       var box = document.createElement('div');
       box.className = 'summary-item';
@@ -424,7 +466,7 @@
       area.hidden = false;
       var notYet = roster.filter(function (r) { return r.count === 0; }).length;
       $('roster-note').textContent =
-        periodName() + ' · 재원생 ' + roster.length + '명 중 ' +
+        (statSubject ? statSubject + ' · ' : '') + periodName() + ' · 재원생 ' + roster.length + '명 중 ' +
         (roster.length - notYet) + '명 응시' +
         (notYet > 0 ? ' · 아직 안 본 학생 ' + notYet + '명' : '');
 
@@ -440,14 +482,18 @@
       area.hidden = true;
     }
 
-    /* 한 주만 보고 있을 때는 제목도 그렇게 바꿔 줍니다 */
-    $('summary-title').textContent = statPeriod ? periodName() + ' 요약' : '전체 요약';
-    $('title-rounds').textContent = statPeriod ? '회차별 평균 (' + periodName() + ')' : '회차별 평균';
-    $('title-students').textContent = statPeriod ? '학생별 (' + periodName() + ')' : '학생별 누적';
-    $('title-all').textContent = statPeriod ? '기록 (' + periodName() + ')' : '전체 기록';
+    /* 한 주만 보고 있을 때, 한 과목만 보고 있을 때 제목도 그렇게 바꿔 줍니다 */
+    var when = statPeriod ? periodName() : '';
+    var what = statSubject || '';
+    var tag = [what, when].filter(function (t) { return t; }).join(' · ');
+
+    $('summary-title').textContent = tag ? tag + ' 요약' : '전체 요약';
+    $('title-rounds').textContent = tag ? '회차별 평균 (' + tag + ')' : '회차별 평균';
+    $('title-students').textContent = tag ? '학생별 (' + tag + ')' : '학생별 누적';
+    $('title-all').textContent = tag ? '기록 (' + tag + ')' : '전체 기록';
 
     fill('table-rounds', sortRows(roundStats(), sorts['table-rounds']), function (r) {
-      return [r.title, r.students + '명', r.count + '번', r.avg + '%'];
+      return [roundName(r.title), r.students + '명', r.count + '번', r.avg + '%'];
     });
 
     fill('table-students', sortRows(students, sorts['table-students']), function (r) {
@@ -455,7 +501,7 @@
     });
 
     fill('table-all', sortRows(rows, sorts['table-all']), function (r) {
-      return [r.name, r.school, r.roundTitle,
+      return [r.name, r.school, roundName(r.roundTitle),
               r.correct + '/' + r.total + ' (' + r.percent + '%)', shortDate(r.savedAt)];
     });
   }
@@ -1099,8 +1145,10 @@
     }
 
     note.textContent = '내려받는 중…';
-    var name = statPeriod ? ('어휘테스트_' + statPeriod + '_주간기록.csv')
-                          : '어휘테스트_전체기록.csv';
+    /* 파일 이름에 고른 과목과 기간을 적어 둡니다 */
+    var what = statSubject || '전체과목';
+    var name = statPeriod ? (what + '_' + statPeriod + '_주간기록.csv')
+                          : (what + '_전체기록.csv');
     downloadFile(name, '﻿' + VocabStore.toCsv(rows)).then(function (ok) {
       note.textContent = ok
         ? (rows.length + '개의 기록을 내려받았습니다.')
@@ -1176,6 +1224,13 @@
   });
 
   /* 통계에서 볼 반을 바꿉니다 */
+  $('stat-subject').addEventListener('change', function () {
+    statSubject = this.value;
+    refreshPeriodCounts();   /* 주차 고르개의 횟수를 그 과목 기준으로 다시 적습니다 */
+    applyGroup();
+    render();
+  });
+
   $('stat-group').addEventListener('change', function () {
     statGroup = this.value;
     applyGroup();
