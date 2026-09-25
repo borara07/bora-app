@@ -60,6 +60,34 @@
     return (typeof EXAMS !== 'undefined' && Array.isArray(EXAMS)) ? EXAMS : [];
   }
 
+  /* 아래 세 가지는 회차마다 다를 수 있습니다.
+     아무것도 적지 않으면 맨 위의 기본값(45문항 · 34번까지 공통 · 화작/언매)을 씁니다.
+
+     ▶ 선택과목이 없는 시험(중등 진단평가 등)은 answers 에 "공통" 하나만 적으면 됩니다.
+       그러면 선택과목 고르는 화면을 건너뛰고 모든 문항이 공통이 됩니다. */
+
+  /* 그 회차의 문항 수 */
+  function countOf(exam) {
+    return (exam && typeof exam.count === 'number' && exam.count > 0)
+      ? exam.count : questionCount();
+  }
+
+  /* 그 회차의 선택과목 목록 (없으면 빈 목록) */
+  function choicesOf(exam) {
+    if (exam && Array.isArray(exam.choices)) { return exam.choices; }
+    var all = choiceNames();
+    var answers = (exam && exam.answers) || {};
+    var found = all.filter(function (name) { return answers[name] != null; });
+    return found.length ? all : [];
+  }
+
+  /* 그 회차에서 몇 번까지가 공통인지 (선택과목이 없으면 끝까지 공통) */
+  function commonOf(exam) {
+    if (choicesOf(exam).length === 0) { return countOf(exam); }
+    return (exam && typeof exam.common === 'number' && exam.common >= 0)
+      ? exam.common : commonCount();
+  }
+
   /* 글자로 적힌 값을 한 글자씩 숫자로 풉니다 ("432" → [4,3,2]) */
   function digits(text) {
     return String(text == null ? '' : text)
@@ -68,7 +96,8 @@
       .map(function (c) { return Number(c); });
   }
 
-  /* 그 선택과목의 정답 45개 (1~34번은 공통, 35~45번은 선택과목) */
+  /* 그 선택과목의 정답 45개 (1~34번은 공통, 35~45번은 선택과목)
+     선택과목이 없는 회차는 '공통' 하나로 끝까지 채워집니다. */
   function answersFor(exam, choice) {
     return digits((exam.answers || {})['공통']).concat(digits((exam.answers || {})[choice]));
   }
@@ -87,9 +116,11 @@
     });
   }
 
-  /* 등급컷 "95-88-77-64" → [95, 88, 77, 64] */
+  /* 등급컷 "95-88-77-64" → [95, 88, 77, 64]
+     선택과목이 없는 회차는 '공통' 칸에 적습니다. */
   function cutsFor(exam, choice) {
-    return String((exam.cuts || {})[choice] || '')
+    var cuts = exam.cuts || {};
+    return String(cuts[choice] || cuts['공통'] || '')
       .split('-')
       .map(function (n) { return Number(String(n).trim()); });
   }
@@ -123,9 +154,6 @@
   function validateExams() {
     var problems = [];
     var list = allExams();
-    var total = questionCount();
-    var common = commonCount();
-    var choices = choiceNames();
 
     if (!Array.isArray(list)) {
       problems.push('EXAMS 가 목록([ ]) 모양이 아닙니다.');
@@ -149,6 +177,13 @@
         problems.push(where + '의 이름에 | 가 들어 있습니다. 다른 글자로 바꿔 주세요.');
       }
 
+      /* 문항 수와 선택과목은 회차마다 다를 수 있습니다 */
+      var total = countOf(exam);
+      var common = commonOf(exam);
+      var choices = choicesOf(exam);
+      /* 선택과목이 없는 회차도 아래 검사를 똑같이 한 번 돌립니다 */
+      var targets = choices.length ? choices : [''];
+
       /* 정답·배점 길이와 글자 검사 */
       function checkRun(label, values, want, min, max) {
         if (values.length !== want) {
@@ -171,28 +206,33 @@
       checkRun('공통 정답', digits((exam.answers || {})['공통']), common, 1, 5);
       checkRun('공통 배점', digits((exam.points || {})['공통']), common, 1, 9);
 
-      choices.forEach(function (choice) {
+      targets.forEach(function (choice) {
+        var label = choice || '공통';
         var want = total - common;
-        checkRun(choice + ' 정답', digits((exam.answers || {})[choice]), want, 1, 5);
-        checkRun(choice + ' 배점', digits((exam.points || {})[choice]), want, 1, 9);
+        if (choice) {
+          checkRun(choice + ' 정답', digits((exam.answers || {})[choice]), want, 1, 5);
+          checkRun(choice + ' 배점', digits((exam.points || {})[choice]), want, 1, 9);
+        }
 
         /* 배점 합이 100점인지 */
         var pts = pointsFor(exam, choice);
         if (pts.length === total) {
           var sum = pts.reduce(function (a, b) { return a + b; }, 0);
           if (sum !== 100) {
-            problems.push(where + '의 ' + choice + ' 배점 합이 ' + sum + '점입니다. 100점이 되어야 합니다.');
+            problems.push(where + '의 ' + label + ' 배점 합이 ' + sum + '점입니다. 100점이 되어야 합니다.');
           }
         }
 
-        /* 등급컷 4개가 높은 순서로 적혀 있는지 */
+        /* 등급컷이 높은 순서로 적혀 있는지 (2개부터 8개까지 적을 수 있습니다) */
         var cuts = cutsFor(exam, choice);
-        if (cuts.length !== 4 || cuts.some(function (n) { return !(n >= 0 && n <= 100); })) {
-          problems.push(where + '의 ' + choice + ' 등급컷을 "95-88-77-64" 처럼 네 개 적어 주세요.');
+        if (cuts.length < 2 || cuts.length > 8 ||
+            cuts.some(function (n) { return !(n >= 0 && n <= 100); })) {
+          problems.push(where + '의 ' + label +
+                        ' 등급컷을 "95-88-77-64" 처럼 높은 순서로 적어 주세요. (2개 ~ 8개)');
         } else {
-          for (var c = 1; c < 4; c++) {
+          for (var c = 1; c < cuts.length; c++) {
             if (cuts[c] > cuts[c - 1]) {
-              problems.push(where + '의 ' + choice + ' 등급컷이 높은 순서가 아닙니다.');
+              problems.push(where + '의 ' + label + ' 등급컷이 높은 순서가 아닙니다.');
               break;
             }
           }
@@ -201,7 +241,7 @@
         /* 영역이 1~45번을 빠짐없이 한 번씩 덮는지 */
         var mine = areasFor(exam, choice);
         if (mine.length === 0) {
-          problems.push(where + '에 ' + choice + ' 영역이 없습니다.');
+          problems.push(where + '에 ' + label + ' 영역이 없습니다.');
         } else {
           var cover = [];
           var k;
@@ -217,11 +257,11 @@
             else if (cover[k] > 1) { doubled.push(k); }
           }
           if (missing.length) {
-            problems.push(where + '의 ' + choice + ' 영역에서 ' +
+            problems.push(where + '의 ' + label + ' 영역에서 ' +
                           missing.slice(0, 8).join(', ') + '번이 어느 영역에도 없습니다.');
           }
           if (doubled.length) {
-            problems.push(where + '의 ' + choice + ' 영역에서 ' +
+            problems.push(where + '의 ' + label + ' 영역에서 ' +
                           doubled.slice(0, 8).join(', ') + '번이 두 영역에 겹쳐 있습니다.');
           }
         }
@@ -317,8 +357,16 @@
     return (exam.grade ? exam.grade + ' · ' : '') + exam.title;
   }
 
+  /* 회차 이름 + 고른 선택과목 (선택과목이 없는 회차는 회차 이름만) */
+  function roundLabel(sep) {
+    var head = examLabel(state.exam);
+    return state.choice ? (head + (sep || ' · ') + state.choice) : head;
+  }
+
   function chooseExam(exam) {
     state.exam = exam;
+    /* 선택과목이 없는 회차는 고르는 화면 없이 바로 답 입력으로 갑니다 */
+    if (choicesOf(exam).length === 0) { chooseSubject(''); return; }
     renderSubject();
   }
 
@@ -330,7 +378,7 @@
     var box = $('subject-list');
     box.innerHTML = '';
 
-    choiceNames().forEach(function (name) {
+    choicesOf(state.exam).forEach(function (name) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'subject-btn';
@@ -345,21 +393,27 @@
   function chooseSubject(name) {
     state.choice = name;
     state.answers = [];
-    for (var i = 0; i < questionCount(); i++) { state.answers.push(0); }
+    for (var i = 0; i < countOf(state.exam); i++) { state.answers.push(0); }
     renderSheet();
   }
 
   /* ---------- 답 입력 (OMR) ---------- */
 
   function renderSheet() {
-    $('sheet-round').textContent = examLabel(state.exam) + ' · ' + state.choice;
-    $('sheet-total').textContent = String(questionCount());
+    $('sheet-round').textContent = roundLabel();
+    $('sheet-total').textContent = String(countOf(state.exam));
     $('sheet-error').hidden = true;
+
+    /* 선택과목이 없는 회차에서는 '선택과목 다시 고르기' 대신 회차로 돌아갑니다 */
+    var back = $('btn-back-subject');
+    if (back) {
+      back.textContent = state.choice ? '선택과목 다시 고르기' : '회차 다시 고르기';
+    }
 
     var box = $('sheet-list');
     box.innerHTML = '';
 
-    for (var q = 1; q <= questionCount(); q++) {
+    for (var q = 1; q <= countOf(state.exam); q++) {
       box.appendChild(sheetRow(q));
     }
 
@@ -422,7 +476,7 @@
 
   function updateSheetCount() {
     var done = doneCount();
-    var total = questionCount();
+    var total = countOf(state.exam);
     $('sheet-done').textContent = String(done);
     $('sheet-fill').style.width = Math.round((done / total) * 100) + '%';
 
@@ -431,7 +485,7 @@
     var note = $('sheet-left');
     if (!note) { return; }
     note.textContent = left === 0
-      ? '45문항을 모두 눌렀습니다.'
+      ? (total + '문항을 모두 눌렀습니다.')
       : ('안 누른 ' + left + '문항은 못 푼 문제로 표시됩니다. 다 못 풀었어도 그대로 채점할 수 있습니다.');
   }
 
@@ -442,7 +496,7 @@
     var choice = state.choice;
     var key = answersFor(exam, choice);
     var pts = pointsFor(exam, choice);
-    var total = questionCount();
+    var total = countOf(exam);
 
     var items = [];
     var score = 0;
@@ -519,7 +573,7 @@
     var r = state.result;
 
     /* 회차와 선택과목은 줄을 나눠 적습니다 (한 줄로 붙이면 낱말 가운데가 끊어집니다) */
-    $('result-round').textContent = examLabel(state.exam) + '\n' + state.choice;
+    $('result-round').textContent = roundLabel('\n');
     $('result-name').textContent = state.student.name + ' 학생';
     $('result-score').textContent = String(r.score);
     $('result-grade').textContent = r.grade + '  (등급컷 ' + r.cuts.join('-') + ')';
@@ -545,7 +599,9 @@
 
       var name = document.createElement('span');
       name.className = 'area-name';
-      name.textContent = (a.group !== lastGroup ? a.group + ' · ' : '') + a.name;
+      /* 분류 이름은 바뀔 때만 앞에 붙입니다. 분류와 영역 이름이 같으면 한 번만 씁니다 */
+      var head2 = (a.group !== lastGroup && a.group !== a.name) ? (a.group + ' · ') : '';
+      name.textContent = head2 + a.name;
       lastGroup = a.group;
       head.appendChild(name);
 
@@ -647,8 +703,9 @@
   /* 기록에는 회차 이름 앞에 '[모의고사]' 가 붙고, 뒤에 선택과목이 붙습니다.
      선생님 화면에서 어휘·문법과 섞이지 않게 하려는 것입니다. */
   function recordTitle() {
-    var short = (state.choice === '언어와 매체') ? '언매' : '화작';
-    return '[모의고사] ' + examLabel(state.exam) + ' · ' + short;
+    var head = '[모의고사] ' + examLabel(state.exam);
+    if (!state.choice) { return head; }        /* 선택과목이 없는 회차 */
+    return head + ' · ' + (state.choice === '언어와 매체' ? '언매' : '화작');
   }
 
   function saveResult(r) {
@@ -884,7 +941,10 @@
     });
 
     $('btn-back-rounds').addEventListener('click', renderRounds);
-    $('btn-back-subject').addEventListener('click', renderSubject);
+    $('btn-back-subject').addEventListener('click', function () {
+      if (choicesOf(state.exam).length === 0) { renderRounds(); return; }
+      renderSubject();
+    });
 
     $('btn-my-history').addEventListener('click', function () {
       state.student = readStudentForm();
