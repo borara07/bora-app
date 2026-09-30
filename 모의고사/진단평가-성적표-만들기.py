@@ -37,6 +37,7 @@ DEEP, PRI, LIGHT, CARD, GRAY = "5B21B6", "7C3AED", "EDE9FE", "F5F3FF", "6B7280"
 BAND, TAB, TH, TD, SUM_, EDGE, INK, BAR = ("EDE9FE","DDD6FE","EDE9FE","FBFAFF",
                                            "E9E4FF","D8D0F5","3B0764","8064A2")
 MINT, MINT_INK = "B8E6E0", "0F4F49"
+VAL = "1F2937"        # 표 안의 값은 검은색 — 보라는 제목·표 머리에만 씁니다
 FAM = "나눔스퀘어라운드"
 
 def F(sz=11, b=False, c="1F2937"): return Font(name=FAM, size=sz, bold=b, color=c)
@@ -99,7 +100,7 @@ def build_report(ws, top, st, avg):
     head(ws, top+4, info)
     vals = [st["name"], WHO, DATE]
     for (t, c1, c2), v in zip(info, vals):
-        cell = put(ws, top+5, c1, v, F(11, True, INK), fill=TD, align=C, border=SOFT)
+        cell = put(ws, top+5, c1, v, F(11, True, VAL), fill=TD, align=C, border=SOFT)
         if t == "시행일": cell.number_format = "yyyy-mm-dd"
         if c2 > c1: merge(ws, top+5, c1, top+5, c2)
         for c in range(c1, c2+1): ws.cell(top+5, c).border = SOFT
@@ -112,9 +113,9 @@ def build_report(ws, top, st, avg):
     head(ws, top+8, sc)
     g = f'{st["grade"]}등급' if st["grade"] else "등급 외"
     svals = [(st["score"], "0", F(24, True, PRI)),
-             (g, "General", F(11, True, INK)),
-             (avg, "0.0", F(11, True, INK)),
-             ("-".join(str(c) for c in CUTS), "General", F(11, True, INK))]
+             (g, "General", F(11, True, VAL)),
+             (avg, "0.0", F(11, True, VAL)),
+             ("-".join(str(c) for c in CUTS), "General", F(11, True, VAL))]
     for (t, c1, c2), (v, fmt, fnt) in zip(sc, svals):
         put(ws, top+9, c1, v, fnt, fill=TD, align=C, border=SOFT, fmt=fmt)
         if c2 > c1: merge(ws, top+9, c1, top+9, c2)
@@ -130,13 +131,13 @@ def build_report(ws, top, st, avg):
     for k, (grp, name, a, b) in enumerate(AREAS):
         r = top + 13 + k
         full = sum(POINT[a-1:b]); mine = sum(st["got"][a-1:b])
-        put(ws, r, 1, "" if grp == last else grp, F(11, True, INK), fill=TD, align=C, border=SOFT)
+        put(ws, r, 1, "" if grp == last else grp, F(11, True, VAL), fill=TD, align=C, border=SOFT)
         last = grp
-        put(ws, r, 2, name, F(11, True, INK), align=C, border=SOFT)
+        put(ws, r, 2, name, F(11, True, VAL), align=C, border=SOFT)
         merge(ws, r, 2, r, 3); ws.cell(r, 3).border = SOFT
-        put(ws, r, 4, full, F(11, True, INK), align=C, border=SOFT)
-        put(ws, r, 5, mine, F(11, True, INK), fill=TD, align=C, border=SOFT)
-        put(ws, r, 6, mine/full*100, F(11, True, PRI), align=C, border=SOFT, fmt="0.0")
+        put(ws, r, 4, full, F(11, True, VAL), align=C, border=SOFT)
+        put(ws, r, 5, mine, F(11, True, VAL), fill=TD, align=C, border=SOFT)
+        put(ws, r, 6, mine/full*100, F(11, True, VAL), align=C, border=SOFT, fmt="0.0")
         merge(ws, r, 6, r, 7); ws.cell(r, 7).border = SOFT
         put(ws, r, TC_, name, F(9, False, GRAY))
         put(ws, r, UC_, mine/full*100, F(9, False, GRAY), fmt="0.0")
@@ -144,12 +145,12 @@ def build_report(ws, top, st, avg):
     rs = top + 24
     topline = Border(left=_edge, right=_edge, bottom=_edge,
                      top=Side(style="medium", color="A78BFA"))
-    put(ws, rs, 1, "합계", F(11, True, INK), fill=SUM_, align=C, border=topline)
+    put(ws, rs, 1, "합계", F(11, True, VAL), fill=SUM_, align=C, border=topline)
     merge(ws, rs, 1, rs, 3)
     for c in (2,3): ws.cell(rs, c).border = topline
-    put(ws, rs, 4, 100, F(11, True, INK), fill=SUM_, align=C, border=topline)
-    put(ws, rs, 5, st["score"], F(11, True, INK), fill=SUM_, align=C, border=topline)
-    put(ws, rs, 6, st["score"], F(11, True, PRI), fill=SUM_, align=C, border=topline, fmt="0.0")
+    put(ws, rs, 4, 100, F(11, True, VAL), fill=SUM_, align=C, border=topline)
+    put(ws, rs, 5, st["score"], F(11, True, VAL), fill=SUM_, align=C, border=topline)
+    put(ws, rs, 6, st["score"], F(11, True, VAL), fill=SUM_, align=C, border=topline, fmt="0.0")
     merge(ws, rs, 6, rs, 7); ws.cell(rs, 7).border = topline
     ws.row_dimensions[rs].height = 20
 
@@ -184,10 +185,10 @@ def build_report(ws, top, st, avg):
             ws.row_dimensions[r0+j].height = 16
         for j in range(15):
             q = b*15 + j + 1; c = 2 + j
-            put(ws, r0,   c, q, F(11, True, INK), fill=TH, align=C, border=SOFT)
+            put(ws, r0,   c, q, F(11, True, VAL), fill=TH, align=C, border=SOFT)
             put(ws, r0+1, c, KEY[q-1], F(11), align=C, border=SOFT)
             put(ws, r0+2, c, st["ans"][q-1] if st["ans"][q-1] else "—", F(11), align=C, border=SOFT)
-            put(ws, r0+3, c, st["got"][q-1], F(11, True, INK), align=C, border=SOFT)
+            put(ws, r0+3, c, st["got"][q-1], F(11, True, VAL), align=C, border=SOFT)
         ws.conditional_formatting.add(
             f"B{r0+3}:P{r0+3}",
             CellIsRule(operator="equal", formula=["0"], fill=FILL(MINT),
@@ -243,7 +244,7 @@ def main(students, out):
            ("최저 점수", f"{min(s['score'] for s in students)}점")]
     for c, (t, v) in enumerate(box):
         put(an, r, 1+c, t, F(11, True, INK), fill=TH, align=C, border=SOFT)
-        put(an, r+1, 1+c, v, F(13, True, PRI), fill=TD, align=C, border=SOFT)
+        put(an, r+1, 1+c, v, F(13, True, VAL), fill=TD, align=C, border=SOFT)
     an.row_dimensions[r+1].height = 24
     r += 3
     put(an, r, 1, "■ 등급 분포", F(12, True, PRI), align=L); merge(an, r, 1, r, 6); r += 1
@@ -266,7 +267,7 @@ def main(students, out):
         pct = [(sum(s["got"][a-1:b])/sum(POINT[a-1:b]), nm) for _, nm, a, b in AREAS]
         weak = min(pct)[1]
         put(an, r, 1, s["name"], F(11), align=C, border=SOFT)
-        put(an, r, 2, s["score"], F(11, True, INK), align=C, border=SOFT)
+        put(an, r, 2, s["score"], F(11, True, VAL), align=C, border=SOFT)
         put(an, r, 3, f'{s["grade"]}등급' if s["grade"] else "등급 외", F(11), align=C, border=SOFT)
         put(an, r, 4, sum(1 for q in range(45) if s["got"][q] == 0), F(11), align=C, border=SOFT)
         put(an, r, 5, weak, F(11), align=C, border=SOFT)
@@ -283,7 +284,7 @@ def main(students, out):
         put(an, r, 2, nm, F(11), align=C, border=SOFT)
         put(an, r, 3, full, F(11), align=C, border=SOFT)
         put(an, r, 4, m, F(11), align=C, border=SOFT, fmt="0.0")
-        put(an, r, 5, m/full*100, F(11, True, PRI), align=C, border=SOFT, fmt="0.0")
+        put(an, r, 5, m/full*100, F(11, True, VAL), align=C, border=SOFT, fmt="0.0")
         r += 1
     r += 1
     put(an, r, 1, "■ 문항별 정답률 (낮은 순)", F(12, True, PRI), align=L); merge(an, r, 1, r, 6); r += 1
@@ -304,7 +305,7 @@ def main(students, out):
         put(an, r, 3, POINT[q-1], F(11), align=C, border=SOFT)
         put(an, r, 4, area_of(q), F(11), align=C, border=SOFT)
         put(an, r, 5, ok, F(11), align=C, border=SOFT)
-        cell = put(an, r, 6, pctv, F(11, True, INK), align=C, border=SOFT, fmt="0.0")
+        cell = put(an, r, 6, pctv, F(11, True, VAL), align=C, border=SOFT, fmt="0.0")
         if pctv < 40: cell.fill = FILL(MINT); cell.font = Font(name=FAM, size=11, bold=True, color=MINT_INK)
         r += 1
     an.page_setup.orientation = "portrait"
@@ -323,13 +324,13 @@ def main(students, out):
         put(aw, 3+i, 1, s["page"], F(11), align=C, border=SOFT)
         put(aw, 3+i, 2, s["name"], F(11), align=C, border=SOFT)
         put(aw, 3+i, 3, "".join(str(a) if a else "-" for a in s["ans"]), F(11), align=L, border=SOFT)
-        put(aw, 3+i, 4, s["score"], F(11, True, INK), align=C, border=SOFT)
-    put(aw, 4+len(students), 1, "정답", F(11, True, INK), align=C, border=SOFT)
+        put(aw, 3+i, 4, s["score"], F(11, True, VAL), align=C, border=SOFT)
+    put(aw, 4+len(students), 1, "정답", F(11, True, VAL), align=C, border=SOFT)
     merge(aw, 4+len(students), 1, 4+len(students), 2)
-    put(aw, 4+len(students), 3, "".join(str(k) for k in KEY), F(11, True, INK), align=L, border=SOFT)
-    put(aw, 5+len(students), 1, "배점", F(11, True, INK), align=C, border=SOFT)
+    put(aw, 4+len(students), 3, "".join(str(k) for k in KEY), F(11, True, VAL), align=L, border=SOFT)
+    put(aw, 5+len(students), 1, "배점", F(11, True, VAL), align=C, border=SOFT)
     merge(aw, 5+len(students), 1, 5+len(students), 2)
-    put(aw, 5+len(students), 3, "".join(str(p) for p in POINT), F(11, True, INK), align=L, border=SOFT)
+    put(aw, 5+len(students), 3, "".join(str(p) for p in POINT), F(11, True, VAL), align=L, border=SOFT)
 
     wb.save(out)
     print("만들었습니다:", out)
