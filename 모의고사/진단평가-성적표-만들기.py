@@ -33,22 +33,21 @@ AREAS = [('화법과 작문','화법',1,3), ('화법과 작문','화법+작문',
 assert sum(POINT) == 100
 
 # ---------- 색·글꼴 (30차 성적표와 같게) ----------
-DEEP, PRI, LIGHT, CARD, GRAY = "5B21B6", "7C3AED", "EDE9FE", "F5F3FF", "6B7280"
-# 보라는 제목 띠·이름표·점수·그래프에만 씁니다.
-# 표 머리와 표 안은 회색으로 낮춰 눈이 덜 어지럽게 했습니다.
-BAND  = "EDE9FE"   # 제목 띠 (연보라)
-TAB   = "DDD6FE"   # 이름표 (1. 학생정보 …)
-TH    = "EFEFF2"   # 표 머리 바탕 (회색)
-THINK = "374151"   # 표 머리 글자 (진회색)
-THON  = "E3E4E8"   # 표 머리 중 강조 한 칸 (득점)
-TD    = "FAFAFB"   # 값 칸 바탕
-SUM_  = "EDEDF1"   # 합계 줄
-EDGE  = "D9D9DF"   # 표 테두리 (회색)
-INK   = "3B0764"   # 진한 보라 글씨 (제목·이름표)
-BAR   = "8064A2"   # 막대 색
-HEAD  = "6B7280"   # 분석 시트 표 머리 띠 (회색)
+# 색은 선생님이 쓰시던 성적표에서 그대로 뽑아 왔습니다.
+# 형광빛 보라를 빼고 차분한 청보라 한 가지로 맞췄습니다.
+BAND  = "D2D2EA"   # 제목 띠 (차분한 청보라)
+TAB   = "E6E0ED"   # 이름표 (1. 학생정보 …)
+TH    = "E6E0ED"   # 표 머리 바탕
+SUM_  = "E6E0ED"   # 합계 줄
+TD    = "DBEEF3"   # 값 줄 바탕 (옅은 하늘빛)
+EDGE  = "D9D9DF"   # 표 테두리
+TITLE_INK = "3F3F46"  # 제목·이름표 글자 (진회색)
+THINK = "1F2937"   # 표 머리 글자 (검정)
+THON  = "C00000"   # '득점' 머리글만 붉은 글씨
+PURPLE= "7F62A2"   # 점수·막대그래프 (차분한 보라)
+GRAY  = "6B7280"
 MINT, MINT_INK = "B8E6E0", "0F4F49"
-VAL = "1F2937"        # 표 안의 값은 검은색 — 보라는 제목·표 머리에만 씁니다
+VAL = "1F2937"        # 표 안의 값은 검은색
 FAM = "나눔스퀘어라운드"
 
 def F(sz=11, b=False, c="1F2937"): return Font(name=FAM, size=sz, bold=b, color=c)
@@ -71,13 +70,13 @@ def put(ws, r, c, v, font=None, fill=None, align=None, border=None, fmt=None):
 def merge(ws, r1, c1, r2, c2): ws.merge_cells(start_row=r1, start_column=c1, end_row=r2, end_column=c2)
 
 def tab(ws, r, c1, c2, text):
-    put(ws, r, c1, text, F(12, True, INK), fill=TAB, align=L)
+    put(ws, r, c1, text, F(12, True, TITLE_INK), fill=TAB, align=L)
     merge(ws, r, c1, r, c2); ws.row_dimensions[r].height = 21
 
 def head(ws, r, groups, redcol=None):
     for t, c1, c2 in groups:
         cell = put(ws, r, c1, t, F(11, True, THINK), fill=TH, align=C, border=SOFT)
-        if redcol is not None and c1 == redcol: cell.fill = FILL(THON)
+        if redcol is not None and c1 == redcol: cell.font = F(11, True, THON)
         if c2 > c1: merge(ws, r, c1, r, c2)
         for c in range(c1, c2 + 1): ws.cell(r, c).border = SOFT
     ws.row_dimensions[r].height = 18
@@ -100,9 +99,9 @@ LOGO = "로고-성적표.png"
 def build_report(ws, top, st, avg):
     ws.row_dimensions[top].height = 40
     img = XLImage(LOGO); img.anchor = f"A{top}"; ws.add_image(img)
-    put(ws, top+1, 1, f"{TITLE} 성적표", F(16, True, INK), fill=BAND, align=L)
+    put(ws, top+1, 1, f"  {TITLE} 성적표", F(13, True, TITLE_INK), fill=BAND, align=L)
     merge(ws, top+1, 1, top+1, 16)
-    ws.row_dimensions[top+1].height = 26
+    ws.row_dimensions[top+1].height = 28
     ws.row_dimensions[top+2].height = 17
 
     # 1. 학생정보
@@ -123,7 +122,7 @@ def build_report(ws, top, st, avg):
     sc = [("점수 (100점 만점)", 1, 4), ("등급", 5, 6), ("전체 평균", 7, 9), ("등급컷", 10, 16)]
     head(ws, top+8, sc)
     g = f'{st["grade"]}등급' if st["grade"] else "등급 외"
-    svals = [(st["score"], "0", F(24, True, PRI)),
+    svals = [(st["score"], "0", F(24, True, PURPLE)),
              (g, "General", F(11, True, VAL)),
              (avg, "0.0", F(11, True, VAL)),
              ("-".join(str(c) for c in CUTS), "General", F(11, True, VAL))]
@@ -142,12 +141,12 @@ def build_report(ws, top, st, avg):
     for k, (grp, name, a, b) in enumerate(AREAS):
         r = top + 13 + k
         full = sum(POINT[a-1:b]); mine = sum(st["got"][a-1:b])
-        put(ws, r, 1, "" if grp == last else grp, F(11, True, VAL), fill=TD, align=C, border=SOFT)
+        put(ws, r, 1, "" if grp == last else grp, F(11, True, VAL), align=C, border=SOFT)
         last = grp
         put(ws, r, 2, name, F(11, True, VAL), align=C, border=SOFT)
         merge(ws, r, 2, r, 3); ws.cell(r, 3).border = SOFT
         put(ws, r, 4, full, F(11, True, VAL), align=C, border=SOFT)
-        put(ws, r, 5, mine, F(11, True, VAL), fill=TD, align=C, border=SOFT)
+        put(ws, r, 5, mine, F(11, True, VAL), align=C, border=SOFT)
         put(ws, r, 6, mine/full*100, F(11, True, VAL), align=C, border=SOFT, fmt="0.0")
         merge(ws, r, 6, r, 7); ws.cell(r, 7).border = SOFT
         put(ws, r, TC_, name, F(9, False, GRAY))
@@ -169,13 +168,13 @@ def build_report(ws, top, st, avg):
     ch = BarChart(); ch.type = "col"; ch.title = "영역별 성취도 (%)"
     try:
         ch.title.tx.rich.p[0].pPr = ParagraphProperties(
-            defRPr=CharacterProperties(sz=1100, b=True, solidFill=INK, latin=None))
+            defRPr=CharacterProperties(sz=1100, b=True, solidFill=TITLE_INK, latin=None))
     except Exception: pass
     ch.legend = None; ch.gapWidth = 55; ch.height, ch.width = 8.2, 9.3
     ch.add_data(Reference(ws, min_col=UC_, min_row=top+13, max_row=top+23), titles_from_data=False)
     ch.set_categories(Reference(ws, min_col=TC_, min_row=top+13, max_row=top+23))
     ser = ch.series[0]
-    ser.graphicalProperties.solidFill = BAR
+    ser.graphicalProperties.solidFill = PURPLE
     ser.graphicalProperties.line.noFill = True
     ch.y_axis.scaling.min = 0; ch.y_axis.scaling.max = 100; ch.y_axis.majorUnit = 20
     ch.y_axis.delete = False; ch.x_axis.delete = False; ch.dispBlanksAs = "gap"
@@ -192,7 +191,7 @@ def build_report(ws, top, st, avg):
     for b in range(3):
         r0 = top + 27 + 4*b
         for j, t in enumerate(["문항 번호", "정답", "학생답안", "정오"]):
-            put(ws, r0+j, 1, t, F(11, True, THINK), fill=TH if j == 0 else TD, align=C, border=SOFT)
+            put(ws, r0+j, 1, t, F(11, True, THINK), fill=TH, align=C, border=SOFT)
             ws.row_dimensions[r0+j].height = 16
         for j in range(15):
             q = b*15 + j + 1; c = 2 + j
@@ -246,10 +245,10 @@ def main(students, out):
     an.sheet_view.showGridLines = False
     for col, w in zip("ABCDEFGH", [14, 12, 12, 12, 14, 14, 26, 6]):
         an.column_dimensions[col].width = w
-    put(an, 1, 1, f"{WHO} · {TITLE} 분석", F(16, True, DEEP), align=L); merge(an, 1, 1, 1, 6)
+    put(an, 1, 1, f"{WHO} · {TITLE} 분석", F(15, True, TITLE_INK), align=L); merge(an, 1, 1, 1, 6)
     put(an, 2, 1, str(DATE), F(10, False, GRAY), align=L)
     r = 4
-    put(an, r, 1, "■ 한눈에 보기", F(12, True, PRI), align=L); merge(an, r, 1, r, 6); r += 1
+    put(an, r, 1, "■ 한눈에 보기", F(12, True, PURPLE), align=L); merge(an, r, 1, r, 6); r += 1
     box = [("응시 인원", f"{len(students)}명"), ("평균 점수", f"{avg:.1f}점"),
            ("최고 점수", f"{max(s['score'] for s in students)}점"),
            ("최저 점수", f"{min(s['score'] for s in students)}점")]
@@ -258,9 +257,9 @@ def main(students, out):
         put(an, r+1, 1+c, v, F(13, True, VAL), fill=TD, align=C, border=SOFT)
     an.row_dimensions[r+1].height = 24
     r += 3
-    put(an, r, 1, "■ 등급 분포", F(12, True, PRI), align=L); merge(an, r, 1, r, 6); r += 1
+    put(an, r, 1, "■ 등급 분포", F(12, True, PURPLE), align=L); merge(an, r, 1, r, 6); r += 1
     for c, t in enumerate(["등급", "인원", "비율"]):
-        put(an, r, 1+c, t, F(11, True, "FFFFFF"), fill=HEAD, align=C, border=SOFT)
+        put(an, r, 1+c, t, F(11, True, THINK), fill=TH, align=C, border=SOFT)
     r += 1
     for gnum in list(range(1, 9)) + [0]:
         cnt = sum(1 for s in students if s["grade"] == gnum)
@@ -270,9 +269,9 @@ def main(students, out):
         put(an, r, 3, cnt/len(students)*100, F(11), align=C, border=SOFT, fmt="0.0")
         r += 1
     r += 1
-    put(an, r, 1, "■ 학생별 점수 (높은 순)", F(12, True, PRI), align=L); merge(an, r, 1, r, 6); r += 1
+    put(an, r, 1, "■ 학생별 점수 (높은 순)", F(12, True, PURPLE), align=L); merge(an, r, 1, r, 6); r += 1
     for c, t in enumerate(["이름", "점수", "등급", "틀린 문항 수", "가장 약한 영역"]):
-        put(an, r, 1+c, t, F(11, True, "FFFFFF"), fill=HEAD, align=C, border=SOFT)
+        put(an, r, 1+c, t, F(11, True, THINK), fill=TH, align=C, border=SOFT)
     r += 1
     for s in sorted(students, key=lambda s: -s["score"]):
         pct = [(sum(s["got"][a-1:b])/sum(POINT[a-1:b]), nm) for _, nm, a, b in AREAS]
@@ -284,9 +283,9 @@ def main(students, out):
         put(an, r, 5, weak, F(11), align=C, border=SOFT)
         r += 1
     r += 1
-    put(an, r, 1, "■ 영역별 반 평균 성취도", F(12, True, PRI), align=L); merge(an, r, 1, r, 6); r += 1
+    put(an, r, 1, "■ 영역별 반 평균 성취도", F(12, True, PURPLE), align=L); merge(an, r, 1, r, 6); r += 1
     for c, t in enumerate(["분류", "영역", "배점", "반 평균 득점", "성취도%"]):
-        put(an, r, 1+c, t, F(11, True, "FFFFFF"), fill=HEAD, align=C, border=SOFT)
+        put(an, r, 1+c, t, F(11, True, THINK), fill=TH, align=C, border=SOFT)
     r += 1
     for grp, nm, a, b in AREAS:
         full = sum(POINT[a-1:b])
@@ -298,9 +297,9 @@ def main(students, out):
         put(an, r, 5, m/full*100, F(11, True, VAL), align=C, border=SOFT, fmt="0.0")
         r += 1
     r += 1
-    put(an, r, 1, "■ 문항별 정답률 (낮은 순)", F(12, True, PRI), align=L); merge(an, r, 1, r, 6); r += 1
+    put(an, r, 1, "■ 문항별 정답률 (낮은 순)", F(12, True, PURPLE), align=L); merge(an, r, 1, r, 6); r += 1
     for c, t in enumerate(["문항", "정답", "배점", "영역", "맞힌 인원", "정답률%"]):
-        put(an, r, 1+c, t, F(11, True, "FFFFFF"), fill=HEAD, align=C, border=SOFT)
+        put(an, r, 1+c, t, F(11, True, THINK), fill=TH, align=C, border=SOFT)
     r += 1
     def area_of(q):
         for _, nm, a, b in AREAS:
@@ -328,9 +327,9 @@ def main(students, out):
     aw.column_dimensions["A"].width = 6; aw.column_dimensions["B"].width = 12
     aw.column_dimensions["C"].width = 50; aw.column_dimensions["D"].width = 8
     put(aw, 1, 1, "OMR 답안지에서 읽어 낸 답입니다 (1~45번을 이어서 적었습니다)",
-        F(12, True, DEEP), align=L); merge(aw, 1, 1, 1, 4)
+        F(12, True, TITLE_INK), align=L); merge(aw, 1, 1, 1, 4)
     for c, t in enumerate(["답안지", "이름", "1~45번 답", "점수"]):
-        put(aw, 2, 1+c, t, F(11, True, "FFFFFF"), fill=HEAD, align=C, border=SOFT)
+        put(aw, 2, 1+c, t, F(11, True, THINK), fill=TH, align=C, border=SOFT)
     for i, s in enumerate(students):
         put(aw, 3+i, 1, s["page"], F(11), align=C, border=SOFT)
         put(aw, 3+i, 2, s["name"], F(11), align=C, border=SOFT)
