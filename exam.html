@@ -16,7 +16,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 모의고사">
 
-  <link rel="stylesheet" href="style.css?v=20261018l">
+  <link rel="stylesheet" href="style.css?v=20261018m">
 </head>
 <body>
 
@@ -84,6 +84,9 @@
 
     <!-- 4. 답 입력 화면 (OMR) -->
     <section id="screen-sheet" class="screen" hidden>
+      <!-- 풀던 시험을 그만두고 회차 고르기로 (한 번 더 묻습니다) -->
+      <button type="button" id="btn-quit" class="btn-back btn-quit">처음으로</button>
+
       <header class="quiz-head">
         <p id="sheet-round" class="quiz-round"></p>
         <div class="progress-text">
@@ -152,11 +155,21 @@
       </div>
     </section>
 
+    <!-- '처음으로' 확인 상자 — 실수로 눌러 풀던 시험을 날리지 않게 한 번 더 묻습니다 -->
+    <div id="quit-ask" class="quit-scrim" hidden role="dialog" aria-modal="true" aria-labelledby="quit-title">
+      <div class="quit-box">
+        <p class="quit-title" id="quit-title">처음으로 돌아갈까요?</p>
+        <p class="quit-text">지금 돌아가면 이 시험은<br>기록되지 않아요.</p>
+        <button type="button" id="quit-keep" class="btn btn-primary">계속 풀기</button>
+        <button type="button" id="quit-leave" class="btn btn-quiet">처음으로</button>
+      </div>
+    </div>
+
   </main>
 
   <script>var APP_SUBJECT = "모의고사";</script>
   <script src="exams.js?v=20261018f"></script>
   <script src="storage.js?v=20261018j"></script>
-  <script src="exam.js?v=20261018j"></script>
+  <script src="exam.js?v=20261018m"></script>
 </body>
 </html>

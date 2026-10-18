@@ -85,6 +85,7 @@
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
   --answer-right: #dd3690;  /* 틀린 문제 해설의 '정답' 글자색 (선명한 분홍) */
   --shadow: rgba(70, 48, 130, 0.08);
+  --scrim: rgba(36, 28, 60, 0.45);   /* 확인 상자 뒤를 어둡게 덮는 색 */
 
   /* 글씨체 (뒤쪽은 글씨체를 못 받았을 때 대신 쓸 것들) */
   --font-body: "나눔스퀘어", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
@@ -118,6 +119,7 @@
     --answer-mine: #a99cca;
     --answer-right: #f983bd;
     --shadow: rgba(0, 0, 0, 0.4);
+    --scrim: rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -144,6 +146,7 @@
   --answer-mine: #a99cca;
   --answer-right: #f983bd;
   --shadow: rgba(0, 0, 0, 0.4);
+  --scrim: rgba(0, 0, 0, 0.6);
 }
 
 /* 큰 글씨체(고운밤)에는 굵은 글씨 파일이 없습니다.
@@ -1830,6 +1833,54 @@ select.input {
   vertical-align: 2px;
   -webkit-text-stroke: 0;
 }
+
+/* ---------- '처음으로' 단추와 확인 상자 (문제 화면) ---------- */
+
+.btn-quit {
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+
+.btn-quit::before { border-color: var(--muted); }
+
+.quit-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--scrim);
+}
+
+.quit-box {
+  width: 100%;
+  max-width: 320px;
+  padding: 22px 20px 18px;
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: 0 10px 30px var(--shadow);
+  text-align: center;
+}
+
+.quit-title {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 400;
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+.quit-text {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.quit-box .btn { margin-top: 18px; }
+.quit-box .btn + .btn { margin-top: 10px; }
 
 /* ---------- 작은 화면(휴대폰) ---------- */
 

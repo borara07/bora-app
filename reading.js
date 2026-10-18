@@ -776,6 +776,8 @@
     refreshHistoryButton();
     show('start');
 
+    setupQuit();
+
     /* 통합 첫 화면(index.html)에서 이름 확인을 마치고 왔으면
        이름 입력을 건너뛰고 바로 회차 고르기로 갑니다 */
     var passed = VocabStore.passedStudent();
@@ -801,6 +803,29 @@
       homeworkRound = h.round || '';
       homeworkSet = !!h.set;
       renderRounds();
+    });
+  }
+
+  /* ---------- '처음으로' (풀던 시험 그만두기) ----------
+     맨 위 '처음으로' 를 누르면 확인 상자를 띄우고,
+     한 번 더 '처음으로' 를 누르면 회차 고르기로 돌아갑니다. 그 시험은 기록하지 않습니다. */
+  function setupQuit() {
+    var ask = $('quit-ask');
+    if (!ask) { return; }
+    function close() { ask.hidden = true; $('btn-quit').focus(); }
+    $('btn-quit').addEventListener('click', function () {
+      ask.hidden = false;
+      $('quit-keep').focus();
+    });
+    $('quit-keep').addEventListener('click', close);
+    $('quit-leave').addEventListener('click', function () {
+      ask.hidden = true;
+      renderRounds();
+    });
+    /* 바깥 어두운 곳을 누르거나 Esc 를 누르면 계속 풉니다 */
+    ask.addEventListener('click', function (e) { if (e.target === ask) { close(); } });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !ask.hidden) { close(); }
     });
   }
 
