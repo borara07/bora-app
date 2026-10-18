@@ -210,7 +210,7 @@ var QUIZ_QUESTION_LABEL = "다음 어휘의 뜻으로 알맞은 것은?";   /* �
 
 **학생에게 보낼 안내 (그대로 복사해서 쓰세요)**
 
-> 어휘 시험을 휴대폰 바탕화면에 놓아두면 편해요.
+> 보라! 국어를 휴대폰 바탕화면에 놓아두면 편해요. (주소: https://borara07.github.io/bora-app/)
 >
 > **아이폰** — 꼭 **사파리**로 여세요 (크롬은 안 됩니다)
 > 1. 링크 열기 → 화면 아래 가운데 **공유 버튼**(네모에 위 화살표)
@@ -222,7 +222,9 @@ var QUIZ_QUESTION_LABEL = "다음 어휘의 뜻으로 알맞은 것은?";   /* �
 > 2. **`홈 화면에 추가`** (또는 `앱 설치`)
 > 3. **`추가`**
 
-바탕화면 아이콘은 학원 로고, 이름은 **보라국어 어휘** 로 나옵니다.
+바탕화면 아이콘은 학원 로고, 이름은 **보라! 국어** 로 나옵니다.
+이 아이콘 하나로 어휘·문법·모의고사·독해가 모두 열립니다.
+예전에 과목별 아이콘을 저장한 학생도 그 아이콘이 계속 열리지만, 새 아이콘 하나로 바꾸도록 안내해 주세요.
 
 ---
 
@@ -231,7 +233,8 @@ var QUIZ_QUESTION_LABEL = "다음 어휘의 뜻으로 알맞은 것은?";   /* �
 | 파일 | 역할 | 고쳐도 되나요? |
 |---|---|---|
 | `questions.js` | **문제와 해설** | ✅ 여기만 고치면 됩니다 |
-| `index.html` | 화면 구조 | 건드리지 않아도 됩니다 |
+| `index.html` · `hub.js` | **통합 첫 화면 '보라! 국어'** (이름 확인 → 과목 고르기) | 건드리지 않아도 됩니다 |
+| `vocab.html` | 어휘 화면 구조 | 건드리지 않아도 됩니다 |
 | `style.css` | 색깔·글씨 크기 | 원하면 색만 바꿔도 됩니다 |
 | `app.js` | 채점·화면 전환 등 동작 | 건드리지 마세요 |
 | `storage.js` | 점수 기록 저장 | 수파베이스를 쓸 때 **두 칸만** 채웁니다 |
@@ -341,7 +344,8 @@ var SUPABASE = {
 학생 화면과 **완전히 다른 주소**입니다.
 
 ```
-학생 어휘     https://borara07.github.io/bora-app/
+학생 통합     https://borara07.github.io/bora-app/            ← '보라! 국어' 이 주소 하나로 네 과목
+학생 어휘     https://borara07.github.io/bora-app/vocab.html
 학생 문법     https://borara07.github.io/bora-app/grammar.html
 학생 모의고사 https://borara07.github.io/bora-app/exam.html
 학생 독해     https://borara07.github.io/bora-app/reading.html

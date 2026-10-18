@@ -4,30 +4,29 @@
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>어휘 테스트</title>
+  <title>보라! 국어</title>
 
-  <!-- 휴대폰 바탕화면에 앱처럼 놓기 위한 설정 -->
-  <link rel="manifest" href="manifest.json?v=20260917a">
+  <!-- 휴대폰 바탕화면에 앱처럼 놓기 위한 설정 (이 아이콘 하나로 네 과목이 다 열립니다) -->
+  <link rel="manifest" href="manifest.json?v=20261018j">
   <meta name="theme-color" content="#5b2d8e">
-  <link rel="icon" href="favicon.png?v=20260917a">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260917a">
+  <link rel="icon" href="favicon.png?v=20261018j">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261018j">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="보라! 어휘">
+  <meta name="apple-mobile-web-app-title" content="보라! 국어">
 
-  <link rel="stylesheet" href="style.css?v=20261018i">
+  <link rel="stylesheet" href="style.css?v=20261018j">
 </head>
 <body>
 
   <main class="app">
 
-    <!-- 1. 학생 정보 입력 화면 -->
+    <!-- 1. 학생 정보 입력 화면 (진한 보라) — 재원생 확인은 여기서 한 번만 합니다 -->
     <section id="screen-start" class="screen">
-      <!-- 바탕이 진한 보라라서 흰색 로고를 씁니다 -->
       <div class="brand-box">
-        <img class="brand-mark" src="logo/mark-white.png?v=20260917a" alt="" width="450" height="397">
-        <h1 class="brand-name">보라! 어휘</h1>
+        <img class="brand-mark" src="logo/mark-white.png?v=20261018j" alt="" width="450" height="397">
+        <h1 class="brand-name">보라! 국어</h1>
       </div>
 
       <form id="start-form" class="card" autocomplete="off">
@@ -54,80 +53,54 @@
       </form>
     </section>
 
-    <!-- 2. 회차 고르기 화면 -->
-    <section id="screen-rounds" class="screen" hidden>
+    <!-- 2. 과목 고르기 화면 (연보라) -->
+    <section id="screen-subjects" class="screen hub-subjects" hidden>
       <div class="brand-box">
-        <img class="brand-mark" src="logo/mark-white.png?v=20260917a" alt="" width="450" height="397">
-        <p class="brand-name">보라! 어휘</p>
+        <picture>
+          <source srcset="logo/mark-white.png?v=20261018j" media="(prefers-color-scheme: dark)">
+          <img class="brand-mark" src="logo/mark.png?v=20261018j" alt="" width="450" height="397">
+        </picture>
+        <p class="brand-name">보라! 국어</p>
+        <p id="hub-quote" class="hub-quote">“나는 점점 더 나아지고 있다.”</p>
       </div>
 
-      <div id="round-list" class="round-list"></div>
-      <p id="rounds-empty" class="rounds-empty" hidden></p>
+      <div class="hub-panel">
+        <p class="hub-who"><b id="hub-name"></b> 학생<span id="hub-grade"></span></p>
+        <p class="hub-pick">과목을 고르세요</p>
 
-      <button type="button" id="btn-back-start" class="btn btn-quiet btn-on-deep">이름 다시 입력</button>
+        <!-- 단추를 누르면 그 과목 화면으로 갑니다. 이름은 다시 묻지 않습니다 -->
+        <nav class="hub-subject-list" aria-label="과목">
+          <a class="hub-subject" href="vocab.html">
+            <span class="hub-subject-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5c2.5-1.2 5.5-1.2 8.5.6 3-1.8 6-1.8 8.5-.6v13c-2.5-1.2-5.5-1.2-8.5.6-3-1.8-6-1.8-8.5-.6z"/><path d="M12 6.1v13.1"/></svg>
+            </span>
+            <span class="hub-subject-name">어휘</span>
+          </a>
+          <a class="hub-subject" href="grammar.html">
+            <span class="hub-subject-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 4.5l4 4L9 19l-5 1 1-5z"/><path d="M13 7l4 4"/></svg>
+            </span>
+            <span class="hub-subject-name">문법</span>
+          </a>
+          <a class="hub-subject" href="exam.html">
+            <span class="hub-subject-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4.5" width="14" height="16" rx="2"/><path d="M9 3.5h6v3H9z"/><path d="M8.5 12l2.2 2.2 4.6-4.6"/><path d="M8.5 17.5h7"/></svg>
+            </span>
+            <span class="hub-subject-name">모의고사</span>
+          </a>
+          <a class="hub-subject" href="reading.html">
+            <span class="hub-subject-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h11M4 10h9M4 14h5"/><circle cx="15.5" cy="15.5" r="3.5"/><path d="M18 18l2.5 2.5"/></svg>
+            </span>
+            <span class="hub-subject-name">독해</span>
+          </a>
+        </nav>
+      </div>
+
+      <button type="button" id="btn-rename" class="btn btn-quiet">이름 다시 입력</button>
     </section>
 
-    <!-- 3. 문제 풀이 화면 -->
-    <section id="screen-quiz" class="screen" hidden>
-      <header class="quiz-head">
-        <p id="quiz-round" class="quiz-round"></p>
-        <div class="progress-text">
-          <span id="progress-now">1</span> / <span id="progress-total">10</span>
-        </div>
-        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
-      </header>
-
-      <div class="card">
-        <p id="question-label" class="question-label">다음 어휘의 뜻으로 알맞은 것은?</p>
-        <p id="question-word" class="question-word">어휘</p>
-        <p id="question-hanja" class="question-hanja" hidden></p>
-
-        <div id="choices" class="choices"></div>
-      </div>
-
-      <button id="btn-next" class="btn btn-primary" disabled>다음 문제</button>
-    </section>
-
-    <!-- 4. 결과 화면 -->
-    <section id="screen-result" class="screen" hidden>
-      <div class="card result-card">
-        <p id="result-round" class="result-round"></p>
-        <p id="result-name" class="result-name"></p>
-        <p class="result-score">
-          <span id="result-correct">0</span><span class="result-total">/<span id="result-total">10</span></span>
-        </p>
-        <p id="result-percent" class="result-percent"></p>
-        <p id="result-comment" class="result-comment"></p>
-      </div>
-
-      <div id="retest-note" class="retest-note" hidden>
-        <p id="retest-title" class="retest-title"></p>
-        <ol class="retest-list">
-          <li>
-            <span class="retest-step">바로 재시험을 보려면</span>
-            틀린 문제 해설을 읽고 '다시 보기' 를 눌러 한 번 더 풀어 주세요.
-          </li>
-          <li>
-            <span class="retest-step">나중에 재시험을 보려면</span>
-            충분히 공부한 뒤에 이 링크를 다시 열어 처음부터 풀어 주세요.
-          </li>
-        </ol>
-      </div>
-
-      <section id="wrong-area">
-        <h2 class="section-title">틀린 문제 해설</h2>
-        <div id="wrong-list" class="wrong-list"></div>
-      </section>
-
-      <p id="save-state" class="save-state" hidden></p>
-
-      <button id="btn-retry" class="btn btn-primary">다시 보기</button>
-      <button id="btn-history" class="btn btn-quiet">내 기록 보기</button>
-      <!-- 시험을 마친 학생이 앱을 닫지 않고 회차 화면으로 돌아갑니다 -->
-      <button id="btn-home" class="btn btn-quiet">처음으로 돌아가기</button>
-    </section>
-
-    <!-- 5. 내 기록 화면 -->
+    <!-- 3. 내 기록 화면 (네 과목 기록을 모두 보여 줍니다) -->
     <section id="screen-history" class="screen" hidden>
       <button type="button" id="btn-back-from-history" class="btn-back">돌아가기</button>
 
@@ -138,24 +111,11 @@
       </div>
 
       <div id="history-list" class="history-list"></div>
-
-    </section>
-
-    <!-- 오류 안내 (문제 파일에 실수가 있을 때만 보입니다) -->
-    <section id="screen-error" class="screen" hidden>
-      <div class="card">
-        <h2 class="section-title">문제 파일을 확인해주세요</h2>
-        <p class="hint">questions.js 파일에서 아래 부분을 고쳐주세요.</p>
-        <ul id="error-list" class="error-list"></ul>
-      </div>
     </section>
 
   </main>
 
-  <!-- 이 페이지는 어휘 문제를 씁니다 -->
-  <script>var APP_SUBJECT = "어휘";</script>
-  <script src="questions.js?v=20260917a"></script>
-  <script src="storage.js?v=20260917a"></script>
-  <script src="app.js?v=20260917a"></script>
+  <script src="storage.js?v=20261018j"></script>
+  <script src="hub.js?v=20261018j"></script>
 </body>
 </html>
