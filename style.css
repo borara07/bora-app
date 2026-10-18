@@ -672,6 +672,7 @@ html.on-rounds .btn-back::before { border-color: rgba(255, 255, 255, 0.9); }
   line-height: 1.55;
   letter-spacing: -0.01em;
   margin: 8px 0 20px;
+  white-space: pre-line;   /* 보기를 줄마다 하나씩 적은 문제가 있어 줄바꿈을 살립니다 */
 }
 
 /* 틀린 문제 카드의 제시문도 한 크기로 둡니다 */
@@ -679,6 +680,7 @@ html.on-rounds .btn-back::before { border-color: rgba(255, 255, 255, 0.9); }
 .wrong-word.is-long {
   font-size: 16px;
   line-height: 1.5;
+  white-space: pre-line;   /* 위와 같은 이유로 줄바꿈을 살립니다 */
 }
 
 /* 어휘 아래 한자 (hanja 를 비워두면 표시되지 않습니다) */
