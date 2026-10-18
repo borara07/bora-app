@@ -210,11 +210,27 @@
   }
 
   /* 이번 주 회차를 어느 이름으로 찾을지 정합니다.
-     어휘는 반(고등부·중등부), 문법은 학년(고1·중3 …)입니다.
-     학년을 모르는 학생은 반 이름으로 찾습니다. */
+     어휘·문법 모두 학년(고1·중3 …)입니다.
+     학년을 모르는 학생은 반 이름(고등부·중등부)으로 찾습니다. */
   function whoFor() {
-    if (SUBJECT === '문법' && state.grade) { return state.grade; }
+    if (state.grade) { return state.grade; }
     return state.group || '고등부';
+  }
+
+  /* 이번 주 회차를 읽어 와서 회차 화면을 그립니다.
+     어휘는 예전에 반(고등부·중등부)으로 회차를 정했습니다.
+     선생님이 그 학년을 아직 따로 정하지 않았으면 예전 반 값을 그대로 씁니다. */
+  function loadHomework() {
+    VocabStore.homeworkRound(whoFor(), SUBJECT).then(function (h) {
+      if (!h.set && SUBJECT === '어휘' && whoFor() !== (state.group || '고등부')) {
+        return VocabStore.homeworkRound(state.group || '고등부', SUBJECT);
+      }
+      return h;
+    }).then(function (h) {
+      homeworkRound = h.round || '';
+      homeworkSet = !!h.set;
+      renderRounds();
+    });
   }
 
   /* 그 반이 볼 회차만 고릅니다. 회차에 반이 안 적혀 있으면 고등부로 봅니다.
@@ -827,12 +843,8 @@
         state.grade = r.grade || '';
         VocabStore.rememberStudent(student);
 
-        /* 어휘는 반, 문법은 학년으로 이번 주 회차를 읽습니다 */
-        VocabStore.homeworkRound(whoFor(), SUBJECT).then(function (h) {
-          homeworkRound = h.round || '';
-          homeworkSet = !!h.set;
-          renderRounds();
-        });
+        /* 학년으로 이번 주 회차를 읽습니다 */
+        loadHomework();
         return;
       }
 
@@ -993,11 +1005,7 @@
     $('rounds-empty').hidden = false;
     show('rounds');
 
-    VocabStore.homeworkRound(whoFor(), SUBJECT).then(function (h) {
-      homeworkRound = h.round || '';
-      homeworkSet = !!h.set;
-      renderRounds();
-    });
+    loadHomework();
   }
 
   /* ---------- '처음으로' (풀던 시험 그만두기) ----------
