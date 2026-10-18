@@ -1688,10 +1688,8 @@ select.input {
   margin: 0;
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-2);
+  color: var(--correct);    /* 맞았을 때도 틀렸을 때도 같은 초록 (정답 보기와 같은 색) */
 }
-
-.read-verdict.is-ok { color: var(--correct); }
 
 .read-why {
   margin: 8px 0 0;
