@@ -717,9 +717,13 @@
     roundsOf(subject).forEach(function (r) {
       if (!byGrade(subject) && (r.group || '고등부') !== group) { return; }
       count += 1;
-      /* 모의고사는 회차에 학년이 적혀 있어 목록에도 같이 보여 줍니다 */
+      /* 모의고사는 회차에 학년이 적혀 있어 목록에도 같이 보여 주고,
+         저장할 때도 '고2 · 3분기 진단평가' 처럼 학년을 붙입니다.
+         학년이 다른 회차끼리 이름이 같아도 섞이지 않게 하려는 것입니다.
+         이름만 저장해 둔 예전 값도 그대로 켜져 보입니다. */
       var label = (subject === '모의고사' && r.grade) ? (r.grade + ' · ' + r.title) : r.title;
-      var one = pickRow('hw-' + count, label, r.title, chosen.indexOf(r.title) >= 0, false);
+      var one = pickRow('hw-' + count, label, label,
+                        chosen.indexOf(label) >= 0 || chosen.indexOf(r.title) >= 0, false);
       one.box.addEventListener('change', function () {
         /* 회차를 하나라도 켜면 '모든 회차 열기' 는 저절로 꺼집니다 */
         if (one.box.checked) { all.box.checked = false; }

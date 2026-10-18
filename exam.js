@@ -298,7 +298,10 @@
     if (!homeworkSet) { return false; }
     var titles = openTitles();
     if (titles.length === 0) { return true; }
-    return titles.indexOf(exam.title) >= 0;
+    /* 선생님이 정한 값은 '고2 · 3분기 진단평가' 처럼 학년이 앞에 붙습니다.
+       학년이 다른 회차끼리 이름이 같아도 섞이지 않게 하려는 것입니다.
+       예전에 이름만 저장해 둔 값도 그대로 열립니다. */
+    return titles.indexOf(examLabel(exam)) >= 0 || titles.indexOf(exam.title) >= 0;
   }
 
   function renderRounds() {
