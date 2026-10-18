@@ -256,12 +256,12 @@ html.on-rounds .btn-primary:disabled {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 9px;
-  margin: 38px 0 28px;
+  gap: 8px;
+  margin: 22px 0 22px;
 }
 
 .brand-mark {
-  width: 56px;
+  width: 48px;
   height: auto;
 }
 
@@ -461,6 +461,11 @@ h1 {
   transform: rotate(45deg);
 }
 
+/* 진한 보라 바탕(회차 고르기) 위에서는 흰 글씨로 — 통합 첫 화면으로 돌아가는 '과목 고르기' */
+html.on-rounds .btn-back { color: rgba(255, 255, 255, 0.9); text-decoration: none; }
+html.on-rounds .btn-back::before { border-color: rgba(255, 255, 255, 0.9); }
+.btn-to-hub { text-decoration: none; }
+
 .btn-back:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
@@ -495,14 +500,15 @@ h1 {
   display: block;
   font-size: 15px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .input {
   width: 100%;
+  min-height: 48px;          /* 손가락으로 누르기 편한 가장 작은 높이입니다 */
   font-size: 17px;
   font-family: inherit;
-  padding: 15px 14px;
+  padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--soft);
@@ -545,8 +551,9 @@ h1 {
 .btn {
   display: block;
   width: 100%;
+  min-height: 48px;          /* 손가락으로 누르기 편한 가장 작은 높이입니다 */
   margin-top: 16px;
-  padding: 16px;
+  padding: 10px 16px;
   font-size: 17px;
   font-weight: 700;
   font-family: inherit;
@@ -913,7 +920,7 @@ h1 {
 
 /* ---------- 학생 정보 입력 ---------- */
 
-.field + .field { margin-top: 18px; }
+.field + .field { margin-top: 14px; }
 
 .field-hint {
   margin: 7px 0 0;
@@ -1701,6 +1708,131 @@ select.input {
   color: inherit;
 }
 
+/* ---------- 통합 첫 화면 '보라! 국어' (index.html) ---------- */
+
+/* 과목 고르기 화면은 선생님 화면처럼 연보라 바탕입니다.
+   로고·문구는 위, 과목 상자는 가운데, '이름 다시 입력' 은 맨 아래에 둡니다 */
+.hub-subjects {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 52px);
+  min-height: calc(100dvh - 52px);
+}
+
+.hub-subjects .brand-box { margin-bottom: auto; }
+.hub-subjects > .btn { margin-top: auto; }
+
+/* 오늘의 한 마디 — '보라! 국어' 와 같은 색 */
+.hub-quote {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: center;
+  word-break: keep-all;
+  color: var(--brand-ink);
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+/* 과목 상자 */
+.hub-panel {
+  margin: 28px 0;
+  padding: 14px 12px 16px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 12px var(--shadow);
+}
+
+/* 상자 맨 위 학생 이름표 */
+.hub-who {
+  width: fit-content;
+  margin: 0 auto 10px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--chip);
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.hub-who b { color: var(--primary-dark); }
+
+.hub-pick {
+  margin: 0 2px 12px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.hub-subject-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* 과목 단추 — 왼쪽에 작은 그림 동그라미, 오른쪽에 과목 이름 */
+.hub-subject {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 10px 8px;
+  border-radius: 14px;
+  background: var(--soft);
+  border: 1.5px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.12s ease;
+}
+
+.hub-subject:hover { border-color: var(--primary); }
+.hub-subject:active { transform: scale(0.97); }
+
+.hub-subject:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.hub-subject-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--chip);
+  color: var(--primary-dark);
+}
+
+.hub-subject-name {
+  white-space: nowrap;
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.1;
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+/* 내 기록 — 과목 이름을 제목 앞에 작게 붙입니다 */
+.history-subject {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--primary-dark);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: 2px;
+  -webkit-text-stroke: 0;
+}
+
 /* ---------- 작은 화면(휴대폰) ---------- */
 
 @media (max-width: 380px) {
@@ -1725,6 +1857,7 @@ select.input {
 
 @media (prefers-reduced-motion: reduce) {
   .progress-fill { transition: none; }
+  .hub-subject { transition: none; }
   .area-fill { transition: none; }
 }
 

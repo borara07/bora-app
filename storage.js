@@ -26,6 +26,7 @@ var VocabStore = (function () {
   var KEY_RECORDS = 'vocab.records';
   var KEY_LAST = 'vocab.lastStudent';
   var KEY_HOMEWORK = 'vocab.homework';   /* 마지막으로 확인한 숙제 회차 */
+  var KEY_PASSED = 'bora.passedStudent'; /* 통합 첫 화면에서 확인을 마친 학생 */
 
   /* ---------- 기기 저장소 다루기 ---------- */
 
@@ -239,6 +240,31 @@ var VocabStore = (function () {
           name: student.name, school: student.school, phone4: student.phone4
         }));
       } catch (e) { /* 저장 못 해도 그냥 넘어갑니다 */ }
+    },
+
+    /* 통합 첫 화면(index.html)에서 재원생 확인을 마친 학생을 과목 화면으로 넘겨줍니다.
+       과목 화면은 이 값이 있으면 이름 입력을 건너뛰고 바로 회차 고르기로 갑니다.
+       앱(탭)을 닫으면 지워집니다. 저장이 안 되는 브라우저에서는 이름을 다시 묻습니다. */
+    passStudent: function (info) {
+      try {
+        window.sessionStorage.setItem(KEY_PASSED, JSON.stringify({
+          name: info.name, school: info.school, phone4: info.phone4,
+          group: info.group || '', grade: info.grade || ''
+        }));
+      } catch (e) { /* 저장 못 해도 그냥 넘어갑니다 */ }
+    },
+
+    passedStudent: function () {
+      try {
+        var v = JSON.parse(window.sessionStorage.getItem(KEY_PASSED) || 'null');
+        return (v && v.name && /^[0-9]{4}$/.test(v.phone4)) ? v : null;
+      } catch (e) {
+        return null;
+      }
+    },
+
+    forgetPassedStudent: function () {
+      try { window.sessionStorage.removeItem(KEY_PASSED); } catch (e) { /* 그냥 넘어갑니다 */ }
     },
 
     /* 시험 결과 한 건 저장 */

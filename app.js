@@ -6,7 +6,7 @@
   'use strict';
 
   /* 이 페이지가 다루는 과목입니다.
-     index.html 은 '어휘', grammar.html 은 '문법' 이라고 미리 적어 둡니다. */
+     vocab.html 은 '어휘', grammar.html 은 '문법' 이라고 미리 적어 둡니다. */
   var SUBJECT = (typeof APP_SUBJECT === 'string' && APP_SUBJECT) ? APP_SUBJECT : '어휘';
 
   /* 이 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS) */
@@ -558,7 +558,7 @@
       return;
     }
 
-    /* 안내 내용은 index.html 에 적혀 있고, 기준 개수만 여기서 채웁니다 */
+    /* 안내 내용은 vocab.html·grammar.html 에 적혀 있고, 기준 개수만 여기서 채웁니다 */
     $('retest-title').textContent =
       '정답이 ' + retestMax() + '개 이하예요.\n재시험을 봐야 합니다.';
     box.hidden = false;
@@ -969,6 +969,33 @@
     }
     refreshHistoryButton();
     show('start');
+
+    /* 통합 첫 화면(index.html)에서 이름 확인을 마치고 왔으면
+       이름 입력을 건너뛰고 바로 회차 고르기로 갑니다 */
+    var passed = VocabStore.passedStudent();
+    if (passed) { enterFromHub(passed); }
+  }
+
+  /* 통합 첫 화면에서 온 학생 — 위에 '과목 고르기' 를 보여 주고 '이름 다시 입력' 은 감춥니다 */
+  function enterFromHub(passed) {
+    state.student = { name: passed.name, school: passed.school, phone4: passed.phone4 };
+    state.group = passed.group || '고등부';
+    state.grade = passed.grade || '';
+
+    $('btn-to-hub').hidden = false;
+    $('btn-back-start').hidden = true;
+
+    /* 이번 주 회차를 읽는 동안 빈 회차 화면을 먼저 보여 줍니다 */
+    $('round-list').innerHTML = '';
+    $('rounds-empty').textContent = '이번 주 시험을 확인하는 중…';
+    $('rounds-empty').hidden = false;
+    show('rounds');
+
+    VocabStore.homeworkRound(whoFor(), SUBJECT).then(function (h) {
+      homeworkRound = h.round || '';
+      homeworkSet = !!h.set;
+      renderRounds();
+    });
   }
 
   init();
