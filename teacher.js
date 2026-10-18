@@ -667,7 +667,11 @@
         return { title: '[' + r.area + r.no + '] ' + r.title };
       }) : [];
     } else {
+      /* 어휘는 두 파일을 함께 씁니다 — questions.js(어휘1) + questions-context.js(어휘2) */
       list = (typeof ROUNDS !== 'undefined') ? ROUNDS : [];
+      if (typeof CONTEXT_ROUNDS !== 'undefined' && Array.isArray(CONTEXT_ROUNDS)) {
+        list = list.concat(CONTEXT_ROUNDS);
+      }
     }
     return Array.isArray(list) ? list : [];
   }
@@ -866,6 +870,7 @@
     }
 
     add(typeof ROUNDS !== 'undefined' ? ROUNDS : null, '');
+    add(typeof CONTEXT_ROUNDS !== 'undefined' ? CONTEXT_ROUNDS : null, '');
     add(typeof GRAMMAR_ROUNDS !== 'undefined' ? GRAMMAR_ROUNDS : null, '[문법] ');
     return out;
   }
