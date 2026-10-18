@@ -652,27 +652,24 @@ h1 {
   word-break: break-word;
 }
 
-/* 문법 문제의 제시문처럼 글이 길 때는 크기를 줄입니다 */
-.question-word.is-sentence {
-  font-size: 24px;
-  line-height: 1.45;
+/* 문법 문제의 제시문입니다.
+   글이 길든 짧든 한 크기로 둡니다. 길이에 따라 크기가 바뀌면
+   같은 글씨체인데도 문제마다 다른 글씨체처럼 보이기 때문입니다.
+   (어휘 한 낱말은 위 .question-word 의 40px 그대로입니다) */
+.question-word.is-sentence,
+.question-word.is-long {
+  font-size: 19px;
+  line-height: 1.55;
   letter-spacing: -0.01em;
   margin: 8px 0 20px;
 }
 
-/* 〈보기〉 처럼 아주 긴 제시문은 한 단계 더 줄입니다 */
-.question-word.is-long {
-  font-size: 19px;
-  line-height: 1.55;
-}
-
-/* 틀린 문제 카드에서도 글이 길면 같은 규칙으로 줄입니다 */
-.wrong-word.is-sentence {
-  font-size: 18px;
+/* 틀린 문제 카드의 제시문도 한 크기로 둡니다 */
+.wrong-word.is-sentence,
+.wrong-word.is-long {
+  font-size: 16px;
   line-height: 1.5;
 }
-
-.wrong-word.is-long { font-size: 16px; }
 
 /* 어휘 아래 한자 (hanja 를 비워두면 표시되지 않습니다) */
 .question-hanja {
