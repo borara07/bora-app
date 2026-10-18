@@ -1243,7 +1243,8 @@ select.input {
 
 .round-list.is-wide .round-btn {
   flex-direction: row;
-  align-items: baseline;
+  /* 글씨가 위로 쏠리지 않게 단추 높이 한가운데에 둡니다 */
+  align-items: center;
   justify-content: flex-start;
   gap: 8px;
   min-height: 50px;          /* 손가락으로 누를 수 있는 가장 작은 크기입니다 */
