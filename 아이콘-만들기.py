@@ -46,6 +46,8 @@ save_set('', DEEP, MARK_W, WHITE)
 save_set('grammar-', WHITE, MARK_P, DEEP)
 # 학생 모의고사 — 연보라 바탕 + 흰 로고 + 가는 흰 테두리 (어휘와 같은 모양, 색만 다름)
 save_set('exam-', PRIMARY, MARK_W, WHITE)
+# 학생 독해 — 연보라 바탕 + 흰 로고, 테두리 없음 (모의고사와 같은 색, 테두리로 가름)
+save_set('reading-', PRIMARY, MARK_W, None)
 # 선생님 — 진보라 바탕 + 흰 로고, 테두리 없음
 save_set('teacher-', DEEP, MARK_W, None)
 

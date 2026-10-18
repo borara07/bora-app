@@ -229,11 +229,12 @@
   }
 
   /* 이 기록이 어느 과목인지 봅니다.
-     기록을 저장할 때 회차 이름 앞에 '[문법] ' · '[모의고사] ' 를 붙여 두었습니다.
+     기록을 저장할 때 회차 이름 앞에 '[문법] ' · '[모의고사] ' · '[독해] ' 를 붙여 두었습니다.
      아무것도 안 붙은 것은 어휘입니다. */
   function subjectOf(record) {
     var title = String(record.roundTitle || '');
     if (title.indexOf('[모의고사]') === 0) { return '모의고사'; }
+    if (title.indexOf('[독해]') === 0) { return '독해'; }
     if (title.indexOf('[문법]') === 0) { return '문법'; }
     return '어휘';
   }
@@ -610,9 +611,9 @@
     return $('homework-subject').value || '어휘';
   }
 
-  /* 학년으로 나누는 과목인지 (문법·모의고사는 학년, 어휘는 반) */
+  /* 학년으로 나누는 과목인지 (문법·모의고사·독해는 학년, 어휘는 반) */
   function byGrade(subject) {
-    return subject === '문법' || subject === '모의고사';
+    return subject === '문법' || subject === '모의고사' || subject === '독해';
   }
 
   function homeworkGroup() {
@@ -639,18 +640,24 @@
        다만 문법으로 바꿀 때는 반 이름이 아니라 학년부터 보여 줍니다. */
     var keep = values.indexOf(before) >= 0 &&
                !(byGrade(subject) && (before === '고등부' || before === '중등부'));
-    /* 문법은 고1(4번째), 모의고사는 고3(6번째)부터 보여 줍니다 */
-    var first = (subject === '모의고사') ? 5 : (subject === '문법' ? 3 : 0);
+    /* 문법·독해는 고1(4번째), 모의고사는 고3(6번째)부터 보여 줍니다 */
+    var first = (subject === '모의고사') ? 5 : ((subject === '문법' || subject === '독해') ? 3 : 0);
     box.value = keep ? before : values[first];
   }
 
-  /* 그 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS) */
+  /* 그 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS, 독해는 READINGS) */
   function roundsOf(subject) {
     var list;
     if (subject === '문법') {
       list = (typeof GRAMMAR_ROUNDS !== 'undefined') ? GRAMMAR_ROUNDS : [];
     } else if (subject === '모의고사') {
       list = (typeof EXAMS !== 'undefined') ? EXAMS : [];
+    } else if (subject === '독해') {
+      /* 독해 지문은 '[인문예술1] 조선 시대의 민본 사상' 이라는 이름으로 엽니다.
+         학생 화면(reading.js 의 roundLabel)과 똑같은 이름이어야 합니다 */
+      list = (typeof READINGS !== 'undefined' && Array.isArray(READINGS)) ? READINGS.map(function (r) {
+        return { title: '[' + r.area + r.no + '] ' + r.title };
+      }) : [];
     } else {
       list = (typeof ROUNDS !== 'undefined') ? ROUNDS : [];
     }

@@ -235,6 +235,8 @@ var QUIZ_QUESTION_LABEL = "다음 어휘의 뜻으로 알맞은 것은?";   /* �
 | `style.css` | 색깔·글씨 크기 | 원하면 색만 바꿔도 됩니다 |
 | `app.js` | 채점·화면 전환 등 동작 | 건드리지 마세요 |
 | `storage.js` | 점수 기록 저장 | 수파베이스를 쓸 때 **두 칸만** 채웁니다 |
+| `readings.js` | **독해 지문과 문제** (분야·번호·문단별 요약 빈칸) | ✅ 독해 지문을 바꿀 때 고칩니다 |
+| `reading.html` · `reading.js` | 독해 학생 화면과 동작 | 건드리지 않아도 됩니다 |
 | `teacher.html` · `teacher.js` | **선생님용 화면** | 건드리지 않아도 됩니다 |
 | `check.html` | 서버 연결 상태 확인 (선생님용) | 문제가 생겼을 때만 씁니다 |
 | `supabase-설정.sql` | 점수 표 만들기 | 수파베이스에 한 번 붙여넣습니다 |
@@ -342,6 +344,7 @@ var SUPABASE = {
 학생 어휘     https://borara07.github.io/bora-app/
 학생 문법     https://borara07.github.io/bora-app/grammar.html
 학생 모의고사 https://borara07.github.io/bora-app/exam.html
+학생 독해     https://borara07.github.io/bora-app/reading.html
 선생님용      https://borara07.github.io/bora-app/teacher.html
 ```
 
