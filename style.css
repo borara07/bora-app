@@ -1508,7 +1508,10 @@ select.input {
   gap: 8px;
 }
 
-.reading-area {
+/* 회차를 묶음으로 나눌 때 묶음 위에 적는 이름
+   (독해는 분야, 어휘는 '어휘1. 사전적 의미' 같은 묶음 이름) */
+.reading-area,
+.round-section {
   margin: 12px 2px 0;
   font-size: 15px;
   font-weight: 700;
@@ -1516,7 +1519,16 @@ select.input {
   color: rgba(255, 255, 255, 0.85);
 }
 
-.reading-area:first-child { margin-top: 0; }
+.reading-area:first-child,
+.round-section:first-child { margin-top: 0; }
+
+/* 묶음으로 나눌 때는 바깥 상자가 격자가 아니라 세로로 쌓입니다
+   (세 칸 격자는 묶음마다 안쪽에 따로 만듭니다) */
+.round-list.has-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 /* 제목이 길어도 낱말 가운데서 끊기지 않게 합니다 */
 .reading-rounds .round-topic { word-break: keep-all; }

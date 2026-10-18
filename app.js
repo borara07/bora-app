@@ -9,12 +9,21 @@
      vocab.html 은 '어휘', grammar.html 은 '문법' 이라고 미리 적어 둡니다. */
   var SUBJECT = (typeof APP_SUBJECT === 'string' && APP_SUBJECT) ? APP_SUBJECT : '어휘';
 
-  /* 이 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS) */
+  /* 회차 고르기 화면에서 묶음 이름이 없는 회차에 붙여 줄 이름입니다.
+     어휘1(questions.js) 은 묶음을 따로 적지 않아도 여기로 들어갑니다 */
+  var DEFAULT_SECTION = '어휘1. 사전적 의미';
+
+  /* 이 과목의 회차 목록
+     어휘는 두 파일을 함께 씁니다 — questions.js(어휘1) + questions-context.js(어휘2)
+     문법은 GRAMMAR_ROUNDS 하나입니다 */
   function allRounds() {
-    var list = (SUBJECT === '문법')
-      ? (typeof GRAMMAR_ROUNDS !== 'undefined' ? GRAMMAR_ROUNDS : undefined)
-      : (typeof ROUNDS !== 'undefined' ? ROUNDS : undefined);
-    return list;
+    if (SUBJECT === '문법') {
+      return (typeof GRAMMAR_ROUNDS !== 'undefined') ? GRAMMAR_ROUNDS : undefined;
+    }
+    if (typeof ROUNDS === 'undefined') { return undefined; }
+    var more = (typeof CONTEXT_ROUNDS !== 'undefined' && Array.isArray(CONTEXT_ROUNDS))
+      ? CONTEXT_ROUNDS : [];
+    return ROUNDS.concat(more);
   }
 
   /* ---------- 화면 요소 모으기 ---------- */
@@ -205,7 +214,8 @@
   /* 이번 주에 풀 수 있는 회차만 골라 냅니다 */
   /* 회차 이름을 번호와 주제로 나눕니다. ("01회 논리 1" -> "01", "논리 1") */
   function splitRoundTitle(title) {
-    var m = /^\s*(\d+)\s*회\s*(.*)$/.exec(title || '');
+    /* 어휘1 은 '01회', 어휘2 는 '01강' 처럼 적습니다 */
+    var m = /^\s*(\d+)\s*[회강]\s*(.*)$/.exec(title || '');
     return m ? { no: m[1], topic: m[2] } : { no: '', topic: title || '' };
   }
 
@@ -262,7 +272,8 @@
       empty.hidden = true;
     }
 
-    mine.forEach(function (round) {
+    /* 회차 단추 하나를 만듭니다 */
+    function makeCard(round) {
       var open = isOpen(round);
       var part = splitRoundTitle(round.title);
 
@@ -290,9 +301,36 @@
         card.disabled = true;
         card.setAttribute('aria-label', round.title + ' — 이번 주에는 열려 있지 않습니다');
       }
+      return card;
+    }
 
-      box.appendChild(card);
+    /* 묶음이 두 가지 이상이면 묶음 이름을 적고 그 아래에 세 칸씩 놓습니다.
+       (어휘1 사전적 의미 / 어휘2 문맥적 의미)
+       묶음이 하나뿐이면 지금까지처럼 단추만 줄줄이 놓습니다 */
+    var sections = [];
+    mine.forEach(function (r) {
+      var s = r.section || DEFAULT_SECTION;
+      if (sections.indexOf(s) < 0) { sections.push(s); }
     });
+
+    if (sections.length < 2) {
+      box.className = 'round-list';
+      mine.forEach(function (round) { box.appendChild(makeCard(round)); });
+    } else {
+      box.className = 'round-list has-sections';
+      sections.forEach(function (name) {
+        var head = document.createElement('p');
+        head.className = 'round-section';
+        head.textContent = name;
+        box.appendChild(head);
+
+        var grid = document.createElement('div');
+        grid.className = 'round-list';
+        mine.filter(function (r) { return (r.section || DEFAULT_SECTION) === name; })
+            .forEach(function (round) { grid.appendChild(makeCard(round)); });
+        box.appendChild(grid);
+      });
+    }
 
     show('rounds');
   }
