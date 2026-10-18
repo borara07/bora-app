@@ -601,6 +601,11 @@
     { value: '중등부', label: '중등부' }
   ];
 
+  /* 선생님 화면의 학년 칸에 있는 이름인지 */
+  function knownGrade(name) {
+    return GRADES.some(function (it) { return it.value === name; });
+  }
+
   function homeworkSubject() {
     return $('homework-subject').value || '어휘';
   }
@@ -716,6 +721,9 @@
     var count = 0;
     roundsOf(subject).forEach(function (r) {
       if (!byGrade(subject) && (r.group || '고등부') !== group) { return; }
+      /* 모의고사는 회차에 학년이 적혀 있으므로 고른 학년 것만 보여 줍니다.
+         학년 칸에 없는 이름(예: 예비고(중3))은 어느 학년에서도 못 고르게 되므로 그대로 둡니다. */
+      if (subject === '모의고사' && r.grade && knownGrade(r.grade) && r.grade !== group) { return; }
       count += 1;
       /* 모의고사는 회차에 학년이 적혀 있어 목록에도 같이 보여 주고,
          저장할 때도 '고2 · 3분기 진단평가' 처럼 학년을 붙입니다.
