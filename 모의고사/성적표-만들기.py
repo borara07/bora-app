@@ -127,7 +127,7 @@ def score_one(ans, key, point):
 # ---------- 성적표 한 장 ----------
 BLOCK_H = 41
 TC_, UC_ = 20, 21      # 그래프가 쓰는 칸 (인쇄 범위 밖)
-LOGO = "로고-성적표.png"
+LOGO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "로고-성적표.png")  # 어느 폴더에서 실행해도 찾습니다
 
 def build_report(ws, top, st, avg, rnd):
     ws.row_dimensions[top].height = 40
@@ -268,10 +268,20 @@ def style_report_sheet(ws):
 # ---------- 만들기 ----------
 def main(round_title, students, out, exams_path):
     book = read_exams(exams_path)
-    hit = [e for e in (book['exams'] or []) if e.get('title') == round_title]
+    def label(e):
+        g = e.get('grade') or ''
+        return (g + ' · ' + e.get('title', '')) if g else e.get('title', '')
+    # 회차 이름만 적어도 되고, '고2 · 3분기 진단평가' 처럼 학년을 붙여 적어도 됩니다.
+    hit = [e for e in (book['exams'] or []) if label(e) == round_title]
     if not hit:
-        names = ' / '.join(e.get('title','') for e in (book['exams'] or []))
+        hit = [e for e in (book['exams'] or []) if e.get('title') == round_title]
+    names = ' / '.join(label(e) for e in (book['exams'] or []))
+    if not hit:
         raise SystemExit('exams.js 에 "%s" 회차가 없습니다.\n있는 회차: %s' % (round_title, names))
+    if len(hit) > 1:
+        # 학년이 다른 회차끼리 이름이 같을 때입니다. 학년을 붙여 다시 알려 주세요.
+        raise SystemExit('"%s" 라는 이름의 회차가 %d 개입니다. 학년을 붙여 적어 주세요.\n있는 회차: %s'
+                         % (round_title, len(hit), names))
     rnd = Round(hit[0], book)
 
     for st in students:
