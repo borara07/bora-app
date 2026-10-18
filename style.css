@@ -651,7 +651,7 @@ html.on-rounds .btn-back::before { border-color: rgba(255, 255, 255, 0.9); }
 
 .question-word {
   font-family: var(--font-title);
-  font-size: 40px;
+  font-size: 32px;
   font-weight: 400;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -662,7 +662,7 @@ html.on-rounds .btn-back::before { border-color: rgba(255, 255, 255, 0.9); }
 /* 문법 문제의 제시문입니다.
    글이 길든 짧든 한 크기로 둡니다. 길이에 따라 크기가 바뀌면
    같은 글씨체인데도 문제마다 다른 글씨체처럼 보이기 때문입니다.
-   (어휘 한 낱말은 위 .question-word 의 40px 그대로입니다) */
+   (어휘 한 낱말은 위 .question-word 의 32px 그대로입니다) */
 .question-word.is-sentence,
 .question-word.is-long {
   font-size: 19px;
@@ -1688,10 +1688,8 @@ select.input {
   margin: 0;
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-2);
+  color: var(--correct);    /* 맞았을 때도 틀렸을 때도 같은 초록 (정답 보기와 같은 색) */
 }
-
-.read-verdict.is-ok { color: var(--correct); }
 
 .read-why {
   margin: 8px 0 0;
@@ -1836,7 +1834,7 @@ select.input {
 /* ---------- 작은 화면(휴대폰) ---------- */
 
 @media (max-width: 380px) {
-  .question-word { font-size: 33px; }
+  .question-word { font-size: 28px; }
   .result-score { font-size: 50px; }
   .choice { padding: 15px 13px; }
   .history-round { font-size: 17px; }

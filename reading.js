@@ -392,7 +392,7 @@
 
     drawSentence($('summary-line'), p.summary, p.answer);
 
-    $('verdict').textContent = ok ? '맞았습니다.' : '아쉬워요. 초록색 보기가 정답입니다.';
+    $('verdict').textContent = ok ? '맞았어요!' : '아쉬워요. 초록색 보기가 정답입니다.';
     $('verdict').className = 'read-verdict' + (ok ? ' is-ok' : '');
     $('why').textContent = p.why || '';
     drawEvidence($('evidence'), p.evidence || '');

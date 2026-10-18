@@ -6,6 +6,7 @@ DEEP = (88, 43, 141)      # 로고 보라 (--brand-deep)
 PRIMARY = (124, 58, 237)  # 연보라 (--primary) — 모의고사 아이콘 바탕
 MIDDLE = (106, 50, 189)   # 진보라와 연보라 한가운데 (#6a32bd) — 통합 앱 '보라! 국어' 아이콘 바탕
 WHITE = (255, 255, 255)
+LIGHT = (167, 139, 250)   # 밝은 보라 (#a78bfa) — 선생님 아이콘 바탕
 
 # 512 기준 — 학생 어휘·문법이 세트로 보이도록 두 아이콘이 같은 값을 씁니다
 PAD, LINE, RADIUS, MARK = 36, 16, 86, 284
@@ -51,7 +52,7 @@ save_set('grammar-', WHITE, MARK_P, DEEP)
 save_set('exam-', PRIMARY, MARK_W, WHITE)
 # 학생 독해 — 연보라 바탕 + 흰 로고, 테두리 없음 (모의고사와 같은 색, 테두리로 가름)
 save_set('reading-', PRIMARY, MARK_W, None)
-# 선생님 — 진보라 바탕 + 흰 로고, 테두리 없음
-save_set('teacher-', DEEP, MARK_W, None)
+# 선생님 — 밝은 보라 바탕 + 흰 로고 + 가는 흰 테두리
+save_set('teacher-', LIGHT, MARK_W, WHITE)
 
 print('아이콘을 새로 그렸습니다')
