@@ -62,6 +62,15 @@ var VocabStore = (function () {
 
   /* ---------- 수파베이스로 보내기 ---------- */
 
+  /* 이번 주 숙제 회차를 저장하는 칸 이름 (homework_round: 뒤에 붙는 부분)
+       어휘 학년  → 어휘:고1        문법·모의고사·독해 → 문법:고1 …
+       어휘 반    → 고등부·중등부   (학년을 나누기 전부터 쓰던 칸이라 그대로 둡니다) */
+  function homeworkKey(group, subject) {
+    var oldGroup = (group === '고등부' || group === '중등부');
+    if (!subject || (subject === '어휘' && oldGroup)) { return group; }
+    return subject + ':' + group;
+  }
+
   function supabaseReady() {
     return !!(SUPABASE.url && SUPABASE.anonKey && SUPABASE.table);
   }
@@ -544,8 +553,8 @@ var VocabStore = (function () {
     /* 이번 주 숙제 회차를 읽어 옵니다.
        인터넷이 안 되면 지난번에 확인한 값을 씁니다. */
     homeworkRound: function (group, subject) {
-      /* 어휘는 반(고등부·중등부)으로, 문법은 학년(고1·중3 …)으로 회차를 정합니다 */
-      var who = (subject && subject !== '어휘' ? subject + ':' : '') + (group || '고등부');
+      /* 네 과목 모두 학년(고1·중3 …)으로 회차를 정합니다 */
+      var who = homeworkKey(group || '고등부', subject);
       var key = 'homework_round:' + who;
       var store = KEY_HOMEWORK + ':' + who;
       /* 지난번에 읽어 둔 값. 아직 한 번도 못 읽었으면 null 입니다 */
@@ -595,7 +604,7 @@ var VocabStore = (function () {
         body: JSON.stringify({
           pass: password,
           round: round || '',
-          grade_group: (subject && subject !== '어휘' ? subject + ':' : '') + (group || '')
+          grade_group: group ? homeworkKey(group, subject) : ''
         })
       }).then(function (res) {
         return res.text().then(function (text) {

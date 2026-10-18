@@ -584,9 +584,11 @@
 
   /* ---------- 이번 주 숙제 회차 ---------- */
 
-  /* 어휘는 반(고등부·중등부)으로, 문법은 학년(중1~고3)으로 나눕니다.
+  /* 네 과목 모두 학년(중1~고3)으로 나눕니다.
      명단 메모에 학년이 없는 사람(선생님 계정 등)은 반 이름으로 회차를 찾으므로
-     문법 목록 끝에 반 두 가지도 함께 둡니다. */
+     목록 끝에 반 두 가지도 함께 둡니다.
+     어휘의 반 칸은 학년을 나누기 전에 쓰던 칸이기도 합니다.
+     학년을 따로 정하지 않은 학생은 이 반 칸의 회차가 열립니다. */
   var GRADES = [
     { value: '중1', label: '중1' },
     { value: '중2', label: '중2' },
@@ -611,9 +613,15 @@
     return $('homework-subject').value || '어휘';
   }
 
-  /* 학년으로 나누는 과목인지 (문법·모의고사·독해는 학년, 어휘는 반) */
+  /* 학년으로 나누는 과목인지 (이제 네 과목 모두 학년입니다) */
   function byGrade(subject) {
-    return subject === '문법' || subject === '모의고사' || subject === '독해';
+    return subject === '어휘' || subject === '문법' || subject === '모의고사' || subject === '독해';
+  }
+
+  /* 학년이 속한 반 (중1~중3 → 중등부, 고1~고3 → 고등부). 어휘 회차는 반마다 따로 있습니다 */
+  function groupOfGrade(grade) {
+    if (grade === '고등부' || grade === '중등부') { return grade; }
+    return String(grade || '').charAt(0) === '중' ? '중등부' : '고등부';
   }
 
   function homeworkGroup() {
@@ -640,8 +648,8 @@
        다만 문법으로 바꿀 때는 반 이름이 아니라 학년부터 보여 줍니다. */
     var keep = values.indexOf(before) >= 0 &&
                !(byGrade(subject) && (before === '고등부' || before === '중등부'));
-    /* 문법·독해는 고1(4번째), 모의고사는 고3(6번째)부터 보여 줍니다 */
-    var first = (subject === '모의고사') ? 5 : ((subject === '문법' || subject === '독해') ? 3 : 0);
+    /* 어휘·문법·독해는 고1(4번째), 모의고사는 고3(6번째)부터 보여 줍니다 */
+    var first = (subject === '모의고사') ? 5 : 3;
     box.value = keep ? before : values[first];
   }
 
@@ -727,11 +735,12 @@
     var all = pickRow('homework-all', '모든 회차 열기 (숙제 지정 안 함)', '', chosen.length === 0, true);
     pick.appendChild(all.row);
 
-    /* 문법은 학년으로 나누므로 회차를 반으로 거르지 않습니다 */
+    /* 어휘 회차는 반마다 따로라서, 고른 학년의 반(고1 → 고등부) 회차만 보여 줍니다.
+       문법·모의고사·독해는 회차를 반으로 거르지 않습니다 */
     var rows = [];
     var count = 0;
     roundsOf(subject).forEach(function (r) {
-      if (!byGrade(subject) && (r.group || '고등부') !== group) { return; }
+      if (subject === '어휘' && (r.group || '고등부') !== groupOfGrade(group)) { return; }
       /* 모의고사는 회차에 학년이 적혀 있으므로 고른 학년 것만 보여 줍니다.
          학년 칸에 없는 이름(예: 예비고(중3))은 어느 학년에서도 못 고르게 되므로 그대로 둡니다. */
       if (subject === '모의고사' && r.grade && knownGrade(r.grade) && r.grade !== group) { return; }
