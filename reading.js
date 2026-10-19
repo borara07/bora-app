@@ -202,6 +202,22 @@
     return titles.indexOf(roundLabel(r)) >= 0;
   }
 
+  /* 단추 안 제목을 두 줄로 나눕니다. 띄어쓰기 자리 가운데 두 줄 길이가 가장 비슷해지는 곳에서 끊습니다.
+     (조선 시대의 / 민본 사상, 미래주의 / 예술 운동, 경매를 통한 / 가격 결정)
+     똑같이 나뉘는 곳이 둘이면 앞줄을 길게 합니다. 글자가 7자 이하로 짧으면 한 줄로 둡니다. */
+  function twoLines(title) {
+    var words = String(title || '').split(' ');
+    var length = function (list) { return list.join('').length; };
+    if (words.length < 2 || length(words) <= 7) { return [words.join(' ')]; }
+    var best = 1;
+    for (var i = 1; i < words.length; i++) {
+      var worse = Math.max(length(words.slice(0, i)), length(words.slice(i)));
+      var now = Math.max(length(words.slice(0, best)), length(words.slice(best)));
+      if (worse <= now) { best = i; }   // 길이가 같으면 앞줄을 길게 (거래 비용 이론과 / 기업 규모)
+    }
+    return [words.slice(0, best).join(' '), words.slice(best).join(' ')];
+  }
+
   function renderRounds() {
     var box = $('round-list');
     box.innerHTML = '';
@@ -244,7 +260,10 @@
 
         var topic = document.createElement('span');
         topic.className = 'round-topic';
-        topic.textContent = r.title;
+        twoLines(r.title).forEach(function (line, i) {
+          if (i > 0) { topic.appendChild(document.createElement('br')); }
+          topic.appendChild(document.createTextNode(line));
+        });
         card.appendChild(topic);
 
         if (open) {
