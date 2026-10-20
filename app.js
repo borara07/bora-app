@@ -6,15 +6,24 @@
   'use strict';
 
   /* 이 페이지가 다루는 과목입니다.
-     index.html 은 '어휘', grammar.html 은 '문법' 이라고 미리 적어 둡니다. */
+     vocab.html 은 '어휘', grammar.html 은 '문법' 이라고 미리 적어 둡니다. */
   var SUBJECT = (typeof APP_SUBJECT === 'string' && APP_SUBJECT) ? APP_SUBJECT : '어휘';
 
-  /* 이 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS) */
+  /* 회차 고르기 화면에서 묶음 이름이 없는 회차에 붙여 줄 이름입니다.
+     어휘1(questions.js) 은 묶음을 따로 적지 않아도 여기로 들어갑니다 */
+  var DEFAULT_SECTION = '어휘1. 사전적 의미';
+
+  /* 이 과목의 회차 목록
+     어휘는 두 파일을 함께 씁니다 — questions.js(어휘1) + questions-context.js(어휘2)
+     문법은 GRAMMAR_ROUNDS 하나입니다 */
   function allRounds() {
-    var list = (SUBJECT === '문법')
-      ? (typeof GRAMMAR_ROUNDS !== 'undefined' ? GRAMMAR_ROUNDS : undefined)
-      : (typeof ROUNDS !== 'undefined' ? ROUNDS : undefined);
-    return list;
+    if (SUBJECT === '문법') {
+      return (typeof GRAMMAR_ROUNDS !== 'undefined') ? GRAMMAR_ROUNDS : undefined;
+    }
+    if (typeof ROUNDS === 'undefined') { return undefined; }
+    var more = (typeof CONTEXT_ROUNDS !== 'undefined' && Array.isArray(CONTEXT_ROUNDS))
+      ? CONTEXT_ROUNDS : [];
+    return ROUNDS.concat(more);
   }
 
   /* ---------- 화면 요소 모으기 ---------- */
@@ -205,16 +214,33 @@
   /* 이번 주에 풀 수 있는 회차만 골라 냅니다 */
   /* 회차 이름을 번호와 주제로 나눕니다. ("01회 논리 1" -> "01", "논리 1") */
   function splitRoundTitle(title) {
-    var m = /^\s*(\d+)\s*회\s*(.*)$/.exec(title || '');
+    /* 어휘1 은 '01회', 어휘2 는 '01강' 처럼 적습니다 */
+    var m = /^\s*(\d+)\s*[회강]\s*(.*)$/.exec(title || '');
     return m ? { no: m[1], topic: m[2] } : { no: '', topic: title || '' };
   }
 
   /* 이번 주 회차를 어느 이름으로 찾을지 정합니다.
-     어휘는 반(고등부·중등부), 문법은 학년(고1·중3 …)입니다.
-     학년을 모르는 학생은 반 이름으로 찾습니다. */
+     어휘·문법 모두 학년(고1·중3 …)입니다.
+     학년을 모르는 학생은 반 이름(고등부·중등부)으로 찾습니다. */
   function whoFor() {
-    if (SUBJECT === '문법' && state.grade) { return state.grade; }
+    if (state.grade) { return state.grade; }
     return state.group || '고등부';
+  }
+
+  /* 이번 주 회차를 읽어 와서 회차 화면을 그립니다.
+     어휘는 예전에 반(고등부·중등부)으로 회차를 정했습니다.
+     선생님이 그 학년을 아직 따로 정하지 않았으면 예전 반 값을 그대로 씁니다. */
+  function loadHomework() {
+    VocabStore.homeworkRound(whoFor(), SUBJECT).then(function (h) {
+      if (!h.set && SUBJECT === '어휘' && whoFor() !== (state.group || '고등부')) {
+        return VocabStore.homeworkRound(state.group || '고등부', SUBJECT);
+      }
+      return h;
+    }).then(function (h) {
+      homeworkRound = h.round || '';
+      homeworkSet = !!h.set;
+      renderRounds();
+    });
   }
 
   /* 그 반이 볼 회차만 고릅니다. 회차에 반이 안 적혀 있으면 고등부로 봅니다.
@@ -262,7 +288,8 @@
       empty.hidden = true;
     }
 
-    mine.forEach(function (round) {
+    /* 회차 단추 하나를 만듭니다 */
+    function makeCard(round) {
       var open = isOpen(round);
       var part = splitRoundTitle(round.title);
 
@@ -290,9 +317,36 @@
         card.disabled = true;
         card.setAttribute('aria-label', round.title + ' — 이번 주에는 열려 있지 않습니다');
       }
+      return card;
+    }
 
-      box.appendChild(card);
+    /* 묶음이 두 가지 이상이면 묶음 이름을 적고 그 아래에 세 칸씩 놓습니다.
+       (어휘1 사전적 의미 / 어휘2 문맥적 의미)
+       묶음이 하나뿐이면 지금까지처럼 단추만 줄줄이 놓습니다 */
+    var sections = [];
+    mine.forEach(function (r) {
+      var s = r.section || DEFAULT_SECTION;
+      if (sections.indexOf(s) < 0) { sections.push(s); }
     });
+
+    if (sections.length < 2) {
+      box.className = 'round-list';
+      mine.forEach(function (round) { box.appendChild(makeCard(round)); });
+    } else {
+      box.className = 'round-list has-sections';
+      sections.forEach(function (name) {
+        var head = document.createElement('p');
+        head.className = 'round-section';
+        head.textContent = name;
+        box.appendChild(head);
+
+        var grid = document.createElement('div');
+        grid.className = 'round-list';
+        mine.filter(function (r) { return (r.section || DEFAULT_SECTION) === name; })
+            .forEach(function (round) { grid.appendChild(makeCard(round)); });
+        box.appendChild(grid);
+      });
+    }
 
     show('rounds');
   }
@@ -558,7 +612,7 @@
       return;
     }
 
-    /* 안내 내용은 index.html 에 적혀 있고, 기준 개수만 여기서 채웁니다 */
+    /* 안내 내용은 vocab.html·grammar.html 에 적혀 있고, 기준 개수만 여기서 채웁니다 */
     $('retest-title').textContent =
       '정답이 ' + retestMax() + '개 이하예요.\n재시험을 봐야 합니다.';
     box.hidden = false;
@@ -827,12 +881,8 @@
         state.grade = r.grade || '';
         VocabStore.rememberStudent(student);
 
-        /* 어휘는 반, 문법은 학년으로 이번 주 회차를 읽습니다 */
-        VocabStore.homeworkRound(whoFor(), SUBJECT).then(function (h) {
-          homeworkRound = h.round || '';
-          homeworkSet = !!h.set;
-          renderRounds();
-        });
+        /* 학년으로 이번 주 회차를 읽습니다 */
+        loadHomework();
         return;
       }
 
@@ -969,6 +1019,54 @@
     }
     refreshHistoryButton();
     show('start');
+
+    setupQuit();
+
+    /* 통합 첫 화면(index.html)에서 이름 확인을 마치고 왔으면
+       이름 입력을 건너뛰고 바로 회차 고르기로 갑니다 */
+    var passed = VocabStore.passedStudent();
+    if (passed) { enterFromHub(passed); }
+  }
+
+  /* 통합 첫 화면에서 온 학생 — 위에 '과목 고르기' 를 보여 주고 '이름 다시 입력' 은 감춥니다 */
+  function enterFromHub(passed) {
+    state.student = { name: passed.name, school: passed.school, phone4: passed.phone4 };
+    state.group = passed.group || '고등부';
+    state.grade = passed.grade || '';
+
+    $('btn-to-hub').hidden = false;
+    $('btn-back-start').hidden = true;
+
+    /* 이번 주 회차를 읽는 동안 빈 회차 화면을 먼저 보여 줍니다 */
+    $('round-list').innerHTML = '';
+    $('rounds-empty').textContent = '이번 주 시험을 확인하는 중…';
+    $('rounds-empty').hidden = false;
+    show('rounds');
+
+    loadHomework();
+  }
+
+  /* ---------- '처음으로' (풀던 시험 그만두기) ----------
+     맨 위 '처음으로' 를 누르면 확인 상자를 띄우고,
+     한 번 더 '처음으로' 를 누르면 회차 고르기로 돌아갑니다. 그 시험은 기록하지 않습니다. */
+  function setupQuit() {
+    var ask = $('quit-ask');
+    if (!ask) { return; }
+    function close() { ask.hidden = true; $('btn-quit').focus(); }
+    $('btn-quit').addEventListener('click', function () {
+      ask.hidden = false;
+      $('quit-keep').focus();
+    });
+    $('quit-keep').addEventListener('click', close);
+    $('quit-leave').addEventListener('click', function () {
+      ask.hidden = true;
+      renderRounds();
+    });
+    /* 바깥 어두운 곳을 누르거나 Esc 를 누르면 계속 풉니다 */
+    ask.addEventListener('click', function (e) { if (e.target === ask) { close(); } });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !ask.hidden) { close(); }
+    });
   }
 
   init();

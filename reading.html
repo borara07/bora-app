@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko" class="on-rounds">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>독해</title>
+
+  <!-- 휴대폰 바탕화면에 앱처럼 놓기 위한 설정 -->
+  <link rel="manifest" href="reading-manifest.json?v=20261018h">
+  <meta name="theme-color" content="#5b2d8e">
+  <link rel="icon" href="reading-favicon.png?v=20261018h">
+  <link rel="apple-touch-icon" href="reading-apple-touch-icon.png?v=20261018h">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="보라! 독해">
+
+  <link rel="stylesheet" href="style.css?v=20261019b">
+</head>
+<body>
+
+  <main class="app">
+
+    <!-- 1. 학생 정보 입력 화면 -->
+    <section id="screen-start" class="screen">
+      <div class="brand-box">
+        <img class="brand-mark" src="logo/mark-white.png?v=20261018h" alt="" width="450" height="397">
+        <h1 class="brand-name">보라! 독해</h1>
+      </div>
+
+      <form id="start-form" class="card" autocomplete="off">
+        <div class="field">
+          <label class="label" for="student-name">학생 이름</label>
+          <input type="text" id="student-name" class="input" placeholder="예) 김민서" maxlength="20">
+        </div>
+
+        <div class="field">
+          <label class="label" for="student-school">학교</label>
+          <input type="text" id="student-school" class="input" placeholder="예) 보라고등학교" maxlength="30">
+        </div>
+
+        <div class="field">
+          <label class="label" for="student-phone4">학부모님 전화번호 뒷 4자리</label>
+          <input type="text" id="student-phone4" class="input" placeholder="예) 1234"
+                 inputmode="numeric" maxlength="4">
+          <p class="field-hint">같은 이름이 있을 때 학생을 구분하는 데만 씁니다.</p>
+        </div>
+
+        <p id="name-error" class="error" hidden></p>
+        <button type="submit" id="btn-start" class="btn btn-primary">다음</button>
+        <button type="button" id="btn-my-history" class="btn btn-quiet" hidden>내 지난 기록 보기</button>
+      </form>
+    </section>
+
+    <!-- 2. 지문 고르기 화면 (분야마다 묶어서 세 칸씩) -->
+    <section id="screen-rounds" class="screen" hidden>
+      <!-- 통합 첫 화면(보라! 국어)에서 들어왔을 때만 보입니다 -->
+      <a href="./" id="btn-to-hub" class="btn-back btn-to-hub" hidden>과목 고르기</a>
+
+      <div class="brand-box">
+        <img class="brand-mark" src="logo/mark-white.png?v=20261018h" alt="" width="450" height="397">
+        <p class="brand-name">보라! 독해</p>
+      </div>
+
+      <div id="round-list" class="reading-rounds"></div>
+      <p id="rounds-empty" class="rounds-empty" hidden></p>
+
+      <button type="button" id="btn-back-start" class="btn btn-quiet btn-on-deep">이름 다시 입력</button>
+    </section>
+
+    <!-- 3. 문단 읽고 요약 문장 빈칸 채우기 -->
+    <section id="screen-read" class="screen" hidden>
+      <!-- 풀던 시험을 그만두고 회차 고르기로 (한 번 더 묻습니다) -->
+      <button type="button" id="btn-quit" class="btn-back btn-quit">처음으로</button>
+
+      <header class="quiz-head">
+        <p id="read-round" class="quiz-round"></p>
+        <div class="progress-text">
+          <span id="read-now">1</span> / <span id="read-total">5</span> 문단
+        </div>
+        <div class="progress-bar"><div id="read-fill" class="progress-fill"></div></div>
+      </header>
+
+      <!-- 앞 문단에서 정리한 요약 (2문단부터 보입니다) -->
+      <details id="notes" class="card read-notes" hidden>
+        <summary id="notes-title">지금까지 정리한 요약</summary>
+        <ol id="notes-list"></ol>
+      </details>
+
+      <article class="card">
+        <p id="para-no" class="para-no">1문단</p>
+        <p id="para-text" class="para-text"></p>
+        <p id="para-note" class="para-note" hidden></p>
+      </article>
+
+      <div class="card">
+        <p class="question-label">이 문단을 한 문장으로 정리했습니다. 빈칸에 알맞은 말은?</p>
+        <p id="summary-line" class="summary-line"></p>
+        <div id="choices" class="choices"></div>
+
+        <div id="feedback" class="read-feedback" hidden>
+          <p id="verdict" class="read-verdict"></p>
+          <p id="why" class="read-why"></p>
+          <p class="example"><span class="example-label">근거 문장</span><span id="evidence"></span></p>
+        </div>
+      </div>
+
+      <button type="button" id="btn-next" class="btn btn-primary" disabled>다음 문단</button>
+    </section>
+
+    <!-- 4. 결과 화면 -->
+    <section id="screen-result" class="screen" hidden>
+      <div class="card result-card">
+        <p id="result-round" class="result-round"></p>
+        <p id="result-name" class="result-name"></p>
+        <p class="result-score">
+          <span id="result-correct">0</span><span class="result-total">/<span id="result-total">5</span></span>
+        </p>
+        <p id="result-comment" class="result-comment"></p>
+      </div>
+
+      <section>
+        <h2 class="section-title">요약 노트</h2>
+        <div class="card"><ol id="outline" class="read-outline"></ol></div>
+      </section>
+
+      <section id="wrong-area">
+        <h2 class="section-title">다시 볼 문단</h2>
+        <div id="wrong-list" class="wrong-list"></div>
+      </section>
+
+      <p id="save-state" class="save-state" hidden></p>
+
+      <button id="btn-retry" class="btn btn-primary">처음부터 다시 읽기</button>
+      <button id="btn-history" class="btn btn-quiet">내 기록 보기</button>
+      <button id="btn-home" class="btn btn-quiet">처음으로 돌아가기</button>
+    </section>
+
+    <!-- 5. 내 기록 화면 -->
+    <section id="screen-history" class="screen" hidden>
+      <button type="button" id="btn-back-from-history" class="btn-back">돌아가기</button>
+
+      <div class="card">
+        <p class="eyebrow">지금까지의 기록</p>
+        <p id="history-who" class="chosen-round"></p>
+        <p id="history-summary" class="chosen-detail"></p>
+      </div>
+
+      <div id="history-list" class="history-list"></div>
+    </section>
+
+    <!-- 오류 안내 (지문 파일에 실수가 있을 때만 보입니다) -->
+    <section id="screen-error" class="screen" hidden>
+      <div class="card">
+        <h2 class="section-title">지문 파일을 확인해주세요</h2>
+        <p class="hint">readings.js 파일에서 아래 부분을 고쳐주세요.</p>
+        <ul id="error-list" class="error-list"></ul>
+      </div>
+    </section>
+
+    <!-- '처음으로' 확인 상자 — 실수로 눌러 풀던 시험을 날리지 않게 한 번 더 묻습니다 -->
+    <div id="quit-ask" class="quit-scrim" hidden role="dialog" aria-modal="true" aria-labelledby="quit-title">
+      <div class="quit-box">
+        <p class="quit-title" id="quit-title">처음으로 돌아갈까요?</p>
+        <p class="quit-text">지금 돌아가면 이 시험은<br>기록되지 않아요.</p>
+        <button type="button" id="quit-keep" class="btn btn-primary">계속 풀기</button>
+        <button type="button" id="quit-leave" class="btn btn-quiet">처음으로</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>var APP_SUBJECT = "독해";</script>
+  <script src="readings.js?v=20261018h"></script>
+  <script src="storage.js?v=20261019b"></script>
+  <script src="reading.js?v=20261019c"></script>
+</body>
+</html>
