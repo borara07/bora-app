@@ -290,6 +290,12 @@
     return state.grade || state.group || '고등부';
   }
 
+  /* 선생님이 '모든 회차 열기' 를 고르시면 이 글자가 저장됩니다.
+     빈 글자는 '한 회차도 안 고름' 이라서 아무것도 열리지 않습니다.
+     (예전에는 빈 글자가 '모두 열기' 였는데, 선생님이 아무것도 체크하지 않고
+      저장했을 때 전부 열려 버려서 둘을 갈라 두었습니다) */
+  var ALL_OPEN = '*';
+
   function openTitles() {
     return String(homeworkRound || '').split('|').filter(function (s) { return s !== ''; });
   }
@@ -297,7 +303,8 @@
   function isOpen(exam) {
     if (!homeworkSet) { return false; }
     var titles = openTitles();
-    if (titles.length === 0) { return true; }
+    if (titles.indexOf(ALL_OPEN) >= 0) { return true; }   /* 모든 회차 열기 */
+    if (titles.length === 0) { return false; }            /* 한 회차도 안 고르셨습니다 */
     /* 선생님이 정한 값은 '고2 · 3분기 진단평가' 처럼 학년이 앞에 붙습니다.
        학년이 다른 회차끼리 이름이 같아도 섞이지 않게 하려는 것입니다.
        예전에 이름만 저장해 둔 값도 그대로 열립니다. */

@@ -561,8 +561,10 @@ var VocabStore = (function () {
       var cached = null;
       try { cached = window.localStorage.getItem(store); } catch (e) { cached = null; }
 
-      /* set = 선생님이 이 반(학년)의 회차를 정해 둔 적이 있는지
-         round = 정해진 회차 이름 ('' 이면 '모든 회차 열기' 를 고르신 것) */
+      /* set   = 선생님이 이 반(학년)의 회차를 정해 둔 적이 있는지
+         round = 정해진 회차 이름들 ('|' 로 이어 붙여 둡니다)
+                 '*' 한 글자면 '모든 회차 열기'
+                 빈 글자면 한 회차도 안 고르신 것이라 아무것도 열리지 않습니다 */
       function fromCache() {
         return { ok: false, set: (cached !== null), round: cached || '' };
       }

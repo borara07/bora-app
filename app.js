@@ -258,6 +258,12 @@
        · '모든 회차 열기' 를 고르셨으면 (빈 값)   → 모두 엽니다
        · 회차를 고르셨으면                       → 고른 회차만 엽니다
      여러 회차를 고르면 이름이 '|' 로 이어져 옵니다 (01회 …|02회 …) */
+  /* 선생님이 '모든 회차 열기' 를 고르시면 이 글자가 저장됩니다.
+     빈 글자는 '한 회차도 안 고름' 이라서 아무것도 열리지 않습니다.
+     (예전에는 빈 글자가 '모두 열기' 였는데, 선생님이 아무것도 체크하지 않고
+      저장했을 때 전부 열려 버려서 둘을 갈라 두었습니다) */
+  var ALL_OPEN = '*';
+
   function openTitles() {
     return String(homeworkRound || '').split('|').filter(function (s) { return s !== ''; });
   }
@@ -265,7 +271,8 @@
   function isOpen(round) {
     if (!homeworkSet) { return false; }
     var titles = openTitles();
-    if (titles.length === 0) { return true; }
+    if (titles.indexOf(ALL_OPEN) >= 0) { return true; }   /* 모든 회차 열기 */
+    if (titles.length === 0) { return false; }            /* 한 회차도 안 고르셨습니다 */
     return titles.indexOf(round.title) >= 0;
   }
 

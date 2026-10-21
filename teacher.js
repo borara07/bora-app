@@ -677,14 +677,21 @@
   }
 
   /* 저장된 값은 회차 이름을 '|' 로 이어 붙인 글자입니다.
-     빈 글자는 '모든 회차 열기' 입니다. (회차 이름에는 '|' 를 쓰지 않습니다) */
+     (회차 이름에는 '|' 를 쓰지 않습니다)
+
+     '*' 한 글자는 '모든 회차 열기' 입니다.
+     빈 글자는 '한 회차도 안 고름' 이라서 아무것도 열리지 않습니다.
+     네모를 하나도 켜지 않고 저장했을 때 전부 열려 버리던 것을 막으려고 둘을 갈랐습니다. */
+  var ALL_OPEN = '*';
+
   function splitRounds(value) {
     return String(value || '').split('|').filter(function (s) { return s !== ''; });
   }
 
-  /* 지금 켜져 있는 회차 이름들 (모두 열기를 켜 두었으면 빈 목록) */
+  /* 지금 켜져 있는 회차 이름들
+     ('모든 회차 열기' 를 켜 두었으면 ['*'], 아무것도 안 켰으면 빈 목록) */
   function pickedRounds() {
-    if ($('homework-all') && $('homework-all').checked) { return []; }
+    if ($('homework-all') && $('homework-all').checked) { return [ALL_OPEN]; }
     var out = [];
     var boxes = $('homework-pick').querySelectorAll('input[data-round]');
     Array.prototype.forEach.call(boxes, function (b) {
@@ -698,7 +705,7 @@
     var note = $('homework-count');
     if (!note) { return; }
     var all = $('homework-all') && $('homework-all').checked;
-    var n = pickedRounds().length;
+    var n = all ? 0 : pickedRounds().length;
     note.textContent = all
       ? '모든 회차가 열립니다.'
       : (n === 0 ? '아직 고른 회차가 없습니다. 이대로 정하면 아무 회차도 열리지 않습니다.'
@@ -732,7 +739,8 @@
     pick.innerHTML = '';
 
     /* 맨 위 '모든 회차 열기' — 켜면 아래 회차들은 흐려집니다 */
-    var all = pickRow('homework-all', '모든 회차 열기 (숙제 지정 안 함)', '', chosen.length === 0, true);
+    var all = pickRow('homework-all', '모든 회차 열기 (숙제 지정 안 함)', '',
+                      chosen.indexOf(ALL_OPEN) >= 0, true);
     pick.appendChild(all.row);
 
     /* 어휘 회차는 반마다 따로라서, 고른 학년의 반(고1 → 고등부) 회차만 보여 줍니다.
@@ -817,12 +825,18 @@
       if (r.ok) {
         box.className = 'check-state is-ok';
         var 누구 = (byGrade(subject) && group !== '고등부' && group !== '중등부') ? '그 학년' : '그 반';
-        box.textContent = picked.length
-          ? (subject + ' · ' + group + ' 이번 주 시험을 이렇게 정했습니다.\n' +
-             picked.join(' · ') + '\n' +
-             누구 + ' 학생에게는 이 ' + picked.length + '개 회차만 열립니다.')
-          : (subject + ' · ' + group + ' 의 모든 회차를 열었습니다.\n' +
-             '학생이 아무 회차나 고를 수 있습니다.');
+        var 머리 = subject + ' · ' + group;
+        if (picked.indexOf(ALL_OPEN) >= 0) {
+          box.textContent = 머리 + ' 의 모든 회차를 열었습니다.\n' +
+                            '학생이 아무 회차나 고를 수 있습니다.';
+        } else if (picked.length) {
+          box.textContent = 머리 + ' 이번 주 시험을 이렇게 정했습니다.\n' +
+                            picked.join(' · ') + '\n' +
+                            누구 + ' 학생에게는 이 ' + picked.length + '개 회차만 열립니다.';
+        } else {
+          box.textContent = 머리 + ' 은 한 회차도 고르지 않으셨습니다.\n' +
+                            누구 + ' 학생에게는 아무 회차도 열리지 않습니다.';
+        }
         return;
       }
       box.className = 'check-state is-bad';
