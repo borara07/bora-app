@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko" class="on-rounds">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내신</title>
+
+  <!-- 휴대폰 바탕화면에 앱처럼 놓기 위한 설정 (통합 앱 '보라! 국어' 아이콘을 함께 씁니다) -->
+  <link rel="manifest" href="manifest.json?v=20261018j">
+  <meta name="theme-color" content="#5b2d8e">
+  <link rel="icon" href="favicon.png?v=20261018j">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261018j">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="보라! 내신">
+
+  <link rel="stylesheet" href="style.css?v=20261021b">
+</head>
+<body>
+
+  <main class="app">
+
+    <!-- 1. 학생 정보 입력 화면 -->
+    <section id="screen-start" class="screen">
+      <div class="brand-box">
+        <img class="brand-mark" src="logo/mark-white.png?v=20261018j" alt="" width="450" height="397">
+        <h1 class="brand-name">보라! 내신</h1>
+      </div>
+
+      <form id="start-form" class="card" autocomplete="off">
+        <div class="field">
+          <label class="label" for="student-name">학생 이름</label>
+          <input type="text" id="student-name" class="input" placeholder="예) 김민서" maxlength="20">
+        </div>
+
+        <div class="field">
+          <label class="label" for="student-school">학교</label>
+          <input type="text" id="student-school" class="input" placeholder="예) 보라고등학교" maxlength="30">
+        </div>
+
+        <div class="field">
+          <label class="label" for="student-phone4">학부모님 전화번호 뒷 4자리</label>
+          <input type="text" id="student-phone4" class="input" placeholder="예) 1234"
+                 inputmode="numeric" maxlength="4">
+          <p class="field-hint">같은 이름이 있을 때 학생을 구분하는 데만 씁니다.</p>
+        </div>
+
+        <p id="name-error" class="error" hidden></p>
+        <button type="submit" id="btn-start" class="btn btn-primary">다음</button>
+        <button type="button" id="btn-my-history" class="btn btn-quiet" hidden>내 지난 기록 보기</button>
+      </form>
+    </section>
+
+    <!-- 2. 학교 시험 고르기 화면 -->
+    <section id="screen-rounds" class="screen" hidden>
+      <!-- 통합 첫 화면(보라! 국어)에서 들어왔을 때만 보입니다 -->
+      <a href="./" id="btn-to-hub" class="btn-back btn-to-hub" hidden>과목 고르기</a>
+
+      <div class="brand-box">
+        <img class="brand-mark" src="logo/mark-white.png?v=20261018j" alt="" width="450" height="397">
+        <p class="brand-name">보라! 내신</p>
+      </div>
+
+      <div id="round-list" class="round-list is-wide"></div>
+      <p id="rounds-empty" class="rounds-empty" hidden></p>
+
+      <button type="button" id="btn-back-start" class="btn btn-quiet btn-on-deep">이름 다시 입력</button>
+    </section>
+
+    <!-- 3. 틀린 문항 · 헤맨 문항 누르기 -->
+    <section id="screen-mark" class="screen" hidden>
+      <!-- 체크하던 것을 그만두고 시험 고르기로 (한 번 더 묻습니다) -->
+      <button type="button" id="btn-quit" class="btn-back btn-quit">처음으로</button>
+
+      <header class="quiz-head">
+        <p id="mark-round" class="quiz-round"></p>
+        <p id="mark-score" class="mark-score"></p>
+      </header>
+
+      <div class="card">
+        <p class="eyebrow">1. 틀린 문항</p>
+        <p class="mark-guide">채점된 시험지를 보고 <b>틀린 문항</b>을 모두 눌러 주세요. 잘못 눌렀으면 다시 누르면 지워집니다.</p>
+        <div id="wrong-grid" class="mark-grid"></div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">2. 맞았지만 헤맨 문항</p>
+        <p class="mark-guide">맞았어도 <b>오래 고민했거나 찍은 문항</b>이 있으면 눌러 주세요. 없으면 그냥 넘어가도 됩니다.</p>
+        <div id="hard-grid" class="mark-grid"></div>
+      </div>
+
+      <button type="button" id="btn-to-why" class="btn btn-primary">다음</button>
+    </section>
+
+    <!-- 4. 틀린 이유 · 어려웠던 점 체크 -->
+    <section id="screen-why" class="screen" hidden>
+      <button type="button" id="btn-back-mark" class="btn-back">문항 다시 고르기</button>
+
+      <div class="card">
+        <p class="eyebrow">왜 틀렸을까요?</p>
+        <p class="chosen-detail">문항마다 해당하는 것을 모두 눌러 주세요. 성적표의 '부족한 점'과 '보완할 점'이 여기서 나옵니다.</p>
+      </div>
+
+      <div id="why-list" class="why-list"></div>
+
+      <button type="button" id="btn-to-reflect" class="btn btn-primary">다음</button>
+    </section>
+
+    <!-- 5. 이번 시험 돌아보기 -->
+    <section id="screen-reflect" class="screen" hidden>
+      <button type="button" id="btn-back-why" class="btn-back">이전으로</button>
+
+      <div class="card">
+        <p class="eyebrow">이번 시험을 준비한 나를 돌아봐요</p>
+        <p class="chosen-detail">해당하는 것을 모두 눌러 주세요.</p>
+        <div id="reflect-chips" class="why-chips"></div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">수업에서 더 해 주었으면 하는 것</p>
+        <div id="wish-chips" class="why-chips"></div>
+      </div>
+
+      <div class="card">
+        <label class="eyebrow" for="memo">선생님께 하고 싶은 말 (안 써도 됩니다)</label>
+        <textarea id="memo" class="input memo-input" rows="3" maxlength="300"
+                  placeholder="예) 문법 프린트 문제를 더 풀고 싶어요"></textarea>
+      </div>
+
+      <button type="button" id="btn-report" class="btn btn-primary">성적표 보기</button>
+    </section>
+
+    <!-- 6. 성적표 -->
+    <section id="screen-result" class="screen" hidden>
+      <div class="card result-card">
+        <p id="result-round" class="result-round is-stacked"></p>
+        <p id="result-name" class="result-name"></p>
+        <p class="result-score">
+          <span id="result-score">0</span><span class="result-total">점</span>
+        </p>
+        <p id="result-count" class="result-grade"></p>
+      </div>
+
+      <section>
+        <h2 class="section-title">이번 시험 분석</h2>
+        <div id="exam-info" class="card report-card"></div>
+      </section>
+
+      <section>
+        <h2 class="section-title">영역별 점수</h2>
+        <div id="area-list" class="area-list"></div>
+      </section>
+
+      <section>
+        <h2 class="section-title">유형별 점수</h2>
+        <p class="report-note">막대 옆 글씨는 '내 점수 / 이 유형에 걸린 점수' 입니다.</p>
+        <div id="type-list" class="area-list"></div>
+      </section>
+
+      <section>
+        <h2 class="section-title">난도별로 보면</h2>
+        <div id="level-list" class="area-list"></div>
+      </section>
+
+      <section>
+        <h2 class="section-title">부족한 점</h2>
+        <div id="weak-list" class="card report-card"></div>
+      </section>
+
+      <section>
+        <h2 class="section-title">보완할 점</h2>
+        <div id="fix-plan" class="card report-card"></div>
+        <div id="fix-list" class="fix-list"></div>
+      </section>
+
+      <section id="reflect-area">
+        <h2 class="section-title">나의 돌아보기</h2>
+        <div id="reflect-box" class="card report-card"></div>
+      </section>
+
+      <p id="save-state" class="save-state" hidden></p>
+
+      <button id="btn-history" class="btn btn-quiet">내 기록 보기</button>
+      <button id="btn-home" class="btn btn-quiet">처음으로 돌아가기</button>
+    </section>
+
+    <!-- 7. 내 기록 화면 -->
+    <section id="screen-history" class="screen" hidden>
+      <button type="button" id="btn-back-from-history" class="btn-back">돌아가기</button>
+
+      <div class="card">
+        <p class="eyebrow">지금까지의 기록</p>
+        <p id="history-who" class="chosen-round"></p>
+        <p id="history-summary" class="chosen-detail"></p>
+      </div>
+
+      <div id="history-list" class="history-list"></div>
+    </section>
+
+    <!-- 오류 안내 (기출 파일에 실수가 있을 때만 보입니다) -->
+    <section id="screen-error" class="screen" hidden>
+      <div class="card">
+        <h2 class="section-title">기출 파일을 확인해주세요</h2>
+        <p class="hint">school-exams.js 파일에서 아래 부분을 고쳐주세요.</p>
+        <ul id="error-list" class="error-list"></ul>
+      </div>
+    </section>
+
+    <!-- '처음으로' 확인 상자 — 실수로 눌러 체크하던 것을 날리지 않게 한 번 더 묻습니다 -->
+    <div id="quit-ask" class="quit-scrim" hidden role="dialog" aria-modal="true" aria-labelledby="quit-title">
+      <div class="quit-box">
+        <p class="quit-title" id="quit-title">처음으로 돌아갈까요?</p>
+        <p class="quit-text">지금 돌아가면 체크한 것은<br>기록되지 않아요.</p>
+        <button type="button" id="quit-keep" class="btn btn-primary">계속 하기</button>
+        <button type="button" id="quit-leave" class="btn btn-quiet">처음으로</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>var APP_SUBJECT = "내신";</script>
+  <script src="school-exams.js?v=20261021b"></script>
+  <script src="school-schedule.js?v=20261021b"></script>
+  <script src="storage.js?v=20261021a"></script>
+  <script src="school.js?v=20261021b"></script>
+</body>
+</html>

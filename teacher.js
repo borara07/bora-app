@@ -229,12 +229,13 @@
   }
 
   /* 이 기록이 어느 과목인지 봅니다.
-     기록을 저장할 때 회차 이름 앞에 '[문법] ' · '[모의고사] ' · '[독해] ' 를 붙여 두었습니다.
+     기록을 저장할 때 회차 이름 앞에 '[문법] ' · '[모의고사] ' · '[독해] ' · '[내신] ' 을 붙여 두었습니다.
      아무것도 안 붙은 것은 어휘입니다. */
   function subjectOf(record) {
     var title = String(record.roundTitle || '');
     if (title.indexOf('[모의고사]') === 0) { return '모의고사'; }
     if (title.indexOf('[독해]') === 0) { return '독해'; }
+    if (title.indexOf('[내신]') === 0) { return '내신'; }
     if (title.indexOf('[문법]') === 0) { return '문법'; }
     return '어휘';
   }
@@ -445,9 +446,9 @@
     [
       ['학생', students.length + '명'],
       ['시험', rows.length + '번'],
-      /* 모의고사는 정답률이 아니라 100점 만점 점수입니다 */
-      [statSubject === '모의고사' ? '평균 점수' : '평균 정답률',
-       (rows.length ? Math.round(sum / rows.length) : 0) + (statSubject === '모의고사' ? '점' : '%')]
+      /* 모의고사·내신은 정답률이 아니라 100점 만점 점수입니다 */
+      [byScore() ? '평균 점수' : '평균 정답률',
+       (rows.length ? Math.round(sum / rows.length) : 0) + (byScore() ? '점' : '%')]
     ].forEach(function (pair) {
       var box = document.createElement('div');
       box.className = 'summary-item';
@@ -613,9 +614,19 @@
     return $('homework-subject').value || '어휘';
   }
 
-  /* 학년으로 나누는 과목인지 (이제 네 과목 모두 학년입니다) */
+  /* 학년으로 나누는 과목인지 (이제 모든 과목이 학년입니다) */
   function byGrade(subject) {
-    return subject === '어휘' || subject === '문법' || subject === '모의고사' || subject === '독해';
+    return subject === '어휘' || subject === '문법' || subject === '모의고사' || subject === '독해' || subject === '내신';
+  }
+
+  /* 점수(100점 만점)로 보는 과목인지 — 모의고사·내신 */
+  function byScore() {
+    return statSubject === '모의고사' || statSubject === '내신';
+  }
+
+  /* 회차에 학년이 적혀 있어, 고른 학년 것만 보여 주고 이름 앞에 학년을 붙이는 과목 */
+  function gradedRounds(subject) {
+    return subject === '모의고사' || subject === '내신';
   }
 
   /* 학년이 속한 반 (중1~중3 → 중등부, 고1~고3 → 고등부). 어휘 회차는 반마다 따로 있습니다 */
@@ -660,6 +671,12 @@
       list = (typeof GRAMMAR_ROUNDS !== 'undefined') ? GRAMMAR_ROUNDS : [];
     } else if (subject === '모의고사') {
       list = (typeof EXAMS !== 'undefined') ? EXAMS : [];
+    } else if (subject === '내신') {
+      /* 내신(정기고사)은 '고1 · 경동고 26-1 중간' 이라는 이름으로 엽니다.
+         학생 화면(school.js 의 examLabel)과 똑같은 이름이어야 합니다 */
+      list = (typeof SCHOOL_EXAMS !== 'undefined' && Array.isArray(SCHOOL_EXAMS)) ? SCHOOL_EXAMS.map(function (e) {
+        return { title: e.school + ' ' + e.term, grade: e.grade };
+      }) : [];
     } else if (subject === '독해') {
       /* 독해 지문은 '[인문예술1] 조선 시대의 민본 사상' 이라는 이름으로 엽니다.
          학생 화면(reading.js 의 roundLabel)과 똑같은 이름이어야 합니다 */
@@ -751,13 +768,13 @@
       if (subject === '어휘' && (r.group || '고등부') !== groupOfGrade(group)) { return; }
       /* 모의고사는 회차에 학년이 적혀 있으므로 고른 학년 것만 보여 줍니다.
          학년 칸에 없는 이름(예: 예비고(중3))은 어느 학년에서도 못 고르게 되므로 그대로 둡니다. */
-      if (subject === '모의고사' && r.grade && knownGrade(r.grade) && r.grade !== group) { return; }
+      if (gradedRounds(subject) && r.grade && knownGrade(r.grade) && r.grade !== group) { return; }
       count += 1;
       /* 모의고사는 회차에 학년이 적혀 있어 목록에도 같이 보여 주고,
          저장할 때도 '고2 · 3분기 진단평가' 처럼 학년을 붙입니다.
          학년이 다른 회차끼리 이름이 같아도 섞이지 않게 하려는 것입니다.
          이름만 저장해 둔 예전 값도 그대로 켜져 보입니다. */
-      var label = (subject === '모의고사' && r.grade) ? (r.grade + ' · ' + r.title) : r.title;
+      var label = (gradedRounds(subject) && r.grade) ? (r.grade + ' · ' + r.title) : r.title;
       var one = pickRow('hw-' + count, label, label,
                         chosen.indexOf(label) >= 0 || chosen.indexOf(r.title) >= 0, false);
       one.box.addEventListener('change', function () {

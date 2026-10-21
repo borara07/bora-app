@@ -1896,6 +1896,243 @@ select.input {
 .quit-box .btn { margin-top: 18px; }
 .quit-box .btn + .btn { margin-top: 10px; }
 
+/* =========================================================
+   내신(정기고사) 화면 (school.html)
+   ========================================================= */
+
+/* ---------- 틀린 문항 · 헤맨 문항 누르기 ---------- */
+
+/* 맨 위 '지금 점수' — 누를 때마다 바로 바뀝니다 */
+.mark-score {
+  flex: 0 0 100%;
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.mark-guide {
+  margin: 4px 0 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+/* 문항 번호 단추 — 한 줄에 다섯 칸 */
+.mark-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.mark-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: 54px;
+  padding: 4px 2px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+  color: var(--text-2);
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.mark-no { font-size: 17px; font-weight: 700; line-height: 1.1; }
+.mark-pt { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.mark-btn:hover { border-color: var(--primary); }
+.mark-btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+/* 틀린 문항 — 진한 연보라로 채웁니다 */
+.mark-btn.is-marked {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+.mark-btn.is-marked .mark-pt { color: var(--on-primary); }
+
+/* 헤맨 문항 — 옅은 연보라 바탕에 점선 테두리 (틀린 문항과 눈에 다르게) */
+.mark-btn.is-hard-kind.is-marked {
+  background: var(--selected);
+  border-style: dashed;
+  border-color: var(--primary);
+  color: var(--primary-dark);
+}
+.mark-btn.is-hard-kind.is-marked .mark-pt { color: var(--primary-dark); }
+
+/* 이미 '틀림'으로 고른 문항은 헤맨 문항 칸에서 누를 수 없습니다 */
+.mark-btn.is-off { opacity: 0.35; cursor: default; }
+
+/* ---------- 틀린 이유 · 돌아보기 단추 ---------- */
+
+.why-list { margin-top: 14px; }
+.why-card .wrong-q-area { min-width: 0; overflow-wrap: anywhere; }
+
+.why-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 6px;
+}
+
+.why-chip {
+  min-height: 48px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+}
+
+.why-chip:hover { border-color: var(--primary); }
+.why-chip:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+.why-chip.is-on {
+  background: var(--selected);
+  border-color: var(--primary);
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+/* 성적표 안의 '나의 돌아보기' — 누를 수 없는 이름표입니다 */
+.why-chip.is-static {
+  display: inline-flex;
+  align-items: center;
+  min-height: 0;
+  padding: 6px 12px;
+  cursor: default;
+}
+
+.memo-input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+/* ---------- 성적표 ---------- */
+
+.report-card { display: grid; gap: 10px; }
+
+.report-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px 14px;
+  margin: 0;
+}
+
+.report-facts div { min-width: 0; }
+
+.report-facts dt {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.report-facts dd {
+  margin: 2px 0 0;
+  font-family: var(--font-title);
+  font-size: 19px;
+  font-weight: 400;
+  color: var(--text);
+  -webkit-text-stroke: var(--title-bold) currentColor;
+  overflow-wrap: anywhere;
+}
+
+/* 카드 안의 작은 제목 (시험 범위 · 이 시험은 이랬어요 …) */
+.report-sub {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+}
+
+.report-bullets {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.report-bullets.is-quiet { font-size: 15px; color: var(--text-2); }
+.report-bullets li.is-strong { font-weight: 700; color: var(--primary-dark); }
+.report-bullets b { color: var(--primary-dark); }
+
+.report-mix {
+  margin: 4px 0 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.report-note {
+  margin: -6px 2px 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.report-memo {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--soft);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* 막대 아래 '4문항 중 3문항 맞음' */
+.area-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.fix-list { margin-top: 14px; }
+.fix-list .wrong-q-no,
+.why-card .wrong-q-no { flex: none; white-space: nowrap; }
+.fix-list .wrong-q-area { min-width: 0; overflow-wrap: anywhere; }
+
+.fix-range {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.fix-why {
+  margin: 0;
+  font-size: 15px;
+  color: var(--answer-mine);
+}
+
+/* 통합 첫 화면 — 다섯째 과목(내신)은 한 줄을 다 씁니다 */
+.hub-subject.is-wide {
+  grid-column: 1 / -1;
+  justify-content: center;
+}
+
 /* ---------- 작은 화면(휴대폰) ---------- */
 
 @media (max-width: 380px) {
@@ -1916,6 +2153,11 @@ select.input {
 
   /* 독해 — 요약 문장을 조금 줄여 한 줄에 더 들어가게 합니다 */
   .summary-line { font-size: 19px; }
+
+  /* 내신 — 문항 번호 다섯 칸이 줄을 벗어나지 않게 조금 줄입니다 */
+  .mark-grid { gap: 5px; }
+  .mark-no { font-size: 16px; }
+  .why-chip { padding: 8px 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

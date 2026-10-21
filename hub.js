@@ -133,6 +133,7 @@
     if (title.indexOf('[모의고사]') === 0) return '모의고사';
     if (title.indexOf('[문법]') === 0) return '문법';
     if (title.indexOf('[독해]') === 0) return '독해';
+    if (title.indexOf('[내신]') === 0) return '내신';
     return '어휘';
   }
 
@@ -177,7 +178,7 @@
     tag.textContent = subject;
     title.appendChild(tag);
     title.appendChild(document.createTextNode(
-      String(r.roundTitle || '').replace(/^\[(모의고사|문법|독해)\]\s*/, '')));
+      String(r.roundTitle || '').replace(/^\[(모의고사|문법|독해|내신)\]\s*/, '')));
     left.appendChild(title);
 
     var when = document.createElement('p');
@@ -187,8 +188,8 @@
 
     var score = document.createElement('p');
     score.className = 'history-score';
-    if (subject === '모의고사') {
-      score.textContent = r.percent + '점';   /* 모의고사는 100점 만점 점수입니다 */
+    if (subject === '모의고사' || subject === '내신') {
+      score.textContent = r.percent + '점';   /* 모의고사·내신은 100점 만점 점수입니다 */
     } else {
       score.textContent = r.correct + '/' + r.total;
       var pct = document.createElement('span');
