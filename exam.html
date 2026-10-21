@@ -7,16 +7,16 @@
   <title>모의고사</title>
 
   <!-- 휴대폰 바탕화면에 앱처럼 놓기 위한 설정 -->
-  <link rel="manifest" href="exam-manifest.json?v=20261004a">
+  <link rel="manifest" href="exam-manifest.json?v=20261020">
   <meta name="theme-color" content="#5b2d8e">
-  <link rel="icon" href="exam-favicon.png?v=20261004a">
-  <link rel="apple-touch-icon" href="exam-apple-touch-icon.png?v=20261004a">
+  <link rel="icon" href="exam-favicon.png?v=20261020">
+  <link rel="apple-touch-icon" href="exam-apple-touch-icon.png?v=20261020">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 모의고사">
 
-  <link rel="stylesheet" href="style.css?v=20261004a">
+  <link rel="stylesheet" href="style.css?v=20261019b">
 </head>
 <body>
 
@@ -25,7 +25,7 @@
     <!-- 1. 학생 정보 입력 화면 -->
     <section id="screen-start" class="screen">
       <div class="brand-box">
-        <img class="brand-mark" src="logo/mark-white.png?v=20261004a" alt="" width="450" height="397">
+        <img class="brand-mark" src="logo/mark-white.png?v=20261020" alt="" width="450" height="397">
         <h1 class="brand-name">보라! 모의고사</h1>
       </div>
 
@@ -55,8 +55,11 @@
 
     <!-- 2. 회차 고르기 화면 -->
     <section id="screen-rounds" class="screen" hidden>
+      <!-- 통합 첫 화면(보라! 국어)에서 들어왔을 때만 보입니다 -->
+      <a href="./" id="btn-to-hub" class="btn-back btn-to-hub" hidden>과목 고르기</a>
+
       <div class="brand-box">
-        <img class="brand-mark" src="logo/mark-white.png?v=20261004a" alt="" width="450" height="397">
+        <img class="brand-mark" src="logo/mark-white.png?v=20261020" alt="" width="450" height="397">
         <p class="brand-name">보라! 모의고사</p>
       </div>
 
@@ -81,6 +84,9 @@
 
     <!-- 4. 답 입력 화면 (OMR) -->
     <section id="screen-sheet" class="screen" hidden>
+      <!-- 풀던 시험을 그만두고 회차 고르기로 (한 번 더 묻습니다) -->
+      <button type="button" id="btn-quit" class="btn-back btn-quit">처음으로</button>
+
       <header class="quiz-head">
         <p id="sheet-round" class="quiz-round"></p>
         <div class="progress-text">
@@ -149,11 +155,21 @@
       </div>
     </section>
 
+    <!-- '처음으로' 확인 상자 — 실수로 눌러 풀던 시험을 날리지 않게 한 번 더 묻습니다 -->
+    <div id="quit-ask" class="quit-scrim" hidden role="dialog" aria-modal="true" aria-labelledby="quit-title">
+      <div class="quit-box">
+        <p class="quit-title" id="quit-title">처음으로 돌아갈까요?</p>
+        <p class="quit-text">지금 돌아가면 이 시험은<br>기록되지 않아요.</p>
+        <button type="button" id="quit-keep" class="btn btn-primary">계속 풀기</button>
+        <button type="button" id="quit-leave" class="btn btn-quiet">처음으로</button>
+      </div>
+    </div>
+
   </main>
 
   <script>var APP_SUBJECT = "모의고사";</script>
-  <script src="exams.js?v=20261004a"></script>
-  <script src="storage.js?v=20261004a"></script>
-  <script src="exam.js?v=20261004a"></script>
+  <script src="exams.js?v=20261020"></script>
+  <script src="storage.js?v=20261021a"></script>
+  <script src="exam.js?v=20261021a"></script>
 </body>
 </html>

@@ -77,10 +77,15 @@
   --wrong-bg: #fdeaee;
   --brand-deep: #582b8d;    /* 첫 화면 바탕 (로고와 같은 진한 보라) */
   --brand-ink: #582b8d;     /* '보라! 어휘' 글씨색 (로고와 같은 색) */
-  --title-bold: 0.5px;      /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐) */
+  /* 큰 글씨체를 굵게 보이게 하는 정도 (클수록 굵어짐).
+     px 가 아니라 em 으로 적습니다. px 로 고정하면 글씨가 작을수록
+     획이 상대적으로 두꺼워져서, 같은 글씨체인데도 다른 글씨체처럼 보입니다.
+     em 으로 두면 글씨 크기를 따라 함께 줄어 어느 크기에서나 같아 보입니다 */
+  --title-bold: 0.013em;
   --answer-mine: #6b6480;   /* 틀린 문제 해설의 '내 답' 글자색 (회색) */
   --answer-right: #dd3690;  /* 틀린 문제 해설의 '정답' 글자색 (선명한 분홍) */
   --shadow: rgba(70, 48, 130, 0.08);
+  --scrim: rgba(36, 28, 60, 0.45);   /* 확인 상자 뒤를 어둡게 덮는 색 */
 
   /* 글씨체 (뒤쪽은 글씨체를 못 받았을 때 대신 쓸 것들) */
   --font-body: "나눔스퀘어", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
@@ -114,6 +119,7 @@
     --answer-mine: #a99cca;
     --answer-right: #f983bd;
     --shadow: rgba(0, 0, 0, 0.4);
+    --scrim: rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -140,6 +146,7 @@
   --answer-mine: #a99cca;
   --answer-right: #f983bd;
   --shadow: rgba(0, 0, 0, 0.4);
+  --scrim: rgba(0, 0, 0, 0.6);
 }
 
 /* 큰 글씨체(고운밤)에는 굵은 글씨 파일이 없습니다.
@@ -252,12 +259,12 @@ html.on-rounds .btn-primary:disabled {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 9px;
-  margin: 38px 0 28px;
+  gap: 8px;
+  margin: 22px 0 22px;
 }
 
 .brand-mark {
-  width: 56px;
+  width: 48px;
   height: auto;
 }
 
@@ -457,6 +464,11 @@ h1 {
   transform: rotate(45deg);
 }
 
+/* 진한 보라 바탕(회차 고르기) 위에서는 흰 글씨로 — 통합 첫 화면으로 돌아가는 '과목 고르기' */
+html.on-rounds .btn-back { color: rgba(255, 255, 255, 0.9); text-decoration: none; }
+html.on-rounds .btn-back::before { border-color: rgba(255, 255, 255, 0.9); }
+.btn-to-hub { text-decoration: none; }
+
 .btn-back:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
@@ -491,14 +503,15 @@ h1 {
   display: block;
   font-size: 15px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .input {
   width: 100%;
+  min-height: 48px;          /* 손가락으로 누르기 편한 가장 작은 높이입니다 */
   font-size: 17px;
   font-family: inherit;
-  padding: 15px 14px;
+  padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--soft);
@@ -541,8 +554,9 @@ h1 {
 .btn {
   display: block;
   width: 100%;
+  min-height: 48px;          /* 손가락으로 누르기 편한 가장 작은 높이입니다 */
   margin-top: 16px;
-  padding: 16px;
+  padding: 10px 16px;
   font-size: 17px;
   font-weight: 700;
   font-family: inherit;
@@ -640,7 +654,7 @@ h1 {
 
 .question-word {
   font-family: var(--font-title);
-  font-size: 40px;
+  font-size: 32px;
   font-weight: 400;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -648,27 +662,26 @@ h1 {
   word-break: break-word;
 }
 
-/* 문법 문제의 제시문처럼 글이 길 때는 크기를 줄입니다 */
-.question-word.is-sentence {
-  font-size: 24px;
-  line-height: 1.45;
-  letter-spacing: -0.01em;
-  margin: 8px 0 20px;
-}
-
-/* 〈보기〉 처럼 아주 긴 제시문은 한 단계 더 줄입니다 */
+/* 문법 문제의 제시문입니다.
+   글이 길든 짧든 한 크기로 둡니다. 길이에 따라 크기가 바뀌면
+   같은 글씨체인데도 문제마다 다른 글씨체처럼 보이기 때문입니다.
+   (어휘 한 낱말은 위 .question-word 의 32px 그대로입니다) */
+.question-word.is-sentence,
 .question-word.is-long {
   font-size: 19px;
   line-height: 1.55;
+  letter-spacing: -0.01em;
+  margin: 8px 0 20px;
+  white-space: pre-line;   /* 보기를 줄마다 하나씩 적은 문제가 있어 줄바꿈을 살립니다 */
 }
 
-/* 틀린 문제 카드에서도 글이 길면 같은 규칙으로 줄입니다 */
-.wrong-word.is-sentence {
-  font-size: 18px;
+/* 틀린 문제 카드의 제시문도 한 크기로 둡니다 */
+.wrong-word.is-sentence,
+.wrong-word.is-long {
+  font-size: 16px;
   line-height: 1.5;
+  white-space: pre-line;   /* 위와 같은 이유로 줄바꿈을 살립니다 */
 }
-
-.wrong-word.is-long { font-size: 16px; }
 
 /* 어휘 아래 한자 (hanja 를 비워두면 표시되지 않습니다) */
 .question-hanja {
@@ -912,7 +925,7 @@ h1 {
 
 /* ---------- 학생 정보 입력 ---------- */
 
-.field + .field { margin-top: 18px; }
+.field + .field { margin-top: 14px; }
 
 .field-hint {
   margin: 7px 0 0;
@@ -1234,22 +1247,27 @@ select.input {
 
 .round-list.is-wide {
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 8px;
+  /* 화면 끝까지 늘리지 않고 폭을 줄여 가운데에 놓습니다 */
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .round-list.is-wide .round-btn {
   flex-direction: row;
-  align-items: baseline;
+  /* 글씨가 위로 쏠리지 않게 단추 높이 한가운데에 둡니다 */
+  align-items: center;
   justify-content: flex-start;
-  gap: 10px;
-  min-height: 62px;
-  padding: 14px 18px;
+  gap: 8px;
+  min-height: 50px;          /* 손가락으로 누를 수 있는 가장 작은 크기입니다 */
+  padding: 9px 14px;
 }
 
-.round-list.is-wide .round-no { font-size: 24px; }
+.round-list.is-wide .round-no { font-size: 20px; }
 
 .round-list.is-wide .round-topic {
-  font-size: 16px;
+  font-size: 15px;
   text-align: left;
 }
 
@@ -1483,10 +1501,405 @@ select.input {
 }
 
 
+/* ---------- 독해 (reading.html) ---------- */
+
+/* 지문 고르기 — 분야 이름을 적고 그 아래 세 칸씩 놓습니다 (진한 보라 바탕 위) */
+.reading-rounds {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 회차를 묶음으로 나눌 때 묶음 위에 적는 이름
+   (독해는 분야, 어휘는 '어휘1. 사전적 의미' 같은 묶음 이름) */
+.reading-area,
+.round-section {
+  margin: 12px 2px 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.reading-area:first-child,
+.round-section:first-child { margin-top: 0; }
+
+/* 묶음으로 나눌 때는 바깥 상자가 격자가 아니라 세로로 쌓입니다
+   (세 칸 격자는 묶음마다 안쪽에 따로 만듭니다) */
+.round-list.has-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 제목이 길어도 낱말 가운데서 끊기지 않게 합니다 */
+.reading-rounds .round-topic { word-break: keep-all; }
+
+/* 앞 문단에서 정리한 요약 (접었다 폈다) */
+.read-notes { padding: 0; }
+
+.read-notes summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 52px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.read-notes summary::-webkit-details-marker { display: none; }
+.read-notes summary::after { content: "펼치기"; font-size: 13px; color: var(--primary); }
+.read-notes[open] summary::after { content: "접기"; }
+
+.read-notes summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.read-notes ol,
+.read-outline {
+  margin: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.read-notes ol { padding: 0 18px 16px; }
+.read-outline { padding: 0; }
+
+.read-notes li,
+.read-outline li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.read-outline-no {
+  padding-top: 1px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.read-outline-text { min-width: 0; }
+.read-outline-text b { color: var(--primary); }
+
+.read-outline-flag {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--answer-right);
+}
+
+/* 문단 본문 — 글자 단위로 줄을 바꾸고 양쪽 끝을 맞춥니다 */
+.para-no {
+  margin: 0 0 10px;
+  font-family: var(--font-title);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--primary);
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+.para-text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.9;
+  word-break: break-all;
+  text-align: justify;
+}
+
+/* 문단 아래 낱말 풀이 */
+.para-note {
+  margin: 14px 0 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  white-space: pre-line;   /* 풀이가 여러 개일 때 줄을 나눕니다 */
+}
+
+/* 요약 문장 — 빈칸을 채우는 문제의 몸통입니다 */
+.summary-line {
+  margin: 8px 0 20px;
+  font-family: var(--font-title);
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.65;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+.read-blank {
+  display: inline-block;
+  min-width: 5.5em;
+  margin: 0 2px;
+  border-bottom: 2.5px solid var(--primary);
+  color: var(--primary);
+  line-height: 1.35;
+}
+
+/* 답을 고른 뒤 — 긴 답도 본문처럼 줄을 바꿔 이어지게 합니다 */
+.read-blank.is-filled {
+  display: inline;
+  min-width: 0;
+  padding: 1px 4px;
+  border-bottom: none;
+  border-radius: 4px;
+  background: var(--selected);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.choice-text { flex: 1; min-width: 0; }
+
+.choice-mark {
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* 채점 표시 — 정답만 초록으로, 내가 고른 오답은 회색 점선으로 둡니다 */
+.choice.is-right {
+  -webkit-text-stroke: 0;
+  font-weight: 700;
+  border-color: var(--correct);
+  background: var(--correct-bg);
+  color: var(--correct);
+}
+
+.choice.is-right .choice-num {
+  background: var(--correct);
+  color: var(--card);
+}
+
+.choice.is-mine {
+  -webkit-text-stroke: 0;
+  border-style: dashed;
+  border-color: var(--answer-mine);
+  color: var(--answer-mine);
+}
+
+.choice.is-dim { opacity: 0.55; }
+
+/* 고른 뒤 보이는 해설과 근거 문장 */
+.read-feedback {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--track);
+}
+
+.read-verdict {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--correct);    /* 맞았을 때도 틀렸을 때도 같은 초록 (정답 보기와 같은 색) */
+}
+
+.read-why {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+/* 근거 문장에서 정답이 나온 곳 (형광펜) */
+.read-mark {
+  padding: 0 2px;
+  border-radius: 3px;
+  background: var(--selected);
+  color: inherit;
+}
+
+/* ---------- 통합 첫 화면 '보라! 국어' (index.html) ---------- */
+
+/* 과목 고르기 화면은 선생님 화면처럼 연보라 바탕입니다.
+   로고·문구는 위, 과목 상자는 가운데, '이름 다시 입력' 은 맨 아래에 둡니다 */
+.hub-subjects {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 52px);
+  min-height: calc(100dvh - 52px);
+}
+
+.hub-subjects .brand-box { margin-bottom: auto; }
+.hub-subjects > .btn { margin-top: auto; }
+
+/* 오늘의 한 마디 — '보라! 국어' 와 같은 색 */
+.hub-quote {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: center;
+  word-break: keep-all;
+  color: var(--brand-ink);
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+/* 과목 상자 */
+.hub-panel {
+  margin: 28px 0;
+  padding: 14px 12px 16px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 12px var(--shadow);
+}
+
+/* 상자 맨 위 학생 이름표 */
+.hub-who {
+  width: fit-content;
+  margin: 0 auto 10px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--chip);
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.hub-who b { color: var(--primary-dark); }
+
+.hub-pick {
+  margin: 0 2px 12px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.hub-subject-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* 과목 단추 — 왼쪽에 작은 그림 동그라미, 오른쪽에 과목 이름 */
+.hub-subject {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 10px 8px;
+  border-radius: 14px;
+  background: var(--soft);
+  border: 1.5px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.12s ease;
+}
+
+.hub-subject:hover { border-color: var(--primary); }
+.hub-subject:active { transform: scale(0.97); }
+
+.hub-subject:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.hub-subject-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--chip);
+  color: var(--primary-dark);
+}
+
+.hub-subject-name {
+  white-space: nowrap;
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.1;
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+/* 내 기록 — 과목 이름을 제목 앞에 작게 붙입니다 */
+.history-subject {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--primary-dark);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: 2px;
+  -webkit-text-stroke: 0;
+}
+
+/* ---------- '처음으로' 단추와 확인 상자 (문제 화면) ---------- */
+
+.btn-quit {
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+
+.btn-quit::before { border-color: var(--muted); }
+
+.quit-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--scrim);
+}
+
+.quit-box {
+  width: 100%;
+  max-width: 320px;
+  padding: 22px 20px 18px;
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: 0 10px 30px var(--shadow);
+  text-align: center;
+}
+
+.quit-title {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 400;
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+.quit-text {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.quit-box .btn { margin-top: 18px; }
+.quit-box .btn + .btn { margin-top: 10px; }
+
 /* ---------- 작은 화면(휴대폰) ---------- */
 
 @media (max-width: 380px) {
-  .question-word { font-size: 33px; }
+  .question-word { font-size: 28px; }
   .result-score { font-size: 50px; }
   .choice { padding: 15px 13px; }
   .history-round { font-size: 17px; }
@@ -1500,10 +1913,14 @@ select.input {
   .sheet-marks { gap: 5px; }
   .sheet-mark { font-size: 16px; }
   .subject-btn { font-size: 20px; }
+
+  /* 독해 — 요약 문장을 조금 줄여 한 줄에 더 들어가게 합니다 */
+  .summary-line { font-size: 19px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .progress-fill { transition: none; }
+  .hub-subject { transition: none; }
   .area-fill { transition: none; }
 }
 

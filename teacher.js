@@ -229,11 +229,12 @@
   }
 
   /* 이 기록이 어느 과목인지 봅니다.
-     기록을 저장할 때 회차 이름 앞에 '[문법] ' · '[모의고사] ' 를 붙여 두었습니다.
+     기록을 저장할 때 회차 이름 앞에 '[문법] ' · '[모의고사] ' · '[독해] ' 를 붙여 두었습니다.
      아무것도 안 붙은 것은 어휘입니다. */
   function subjectOf(record) {
     var title = String(record.roundTitle || '');
     if (title.indexOf('[모의고사]') === 0) { return '모의고사'; }
+    if (title.indexOf('[독해]') === 0) { return '독해'; }
     if (title.indexOf('[문법]') === 0) { return '문법'; }
     return '어휘';
   }
@@ -583,9 +584,11 @@
 
   /* ---------- 이번 주 숙제 회차 ---------- */
 
-  /* 어휘는 반(고등부·중등부)으로, 문법은 학년(중1~고3)으로 나눕니다.
+  /* 네 과목 모두 학년(중1~고3)으로 나눕니다.
      명단 메모에 학년이 없는 사람(선생님 계정 등)은 반 이름으로 회차를 찾으므로
-     문법 목록 끝에 반 두 가지도 함께 둡니다. */
+     목록 끝에 반 두 가지도 함께 둡니다.
+     어휘의 반 칸은 학년을 나누기 전에 쓰던 칸이기도 합니다.
+     학년을 따로 정하지 않은 학생은 이 반 칸의 회차가 열립니다. */
   var GRADES = [
     { value: '중1', label: '중1' },
     { value: '중2', label: '중2' },
@@ -601,13 +604,24 @@
     { value: '중등부', label: '중등부' }
   ];
 
+  /* 선생님 화면의 학년 칸에 있는 이름인지 */
+  function knownGrade(name) {
+    return GRADES.some(function (it) { return it.value === name; });
+  }
+
   function homeworkSubject() {
     return $('homework-subject').value || '어휘';
   }
 
-  /* 학년으로 나누는 과목인지 (문법·모의고사는 학년, 어휘는 반) */
+  /* 학년으로 나누는 과목인지 (이제 네 과목 모두 학년입니다) */
   function byGrade(subject) {
-    return subject === '문법' || subject === '모의고사';
+    return subject === '어휘' || subject === '문법' || subject === '모의고사' || subject === '독해';
+  }
+
+  /* 학년이 속한 반 (중1~중3 → 중등부, 고1~고3 → 고등부). 어휘 회차는 반마다 따로 있습니다 */
+  function groupOfGrade(grade) {
+    if (grade === '고등부' || grade === '중등부') { return grade; }
+    return String(grade || '').charAt(0) === '중' ? '중등부' : '고등부';
   }
 
   function homeworkGroup() {
@@ -634,33 +648,50 @@
        다만 문법으로 바꿀 때는 반 이름이 아니라 학년부터 보여 줍니다. */
     var keep = values.indexOf(before) >= 0 &&
                !(byGrade(subject) && (before === '고등부' || before === '중등부'));
-    /* 문법은 고1(4번째), 모의고사는 고3(6번째)부터 보여 줍니다 */
-    var first = (subject === '모의고사') ? 5 : (subject === '문법' ? 3 : 0);
+    /* 어휘·문법·독해는 고1(4번째), 모의고사는 고3(6번째)부터 보여 줍니다 */
+    var first = (subject === '모의고사') ? 5 : 3;
     box.value = keep ? before : values[first];
   }
 
-  /* 그 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS) */
+  /* 그 과목의 회차 목록 (어휘는 ROUNDS, 문법은 GRAMMAR_ROUNDS, 독해는 READINGS) */
   function roundsOf(subject) {
     var list;
     if (subject === '문법') {
       list = (typeof GRAMMAR_ROUNDS !== 'undefined') ? GRAMMAR_ROUNDS : [];
     } else if (subject === '모의고사') {
       list = (typeof EXAMS !== 'undefined') ? EXAMS : [];
+    } else if (subject === '독해') {
+      /* 독해 지문은 '[인문예술1] 조선 시대의 민본 사상' 이라는 이름으로 엽니다.
+         학생 화면(reading.js 의 roundLabel)과 똑같은 이름이어야 합니다 */
+      list = (typeof READINGS !== 'undefined' && Array.isArray(READINGS)) ? READINGS.map(function (r) {
+        return { title: '[' + r.area + r.no + '] ' + r.title };
+      }) : [];
     } else {
+      /* 어휘는 두 파일을 함께 씁니다 — questions.js(어휘1) + questions-context.js(어휘2) */
       list = (typeof ROUNDS !== 'undefined') ? ROUNDS : [];
+      if (typeof CONTEXT_ROUNDS !== 'undefined' && Array.isArray(CONTEXT_ROUNDS)) {
+        list = list.concat(CONTEXT_ROUNDS);
+      }
     }
     return Array.isArray(list) ? list : [];
   }
 
   /* 저장된 값은 회차 이름을 '|' 로 이어 붙인 글자입니다.
-     빈 글자는 '모든 회차 열기' 입니다. (회차 이름에는 '|' 를 쓰지 않습니다) */
+     (회차 이름에는 '|' 를 쓰지 않습니다)
+
+     '*' 한 글자는 '모든 회차 열기' 입니다.
+     빈 글자는 '한 회차도 안 고름' 이라서 아무것도 열리지 않습니다.
+     네모를 하나도 켜지 않고 저장했을 때 전부 열려 버리던 것을 막으려고 둘을 갈랐습니다. */
+  var ALL_OPEN = '*';
+
   function splitRounds(value) {
     return String(value || '').split('|').filter(function (s) { return s !== ''; });
   }
 
-  /* 지금 켜져 있는 회차 이름들 (모두 열기를 켜 두었으면 빈 목록) */
+  /* 지금 켜져 있는 회차 이름들
+     ('모든 회차 열기' 를 켜 두었으면 ['*'], 아무것도 안 켰으면 빈 목록) */
   function pickedRounds() {
-    if ($('homework-all') && $('homework-all').checked) { return []; }
+    if ($('homework-all') && $('homework-all').checked) { return [ALL_OPEN]; }
     var out = [];
     var boxes = $('homework-pick').querySelectorAll('input[data-round]');
     Array.prototype.forEach.call(boxes, function (b) {
@@ -674,7 +705,7 @@
     var note = $('homework-count');
     if (!note) { return; }
     var all = $('homework-all') && $('homework-all').checked;
-    var n = pickedRounds().length;
+    var n = all ? 0 : pickedRounds().length;
     note.textContent = all
       ? '모든 회차가 열립니다.'
       : (n === 0 ? '아직 고른 회차가 없습니다. 이대로 정하면 아무 회차도 열리지 않습니다.'
@@ -708,18 +739,27 @@
     pick.innerHTML = '';
 
     /* 맨 위 '모든 회차 열기' — 켜면 아래 회차들은 흐려집니다 */
-    var all = pickRow('homework-all', '모든 회차 열기 (숙제 지정 안 함)', '', chosen.length === 0, true);
+    var all = pickRow('homework-all', '모든 회차 열기 (숙제 지정 안 함)', '',
+                      chosen.indexOf(ALL_OPEN) >= 0, true);
     pick.appendChild(all.row);
 
-    /* 문법은 학년으로 나누므로 회차를 반으로 거르지 않습니다 */
+    /* 어휘 회차는 반마다 따로라서, 고른 학년의 반(고1 → 고등부) 회차만 보여 줍니다.
+       문법·모의고사·독해는 회차를 반으로 거르지 않습니다 */
     var rows = [];
     var count = 0;
     roundsOf(subject).forEach(function (r) {
-      if (!byGrade(subject) && (r.group || '고등부') !== group) { return; }
+      if (subject === '어휘' && (r.group || '고등부') !== groupOfGrade(group)) { return; }
+      /* 모의고사는 회차에 학년이 적혀 있으므로 고른 학년 것만 보여 줍니다.
+         학년 칸에 없는 이름(예: 예비고(중3))은 어느 학년에서도 못 고르게 되므로 그대로 둡니다. */
+      if (subject === '모의고사' && r.grade && knownGrade(r.grade) && r.grade !== group) { return; }
       count += 1;
-      /* 모의고사는 회차에 학년이 적혀 있어 목록에도 같이 보여 줍니다 */
+      /* 모의고사는 회차에 학년이 적혀 있어 목록에도 같이 보여 주고,
+         저장할 때도 '고2 · 3분기 진단평가' 처럼 학년을 붙입니다.
+         학년이 다른 회차끼리 이름이 같아도 섞이지 않게 하려는 것입니다.
+         이름만 저장해 둔 예전 값도 그대로 켜져 보입니다. */
       var label = (subject === '모의고사' && r.grade) ? (r.grade + ' · ' + r.title) : r.title;
-      var one = pickRow('hw-' + count, label, r.title, chosen.indexOf(r.title) >= 0, false);
+      var one = pickRow('hw-' + count, label, label,
+                        chosen.indexOf(label) >= 0 || chosen.indexOf(r.title) >= 0, false);
       one.box.addEventListener('change', function () {
         /* 회차를 하나라도 켜면 '모든 회차 열기' 는 저절로 꺼집니다 */
         if (one.box.checked) { all.box.checked = false; }
@@ -785,12 +825,18 @@
       if (r.ok) {
         box.className = 'check-state is-ok';
         var 누구 = (byGrade(subject) && group !== '고등부' && group !== '중등부') ? '그 학년' : '그 반';
-        box.textContent = picked.length
-          ? (subject + ' · ' + group + ' 이번 주 시험을 이렇게 정했습니다.\n' +
-             picked.join(' · ') + '\n' +
-             누구 + ' 학생에게는 이 ' + picked.length + '개 회차만 열립니다.')
-          : (subject + ' · ' + group + ' 의 모든 회차를 열었습니다.\n' +
-             '학생이 아무 회차나 고를 수 있습니다.');
+        var 머리 = subject + ' · ' + group;
+        if (picked.indexOf(ALL_OPEN) >= 0) {
+          box.textContent = 머리 + ' 의 모든 회차를 열었습니다.\n' +
+                            '학생이 아무 회차나 고를 수 있습니다.';
+        } else if (picked.length) {
+          box.textContent = 머리 + ' 이번 주 시험을 이렇게 정했습니다.\n' +
+                            picked.join(' · ') + '\n' +
+                            누구 + ' 학생에게는 이 ' + picked.length + '개 회차만 열립니다.';
+        } else {
+          box.textContent = 머리 + ' 은 한 회차도 고르지 않으셨습니다.\n' +
+                            누구 + ' 학생에게는 아무 회차도 열리지 않습니다.';
+        }
         return;
       }
       box.className = 'check-state is-bad';
@@ -838,6 +884,7 @@
     }
 
     add(typeof ROUNDS !== 'undefined' ? ROUNDS : null, '');
+    add(typeof CONTEXT_ROUNDS !== 'undefined' ? CONTEXT_ROUNDS : null, '');
     add(typeof GRAMMAR_ROUNDS !== 'undefined' ? GRAMMAR_ROUNDS : null, '[문법] ');
     return out;
   }

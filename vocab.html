@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko" class="on-rounds">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>어휘 테스트</title>
+
+  <!-- 휴대폰 바탕화면에 앱처럼 놓기 위한 설정 -->
+  <link rel="manifest" href="vocab-manifest.json?v=20261018j">
+  <meta name="theme-color" content="#5b2d8e">
+  <link rel="icon" href="vocab-favicon.png?v=20261018j">
+  <link rel="apple-touch-icon" href="vocab-apple-touch-icon.png?v=20261018j">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="보라! 어휘">
+
+  <link rel="stylesheet" href="style.css?v=20261019b">
+</head>
+<body>
+
+  <main class="app">
+
+    <!-- 1. 학생 정보 입력 화면 -->
+    <section id="screen-start" class="screen">
+      <!-- 바탕이 진한 보라라서 흰색 로고를 씁니다 -->
+      <div class="brand-box">
+        <img class="brand-mark" src="logo/mark-white.png?v=20260917a" alt="" width="450" height="397">
+        <h1 class="brand-name">보라! 어휘</h1>
+      </div>
+
+      <form id="start-form" class="card" autocomplete="off">
+        <div class="field">
+          <label class="label" for="student-name">학생 이름</label>
+          <input type="text" id="student-name" class="input" placeholder="예) 김민서" maxlength="20">
+        </div>
+
+        <div class="field">
+          <label class="label" for="student-school">학교</label>
+          <input type="text" id="student-school" class="input" placeholder="예) 보라고등학교" maxlength="30">
+        </div>
+
+        <div class="field">
+          <label class="label" for="student-phone4">학부모님 전화번호 뒷 4자리</label>
+          <input type="text" id="student-phone4" class="input" placeholder="예) 1234"
+                 inputmode="numeric" maxlength="4">
+          <p class="field-hint">같은 이름이 있을 때 학생을 구분하는 데만 씁니다.</p>
+        </div>
+
+        <p id="name-error" class="error" hidden></p>
+        <button type="submit" id="btn-start" class="btn btn-primary">다음</button>
+        <button type="button" id="btn-my-history" class="btn btn-quiet" hidden>내 지난 기록 보기</button>
+      </form>
+    </section>
+
+    <!-- 2. 회차 고르기 화면 -->
+    <section id="screen-rounds" class="screen" hidden>
+      <!-- 통합 첫 화면(보라! 국어)에서 들어왔을 때만 보입니다 -->
+      <a href="./" id="btn-to-hub" class="btn-back btn-to-hub" hidden>과목 고르기</a>
+
+      <div class="brand-box">
+        <img class="brand-mark" src="logo/mark-white.png?v=20260917a" alt="" width="450" height="397">
+        <p class="brand-name">보라! 어휘</p>
+      </div>
+
+      <div id="round-list" class="round-list"></div>
+      <p id="rounds-empty" class="rounds-empty" hidden></p>
+
+      <button type="button" id="btn-back-start" class="btn btn-quiet btn-on-deep">이름 다시 입력</button>
+    </section>
+
+    <!-- 3. 문제 풀이 화면 -->
+    <section id="screen-quiz" class="screen" hidden>
+      <!-- 풀던 시험을 그만두고 회차 고르기로 (한 번 더 묻습니다) -->
+      <button type="button" id="btn-quit" class="btn-back btn-quit">처음으로</button>
+
+      <header class="quiz-head">
+        <p id="quiz-round" class="quiz-round"></p>
+        <div class="progress-text">
+          <span id="progress-now">1</span> / <span id="progress-total">10</span>
+        </div>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+      </header>
+
+      <div class="card">
+        <p id="question-label" class="question-label">다음 어휘의 뜻으로 알맞은 것은?</p>
+        <p id="question-word" class="question-word">어휘</p>
+        <p id="question-hanja" class="question-hanja" hidden></p>
+
+        <div id="choices" class="choices"></div>
+      </div>
+
+      <button id="btn-next" class="btn btn-primary" disabled>다음 문제</button>
+    </section>
+
+    <!-- 4. 결과 화면 -->
+    <section id="screen-result" class="screen" hidden>
+      <div class="card result-card">
+        <p id="result-round" class="result-round"></p>
+        <p id="result-name" class="result-name"></p>
+        <p class="result-score">
+          <span id="result-correct">0</span><span class="result-total">/<span id="result-total">10</span></span>
+        </p>
+        <p id="result-percent" class="result-percent"></p>
+        <p id="result-comment" class="result-comment"></p>
+      </div>
+
+      <div id="retest-note" class="retest-note" hidden>
+        <p id="retest-title" class="retest-title"></p>
+        <ol class="retest-list">
+          <li>
+            <span class="retest-step">바로 재시험을 보려면</span>
+            틀린 문제 해설을 읽고 '다시 보기' 를 눌러 한 번 더 풀어 주세요.
+          </li>
+          <li>
+            <span class="retest-step">나중에 재시험을 보려면</span>
+            충분히 공부한 뒤에 이 링크를 다시 열어 처음부터 풀어 주세요.
+          </li>
+        </ol>
+      </div>
+
+      <section id="wrong-area">
+        <h2 class="section-title">틀린 문제 해설</h2>
+        <div id="wrong-list" class="wrong-list"></div>
+      </section>
+
+      <p id="save-state" class="save-state" hidden></p>
+
+      <button id="btn-retry" class="btn btn-primary">다시 보기</button>
+      <button id="btn-history" class="btn btn-quiet">내 기록 보기</button>
+      <!-- 시험을 마친 학생이 앱을 닫지 않고 회차 화면으로 돌아갑니다 -->
+      <button id="btn-home" class="btn btn-quiet">처음으로 돌아가기</button>
+    </section>
+
+    <!-- 5. 내 기록 화면 -->
+    <section id="screen-history" class="screen" hidden>
+      <button type="button" id="btn-back-from-history" class="btn-back">돌아가기</button>
+
+      <div class="card">
+        <p class="eyebrow">지금까지의 기록</p>
+        <p id="history-who" class="chosen-round"></p>
+        <p id="history-summary" class="chosen-detail"></p>
+      </div>
+
+      <div id="history-list" class="history-list"></div>
+
+    </section>
+
+    <!-- 오류 안내 (문제 파일에 실수가 있을 때만 보입니다) -->
+    <section id="screen-error" class="screen" hidden>
+      <div class="card">
+        <h2 class="section-title">문제 파일을 확인해주세요</h2>
+        <p class="hint">questions.js 파일에서 아래 부분을 고쳐주세요.</p>
+        <ul id="error-list" class="error-list"></ul>
+      </div>
+    </section>
+
+    <!-- '처음으로' 확인 상자 — 실수로 눌러 풀던 시험을 날리지 않게 한 번 더 묻습니다 -->
+    <div id="quit-ask" class="quit-scrim" hidden role="dialog" aria-modal="true" aria-labelledby="quit-title">
+      <div class="quit-box">
+        <p class="quit-title" id="quit-title">처음으로 돌아갈까요?</p>
+        <p class="quit-text">지금 돌아가면 이 시험은<br>기록되지 않아요.</p>
+        <button type="button" id="quit-keep" class="btn btn-primary">계속 풀기</button>
+        <button type="button" id="quit-leave" class="btn btn-quiet">처음으로</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 이 페이지는 어휘 문제를 씁니다 -->
+  <script>var APP_SUBJECT = "어휘";</script>
+  <script src="questions.js?v=20261019a"></script>
+  <script src="questions-context.js?v=20261019e"></script>
+  <script src="storage.js?v=20261021a"></script>
+  <script src="app.js?v=20261021a"></script>
+</body>
+</html>
