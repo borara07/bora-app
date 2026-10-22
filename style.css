@@ -2107,6 +2107,35 @@ select.input {
   color: rgba(255, 255, 255, 0.72);
 }
 
+/* 내신 — 선생님 화면의 성적표 검토 */
+.review-list { display: grid; gap: 8px; margin-top: 10px; }
+.review-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+  font-family: inherit;
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+}
+.review-row:hover { border-color: var(--primary); }
+.review-name { font-size: 17px; }
+.review-sub { font-size: 14px; color: var(--muted); }
+.round-state.is-new { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+.mark-btn.is-changed { outline: 2px dashed var(--primary); outline-offset: 2px; }
+.review-preview-title { margin-top: 18px; }
+.review-preview {
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
 /* 내신 — 기록을 보낸 뒤 '학생 분석리포트를 준비 중입니다' */
 .sent-card { text-align: center; }
 .sent-title {

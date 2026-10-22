@@ -64,6 +64,9 @@
           fillGroupPicker();
           loadHomework();
 
+          /* 내신 성적표 검토 (school-review.js) */
+          if (typeof SchoolReview !== 'undefined') { SchoolReview.start(password, allRows); }
+
           VocabStore.fetchStudents(password).then(function (sr) {
             allRoster = sr.ok ? sr.rows : null;
             applyGroup();
@@ -114,6 +117,7 @@
     allRows = [];
     rows = [];
     myPassword = '';
+    if ($('school-review')) { $('school-review').hidden = true; $('review-edit').hidden = true; }
     allRoster = null;
     roster = null;
     $('password').value = '';
@@ -674,7 +678,10 @@
     } else if (subject === '내신') {
       /* 내신(정기고사)은 '고1 · 경동고 26-1 중간' 이라는 이름으로 엽니다.
          학생 화면(school.js 의 examLabel)과 똑같은 이름이어야 합니다 */
-      list = (typeof SCHOOL_EXAMS !== 'undefined' && Array.isArray(SCHOOL_EXAMS)) ? SCHOOL_EXAMS.map(function (e) {
+      /* 분석 검토를 마친(status '검토 완료') 시험만 열 수 있습니다 */
+      list = (typeof SCHOOL_EXAMS !== 'undefined' && Array.isArray(SCHOOL_EXAMS)) ? SCHOOL_EXAMS.filter(function (e) {
+        return (e.status || '검토 완료') === '검토 완료';
+      }).map(function (e) {
         return { title: e.school + ' ' + e.term, grade: e.grade };
       }) : [];
     } else if (subject === '독해') {

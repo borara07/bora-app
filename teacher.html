@@ -14,7 +14,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 선생님">
-  <link rel="stylesheet" href="style.css?v=20261021b">
+  <link rel="stylesheet" href="style.css?v=20261022b">
 </head>
 <body>
 
@@ -92,6 +92,59 @@
         <button type="button" id="btn-homework" class="btn btn-primary">이대로 정하기</button>
         <p id="homework-state" class="check-state" hidden></p>
       </div>
+
+      <!-- 내신 성적표 검토 (원장 선생님) — 학생이 보낸 기록을 검토·보완하고 한마디를 적어 공개합니다.
+           school-review.js 가 채웁니다. -->
+      <section id="school-review" hidden>
+        <h2 class="section-title">내신 성적표 검토</h2>
+        <div class="card">
+          <div class="field">
+            <label class="label" for="review-exam">시험</label>
+            <select id="review-exam" class="input"></select>
+            <p class="field-hint">분석 검토를 마친(검토 완료) 시험만 나옵니다.
+              학생 이름을 누르면 성적표를 고치고 공개할 수 있습니다.</p>
+          </div>
+          <p id="review-count" class="field-hint"></p>
+          <div id="review-list" class="review-list"></div>
+        </div>
+
+        <div id="review-edit" class="card" hidden>
+          <p class="eyebrow">성적표 고치기</p>
+          <p id="review-who" class="chosen-round"></p>
+          <p id="review-flag" class="field-hint"></p>
+
+          <p class="label">틀린 문항</p>
+          <p class="field-hint">학생이 시험지와 다르게 눌렀으면 고쳐 주세요. 학생이 처음 누른 것과 달라진 칸은 점선으로 보입니다.</p>
+          <div id="review-wrong" class="mark-grid"></div>
+          <p class="label">맞았지만 헤맨 문항</p>
+          <div id="review-hard" class="mark-grid"></div>
+
+          <div class="field">
+            <label class="label" for="review-weak">부족한 점에 더할 말 (한 줄에 하나)</label>
+            <textarea id="review-weak" class="input memo-input" rows="3"
+                      placeholder="예) 문법 개념 문항에서 같은 실수가 반복됩니다."></textarea>
+          </div>
+          <div class="field">
+            <label class="label" for="review-fix">보완할 점에 더할 말 (한 줄에 하나)</label>
+            <textarea id="review-fix" class="input memo-input" rows="3"
+                      placeholder="예) 중세 국어 프린트 2쪽 다시 풀기"></textarea>
+          </div>
+          <div class="field">
+            <label class="label" for="review-comment">선생님 한마디</label>
+            <textarea id="review-comment" class="input memo-input" rows="4"
+                      placeholder="예) 문학은 아주 잘했어요. 문법만 잡으면 90점 넘습니다!"></textarea>
+          </div>
+
+          <button type="button" id="btn-review-publish" class="btn btn-primary">학생에게 공개</button>
+          <button type="button" id="btn-review-save" class="btn btn-quiet">저장만 하기 (공개 안 함)</button>
+          <button type="button" id="btn-review-unpublish" class="btn btn-quiet" hidden>공개 취소</button>
+          <p id="review-state" class="check-state" hidden></p>
+
+          <p class="eyebrow review-preview-title">학생이 받을 성적표 (미리보기)</p>
+          <div id="review-preview" class="review-preview"></div>
+          <button type="button" id="btn-review-close" class="btn btn-quiet">닫기</button>
+        </div>
+      </section>
 
       <!-- 과목 고르개: 어휘·문법·모의고사·독해 기록이 한 표에 섞이지 않게 합니다.
            여기서 고른 과목만 아래 모든 표와 CSV 에 나옵니다. -->
@@ -245,8 +298,11 @@
   <script src="questions-grammar.js?v=20261018b"></script>
   <script src="exams.js?v=20261018b"></script>
   <script src="readings.js?v=20261018h"></script>
-  <script src="school-exams.js?v=20261022a"></script>
-  <script src="storage.js?v=20261021a"></script>
-  <script src="teacher.js?v=20261021b"></script>
+  <script src="school-exams.js?v=20261022b"></script>
+  <script src="school-schedule.js?v=20261022b"></script>
+  <script src="storage.js?v=20261022b"></script>
+  <script src="teacher.js?v=20261022b"></script>
+  <script src="school-report.js?v=20261022b"></script>
+  <script src="school-review.js?v=20261022b"></script>
 </body>
 </html>
