@@ -2,17 +2,22 @@
    내신(정기고사) 앱 동작 파일
    (시험 분류만 바꿀 거라면 school-exams.js 만 고치면 됩니다)
 
-   학생이 채점된 학교 시험지를 보고 '틀린 문항'을 누르면
-   그 학교 시험 분석과 함께 개인 성적표가 나옵니다.
-     - 시험 분석: 과목·시험일·범위(정기고사 일정표) + 세 줄 총평
-     - 개인 분석: 점수, 영역·유형·난도별 점수, 부족한 점, 보완할 점
+   순서
+     1. 선생님(Claude)이 시험지를 분석합니다          → 학생에게는 '시험지 분석 중'
+     2. 선생님이 분석을 검토합니다                    → 학생에게는 '시험지 분석 중'
+     3. 검토가 끝나면 선생님이 시험을 엽니다           → 학생이 '기록하기' 를 누를 수 있음
+     4. 학생이 틀린 문항·이유·돌아보기를 기록해 보냅니다 → '학생 분석리포트를 준비 중입니다'
+     5. 선생님이 성적표를 검토·보완하고 한마디를 적어 공개합니다 → 학생이 '리포트 보기'
+
    정답은 받지 않습니다. 배점으로 점수를 계산합니다.
+   성적표를 계산하고 그리는 부분은 school-report.js 에 있습니다. (선생님 화면과 함께 씀)
    ========================================================= */
 
 (function () {
   'use strict';
 
   var SUBJECT = '내신';
+  var R = SchoolReport;
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -22,32 +27,13 @@
     mark: $('screen-mark'),
     why: $('screen-why'),
     reflect: $('screen-reflect'),
+    sent: $('screen-sent'),
     result: $('screen-result'),
     history: $('screen-history'),
     error: $('screen-error')
   };
 
-  /* ---------- 틀린 이유 · 돌아보기 목록 ----------
-     설문지의 예시를 그대로 옮겼습니다. 글자(code)는 기록에 남는 이름이라 바꾸지 않습니다. */
-  var REASONS = [
-    { code: '지문', label: '지문이 어려웠다',
-      fix: '지문을 문단마다 한 줄로 요약하며 읽는 연습을 합니다.' },
-    { code: '외부', label: '외부 작품·<보기> 해석이 어려웠다',
-      fix: '처음 보는 작품은 화자·상황·정서부터 찾고, <보기>는 핵심 문장에 밑줄을 긋고 지문과 짝지어 봅니다.' },
-    { code: '물음', label: '문제를 잘못 이해했다',
-      fix: "물음의 '적절하지 않은 것'·조건에 동그라미를 치고 풉니다." },
-    { code: '선지', label: '선택지 분석이 안 됐다',
-      fix: '선지를 끊어 읽고, 끊은 부분마다 지문에서 근거를 찾아 표시합니다.' },
-    { code: '개념', label: '개념을 몰랐다',
-      fix: '틀린 문항의 개념을 노트에 정리하고, 같은 개념 문제를 더 풀어 봅니다.' },
-    { code: '고민', label: '고민 시간이 길었다',
-      fix: '시간을 재고 푸는 연습을 합니다. 오래 걸리는 문항은 표시하고 넘어갔다가 돌아옵니다.' },
-    { code: '시간', label: '시간이 부족해 못 읽었다',
-      fix: '쉬운 문항부터 푸는 순서를 정하고, 실전처럼 시간 배분 연습을 합니다.' },
-    { code: '찍음', label: '찍었다',
-      fix: '찍은 문항은 맞았어도 틀린 문항처럼 다시 공부합니다.' }
-  ];
-
+  /* ---------- 돌아보기 목록 ---------- */
   var REFLECTS = [
     '공부량이 부족했다', '어떻게 공부해야 할지 몰랐다', '집중력이 부족했다',
     '수업만 듣고 숙제를 잘 안 했다', '시험 범위를 끝까지 못 봤다', '실수가 많았다'
@@ -64,138 +50,15 @@
     group: '',
     grade: '',
     exam: null,      /* 고른 시험 (school-exams.js 의 한 칸) */
-    wrong: {},       /* 틀린 문항 번호 → true */
-    hard: {},        /* 맞았지만 헤맨 문항 번호 → true */
-    reasons: {},     /* 문항 번호 → ['개념', '선지'] */
-    reflect: [],
-    wish: [],
-    memo: '',
-    result: null
+    marks: R.emptyMarks(),
+    status: {}       /* 시험 이름 → { submitted, published } (서버에서 받음) */
   };
 
   var historyBackTo = 'start';
   var homeworkRound = '';
   var homeworkSet = false;
 
-  /* ---------- 기출 파일에서 값 꺼내기 ---------- */
-
-  function allExams() {
-    return (typeof SCHOOL_EXAMS !== 'undefined' && Array.isArray(SCHOOL_EXAMS)) ? SCHOOL_EXAMS : [];
-  }
-  function listOf(name, fallback) {
-    var v = (typeof window[name] !== 'undefined') ? window[name] : null;
-    return Array.isArray(v) ? v : fallback;
-  }
-  function areas() { return listOf('SCHOOL_AREAS', ['문학', '독서', '문법', '화법', '작문', '매체', '어휘']); }
-  function mapOf(name) {
-    var v = (typeof window[name] !== 'undefined') ? window[name] : null;
-    return (v && typeof v === 'object' && !Array.isArray(v)) ? v : null;
-  }
-  /* 유형 — 영역마다 나뉜 목록 (예전처럼 한 줄 목록이어도 읽습니다) */
-  function typesOf(area) {
-    var m = mapOf('SCHOOL_TYPES');
-    if (m) { return Array.isArray(m[area]) ? m[area] : []; }
-    return listOf('SCHOOL_TYPES', []);
-  }
-  function types() {
-    var m = mapOf('SCHOOL_TYPES');
-    if (!m) { return listOf('SCHOOL_TYPES', []); }
-    var all = [];
-    areas().forEach(function (a) { (m[a] || []).forEach(function (t) { if (all.indexOf(t) < 0) { all.push(t); } }); });
-    return all;
-  }
-  function genresOf(area) { var m = mapOf('SCHOOL_GENRES'); return (m && Array.isArray(m[area])) ? m[area] : null; }
-  function sources() { return listOf('SCHOOL_SOURCES', ['교과서', '학교 프린트', '부교재', '모의고사(학평)', '외부 지문']); }
-  function forms() { return listOf('SCHOOL_FORMS', ['객관식', '모두 고르기', '서답형(찾아 쓰기)', '서답형(서술)']); }
-  function formOf(q) { return q.form || '객관식'; }
-  function isEssay(q) { return /^서답형/.test(formOf(q)) || /^서답형/.test(String(q.no)); }
-  var LEVELS = ['하', '중', '상'];
-
-  /* 난도 — 배점으로 정합니다 (school-exams.js 의 schoolLevels) */
-  function levelOf(q) {
-    if (!state.levels) {
-      state.levels = (typeof schoolLevels === 'function' && state.exam) ? schoolLevels(state.exam) : {};
-    }
-    return state.levels[q.no] || q.level || '중';
-  }
-
-  /* 번호를 화면에 쓰는 법: 1 → "1번", "서답형 1" → "서답형 1" */
-  function noLabel(q) { return typeof q.no === 'number' ? q.no + '번' : String(q.no); }
-  /* 번호 칸에 들어갈 짧은 글자: 1 → "1", "서답형 1" → "서1" */
-  function noShort(q) { return typeof q.no === 'number' ? String(q.no) : String(q.no).replace(/^서답형\s*/, '서'); }
-  function sourceOf(q) { return q.source || (/교과서 밖/.test(q.range || '') ? '외부 지문' : '교과서'); }
-
-  /* 정기고사 일정표에서 과목·시험일·범위를 찾습니다 (없으면 null) */
-  function scheduleOf(exam) {
-    if (typeof findSchoolSchedule !== 'function') { return null; }
-    try { return findSchoolSchedule(exam.school, exam.grade, exam.term); } catch (e) { return null; }
-  }
-
-  function round1(n) { return Math.round(n * 10) / 10; }
-
-  /* 화면에 보여 줄 이름 ("고1 · 경동고 26-1 중간") — 선생님이 시험을 열 때 쓰는 이름과 같습니다 */
-  function examTitle(exam) { return exam.school + ' ' + exam.term; }
-  function examLabel(exam) { return exam.grade + ' · ' + examTitle(exam); }
-
-  /* ---------- 기출 파일 검사 ----------
-     형식이 틀려도 앱이 멈추지 않고, 어느 시험 몇 번 문항이 잘못됐는지 알려 줍니다. */
-  function validateSchoolExams() {
-    var problems = [];
-    var seen = {};
-    allExams().forEach(function (exam, i) {
-      var where = (exam && exam.school ? examLabel(exam) : (i + 1) + '번째 시험');
-      if (!exam || !exam.school || !exam.grade || !exam.term) {
-        problems.push(where + ': school(학교) · grade(학년) · term(시험) 을 모두 적어 주세요.');
-        return;
-      }
-      if (seen[examLabel(exam)]) { problems.push(where + ': 같은 시험이 두 번 적혀 있습니다.'); }
-      seen[examLabel(exam)] = true;
-      if (String(examLabel(exam)).indexOf('|') >= 0) { problems.push(where + ": 이름에 '|' 를 쓰지 않습니다."); }
-
-      var qs = Array.isArray(exam.questions) ? exam.questions : [];
-      if (qs.length === 0) { problems.push(where + ': 문항이 없습니다.'); return; }
-      /* 번호: 객관식은 1, 2, 3 … 차례로, 서답형은 "서답형 1", "서답형 2" … 차례로 */
-      var nextObj = 1, nextEssay = 1, nos = {};
-      qs.forEach(function (q, k) {
-        var at = where + ' ' + (k + 1) + '번째 문항';
-        if (!q) { problems.push(at + ': 비어 있습니다.'); return; }
-        if (typeof q.no === 'number') {
-          if (q.no !== nextObj) { problems.push(at + ': 번호(no)가 ' + nextObj + ' 이어야 합니다.'); }
-          nextObj = q.no + 1;
-        } else if (/^서답형 \d+$/.test(String(q.no))) {
-          var n = Number(String(q.no).replace('서답형 ', ''));
-          if (n !== nextEssay) { problems.push(at + ": 번호(no)가 '서답형 " + nextEssay + "' 이어야 합니다."); }
-          nextEssay = n + 1;
-        } else {
-          problems.push(at + ": 번호(no)는 숫자이거나 '서답형 1' 처럼 적습니다."); return;
-        }
-        if (nos[q.no]) { problems.push(at + ': 번호 ' + q.no + ' 이(가) 두 번 나옵니다.'); }
-        nos[q.no] = true;
-        at = where + ' ' + noLabel(q);
-        if (!(typeof q.point === 'number' && q.point > 0)) { problems.push(at + ': 배점(point)을 숫자로 적어 주세요.'); }
-        if (areas().indexOf(q.area) < 0) { problems.push(at + ": 영역 '" + q.area + "' 이 목록에 없습니다."); return; }
-        var g = genresOf(q.area);
-        if (g && q.genre && g.indexOf(q.genre) < 0) { problems.push(at + ": 갈래 '" + q.genre + "' 은(는) " + q.area + ' 갈래 목록에 없습니다.'); }
-        var t = typesOf(q.area);
-        if (t.length && t.indexOf(q.type) < 0) { problems.push(at + ": 유형 '" + q.type + "' 은(는) " + q.area + ' 유형 목록에 없습니다.'); }
-        if (q.source && sources().indexOf(q.source) < 0) { problems.push(at + ": 출처 '" + q.source + "' 이 목록에 없습니다."); }
-        if (q.form && forms().indexOf(q.form) < 0) { problems.push(at + ": 형식 '" + q.form + "' 이 목록에 없습니다."); }
-        if (q.tags && !Array.isArray(q.tags)) { problems.push(at + ': 꼬리표(tags)는 ["#…", "#…"] 처럼 적습니다.'); }
-        if (!q.range) { problems.push(at + ': 해당 범위(range)가 비어 있습니다.'); }
-        if (!q.tip) { problems.push(at + ': 보완 포인트(tip)가 비어 있습니다.'); }
-      });
-      var sum = round1(qs.reduce(function (a, q) { return a + (Number(q.point) || 0); }, 0));
-      if (exam.full != null && Math.abs(sum - exam.full) > 0.05) {
-        problems.push(where + ': 배점을 모두 더하면 ' + sum + '점인데 만점(full)은 ' + exam.full + '점입니다.');
-      }
-      ['best', 'hardest'].forEach(function (key) {
-        if (exam[key] != null && !nos[exam[key]]) {
-          problems.push(where + ': ' + (key === 'best' ? '대표 유형(best)' : '고난도 유형(hardest)') + ' ' + exam[key] + ' 번 문항이 없습니다.');
-        }
-      });
-    });
-    return problems;
-  }
+  function examLabel(exam) { return R.examLabel(exam); }
 
   function showErrors(problems) {
     var list = $('error-list');
@@ -240,59 +103,97 @@
     return String(homeworkRound || '').split('|').filter(function (s) { return s !== ''; });
   }
 
+  /* 학생이 누를 수 있는 시험: 검토를 마쳤고(검토 완료) 선생님이 연 시험 */
   function isOpen(exam) {
-    if (!homeworkSet) { return false; }
+    if (!exam || !R.isReviewed(exam) || !homeworkSet) { return false; }
     var titles = openTitles();
     if (titles.indexOf(ALL_OPEN) >= 0) { return true; }
     return titles.indexOf(examLabel(exam)) >= 0;
   }
 
-  /* 내 학년 시험만 보여 줍니다. 학년을 모르면 모두 보여 줍니다. */
-  function myExams() {
-    var all = allExams();
-    if (!state.grade) { return all; }
-    return all.filter(function (e) { return e.grade === state.grade; });
+  /* 학교 이름 맞추기: '경동고등학교' → '경동고', '덕성여자고등학교' → '덕성여고' */
+  function shortSchool(name) {
+    return String(name || '').replace(/\s/g, '')
+      .replace(/여자고등학교$/, '여고').replace(/고등학교$/, '고').replace(/학교$/, '');
   }
+
+  /* 내 학년의 시험 목록 — 분석해 둔 시험 + 정기고사 일정표에서 이미 치른 시험(분석 중)
+     내 학교를 찾으면 내 학교 시험만, 못 찾으면 학년 전체를 보여 줍니다. */
+  function myExams() {
+    var list = R.allExams().filter(function (e) { return !state.grade || e.grade === state.grade; })
+      .map(function (e) { return { school: e.school, grade: e.grade, term: e.term, exam: e }; });
+    var have = {};
+    list.forEach(function (x) { have[x.grade + '|' + x.school + '|' + x.term] = true; });
+
+    var today = new Date().toISOString().slice(0, 10);
+    var sched = (typeof SCHOOL_SCHEDULE !== 'undefined' && Array.isArray(SCHOOL_SCHEDULE)) ? SCHOOL_SCHEDULE : [];
+    sched.forEach(function (s) {
+      if (state.grade && s.grade !== state.grade) { return; }
+      if (!s.date || s.date > today) { return; }
+      var key = s.grade + '|' + s.school + '|' + s.term;
+      if (have[key]) { return; }
+      have[key] = true;
+      list.push({ school: s.school, grade: s.grade, term: s.term, exam: null, date: s.date });
+    });
+
+    var mine = shortSchool(state.student && state.student.school);
+    var mySchool = list.filter(function (x) { return x.school === mine; });
+    if (mySchool.length) { list = mySchool; }
+
+    /* 최근 시험이 위로 */
+    function order(t) { return String(t).replace('중간', '1').replace('기말', '2'); }
+    return list.sort(function (a, b) {
+      var x = order(a.term), y = order(b.term);
+      return x < y ? 1 : x > y ? -1 : (a.school < b.school ? -1 : 1);
+    });
+  }
+
+  /* 단추 하나의 상태 */
+  function stateOf(item) {
+    var exam = item.exam;
+    if (!isOpen(exam)) { return 'analyzing'; }
+    var st = state.status[examLabel(exam)] || {};
+    if (st.published) { return 'published'; }
+    if (st.submitted) { return 'waiting'; }
+    return 'open';
+  }
+
+  var STATE_TEXT = {
+    analyzing: '시험지 분석 중',
+    open: '기록하기',
+    waiting: '리포트 준비 중',
+    published: '리포트 보기'
+  };
 
   function renderRounds() {
     var box = $('round-list');
     box.innerHTML = '';
 
     var mine = myExams();
-    var openCount = mine.filter(isOpen).length;
     var empty = $('rounds-empty');
     if (mine.length === 0) {
-      empty.textContent = whoFor() + ' 정기고사 분석이 아직 준비되지 않았습니다.\n선생님께 알려주세요.';
-      empty.hidden = false;
-    } else if (openCount === 0) {
-      empty.textContent = whoFor() + ' 정기고사가 아직 열리지 않았습니다.\n선생님께 알려주세요.';
+      empty.textContent = whoFor() + ' 정기고사가 아직 없습니다.';
       empty.hidden = false;
     } else {
       empty.hidden = true;
     }
 
-    mine.forEach(function (exam) {
-      var open = isOpen(exam);
+    mine.forEach(function (item) {
+      var st = stateOf(item);
       var card = document.createElement('button');
       card.type = 'button';
-      card.className = 'round-btn' + (open ? '' : ' is-locked');
+      card.className = 'round-btn' + (st === 'analyzing' ? ' is-locked' : '');
 
-      /* 학교 이름을 크게, 학년·시험을 작게 씁니다 */
-      var no = document.createElement('span');
-      no.className = 'round-no';
-      no.textContent = exam.school;
-      card.appendChild(no);
+      /* 학교 이름을 크게, 학년·시험을 작게, 오른쪽에 지금 상태 */
+      card.appendChild(R.el('span', 'round-no', item.school));
+      card.appendChild(R.el('span', 'round-topic', item.grade + ' · ' + item.term));
+      card.appendChild(R.el('span', 'round-state is-' + st, STATE_TEXT[st]));
 
-      var topic = document.createElement('span');
-      topic.className = 'round-topic';
-      topic.textContent = exam.grade + ' · ' + exam.term;
-      card.appendChild(topic);
-
-      if (open) {
-        card.addEventListener('click', function () { chooseExam(exam); });
-      } else {
+      if (st === 'analyzing') {
         card.disabled = true;
-        card.setAttribute('aria-label', examLabel(exam) + ' — 아직 열려 있지 않습니다');
+        card.setAttribute('aria-label', item.school + ' ' + item.term + ' — 시험지 분석 중입니다');
+      } else {
+        card.addEventListener('click', function () { chooseExam(item.exam, st); });
       }
       box.appendChild(card);
     });
@@ -300,34 +201,18 @@
     show('rounds');
   }
 
-  function chooseExam(exam) {
+  function chooseExam(exam, st) {
     state.exam = exam;
-    state.levels = null;
-    state.wrong = {};
-    state.hard = {};
-    state.reasons = {};
-    state.reflect = [];
-    state.wish = [];
-    state.memo = '';
+    if (st === 'waiting') { renderSent(false); return; }
+    if (st === 'published') { openReport(); return; }
+    state.marks = R.emptyMarks();
     $('memo').value = '';
     renderMark();
   }
 
   /* ---------- 틀린 문항 · 헤맨 문항 누르기 ---------- */
 
-  function questions() { return state.exam ? state.exam.questions : []; }
-
-  function fullPoints() {
-    return round1(questions().reduce(function (a, q) { return a + q.point; }, 0));
-  }
-
-  function currentScore() {
-    return round1(questions().reduce(function (a, q) { return a + (state.wrong[q.no] ? 0 : q.point); }, 0));
-  }
-
-  function wrongCount() {
-    return questions().filter(function (q) { return state.wrong[q.no]; }).length;
-  }
+  function questions() { return R.questionsOf(state.exam); }
 
   function renderMark() {
     $('mark-round').textContent = examLabel(state.exam);
@@ -345,22 +230,13 @@
       btn.type = 'button';
       btn.className = 'mark-btn' + (kind === 'hard' ? ' is-hard-kind' : '');
       btn.setAttribute('data-no', String(q.no));
-
-      var n = document.createElement('span');
-      n.className = 'mark-no';
-      n.textContent = noShort(q);
-      btn.appendChild(n);
-
-      var p = document.createElement('span');
-      p.className = 'mark-pt';
-      p.textContent = q.point + '점';
-      btn.appendChild(p);
-
+      btn.appendChild(R.el('span', 'mark-no', R.noShort(q)));
+      btn.appendChild(R.el('span', 'mark-pt', q.point + '점'));
       btn.addEventListener('click', function () {
-        var set = state[kind];
+        var set = state.marks[kind];
         if (set[q.no]) { delete set[q.no]; } else { set[q.no] = true; }
         /* 한 문항은 '틀림'과 '헤맴' 중 하나만 됩니다 */
-        if (kind === 'wrong' && state.wrong[q.no]) { delete state.hard[q.no]; }
+        if (kind === 'wrong' && state.marks.wrong[q.no]) { delete state.marks.hard[q.no]; }
         paintGrids();
         updateMarkScore();
       });
@@ -374,28 +250,26 @@
       var buttons = $(kind + '-grid').querySelectorAll('.mark-btn');
       Array.prototype.forEach.call(buttons, function (b) {
         var no = b.getAttribute('data-no');
-        var on = !!state[kind][no];
+        var on = !!state.marks[kind][no];
         b.classList.toggle('is-marked', on);
         b.setAttribute('aria-pressed', on ? 'true' : 'false');
         b.setAttribute('aria-label', (/^\d+$/.test(no) ? no + '번' : no) + ' ' + (kind === 'wrong' ? '틀림' : '헤맴'));
         /* 틀린 문항은 '헤맨 문항' 칸에서 누를 수 없게 흐리게 둡니다 */
         if (kind === 'hard') {
-          b.disabled = !!state.wrong[no];
-          b.classList.toggle('is-off', !!state.wrong[no]);
+          b.disabled = !!state.marks.wrong[no];
+          b.classList.toggle('is-off', !!state.marks.wrong[no]);
         }
       });
     });
   }
 
   function updateMarkScore() {
-    var w = wrongCount();
-    $('mark-score').textContent = '지금 점수 ' + currentScore() + '점 / ' + fullPoints() + '점 · 틀린 문항 ' + w + '개';
+    var w = questions().filter(function (q) { return state.marks.wrong[q.no]; }).length;
+    $('mark-score').textContent = '지금 점수 ' + R.scoreOf(state.exam, state.marks) + '점 / ' +
+      R.fullPoints(state.exam) + '점 · 틀린 문항 ' + w + '개';
   }
 
-  /* 이유를 물을 문항: 틀린 문항 + 헤맨 문항 (번호 순서) */
-  function askedQuestions() {
-    return questions().filter(function (q) { return state.wrong[q.no] || state.hard[q.no]; });
-  }
+  function askedQuestions() { return R.asked(state.exam, state.marks); }
 
   /* ---------- 틀린 이유 체크 ---------- */
 
@@ -403,27 +277,14 @@
     var box = $('why-list');
     box.innerHTML = '';
     askedQuestions().forEach(function (q) {
-      var card = document.createElement('div');
-      card.className = 'wrong-q why-card';
-
-      var head = document.createElement('div');
-      head.className = 'wrong-q-head';
-      var no = document.createElement('span');
-      no.className = 'wrong-q-no';
-      no.textContent = noLabel(q);
-      head.appendChild(no);
-      var area = document.createElement('span');
-      area.className = 'wrong-q-area';
-      area.textContent = q.area + ' · ' + q.range;
-      head.appendChild(area);
-      var flag = document.createElement('span');
-      flag.className = 'wrong-q-flag';
-      flag.textContent = state.wrong[q.no] ? '틀림' : '헤맴';
-      head.appendChild(flag);
+      var card = R.el('div', 'wrong-q why-card');
+      var head = R.el('div', 'wrong-q-head');
+      head.appendChild(R.el('span', 'wrong-q-no', R.noLabel(q)));
+      head.appendChild(R.el('span', 'wrong-q-area', q.area + ' · ' + q.range));
+      head.appendChild(R.el('span', 'wrong-q-flag', state.marks.wrong[q.no] ? '틀림' : '헤맴'));
       card.appendChild(head);
-
-      card.appendChild(chipGroup(REASONS.map(function (r) { return { value: r.code, label: r.label }; }),
-        state.reasons[q.no] || [], function (picked) { state.reasons[q.no] = picked; }));
+      card.appendChild(chipGroup(R.REASONS.map(function (r) { return { value: r.code, label: r.label }; }),
+        state.marks.reasons[q.no] || [], function (picked) { state.marks.reasons[q.no] = picked; }));
       box.appendChild(card);
     });
     show('why');
@@ -431,8 +292,7 @@
 
   /* 여러 개 고를 수 있는 단추 묶음 */
   function chipGroup(options, picked, onChange) {
-    var wrap = document.createElement('div');
-    wrap.className = 'why-chips';
+    var wrap = R.el('div', 'why-chips');
     var now = picked.slice();
     options.forEach(function (op) {
       var b = document.createElement('button');
@@ -462,331 +322,21 @@
     var r = $('reflect-chips');
     r.innerHTML = '';
     r.appendChild(chipGroup(REFLECTS.map(function (t) { return { value: t, label: t }; }),
-      state.reflect, function (v) { state.reflect = v; }));
+      state.marks.reflect, function (v) { state.marks.reflect = v; }));
     var w = $('wish-chips');
     w.innerHTML = '';
     w.appendChild(chipGroup(WISHES.map(function (t) { return { value: t, label: t }; }),
-      state.wish, function (v) { state.wish = v; }));
+      state.marks.wish, function (v) { state.marks.wish = v; }));
     show('reflect');
   }
 
-  /* ---------- 성적표 계산 ---------- */
-
-  /* 묶음(영역·유형·난도)마다 걸린 점수와 내 점수 */
-  function scoreBy(key, order) {
-    var map = {};
-    questions().forEach(function (q) {
-      var k = (typeof key === 'function') ? key(q) : q[key];
-      if (!map[k]) { map[k] = { name: k, full: 0, got: 0, count: 0, right: 0 }; }
-      map[k].full += q.point;
-      map[k].count += 1;
-      if (!state.wrong[q.no]) { map[k].got += q.point; map[k].right += 1; }
-    });
-    var names = order.filter(function (n) { return map[n]; });
-    Object.keys(map).forEach(function (n) { if (names.indexOf(n) < 0) { names.push(n); } });
-    return names.map(function (n) {
-      var m = map[n];
-      m.full = round1(m.full);
-      m.got = round1(m.got);
-      m.lost = round1(m.full - m.got);
-      m.percent = m.full ? Math.round((m.got / m.full) * 1000) / 10 : 0;
-      return m;
-    });
-  }
-
-  /* 틀린 이유를 고른 횟수 (많은 순서) */
-  function reasonCounts() {
-    var count = {};
-    askedQuestions().forEach(function (q) {
-      (state.reasons[q.no] || []).forEach(function (code) { count[code] = (count[code] || 0) + 1; });
-    });
-    return REASONS.filter(function (r) { return count[r.code]; })
-      .map(function (r) { return { code: r.code, label: r.label, fix: r.fix, n: count[r.code] }; })
-      .sort(function (a, b) { return b.n - a.n; });
-  }
-
-  function makeResult() {
-    var qs = questions();
-    return {
-      score: currentScore(),
-      full: fullPoints(),
-      total: qs.length,
-      correct: qs.length - wrongCount(),
-      wrong: wrongCount(),
-      hard: qs.filter(function (q) { return state.hard[q.no]; }).length,
-      areas: scoreBy('area', areas()),
-      types: scoreBy('type', types()),
-      levels: scoreBy(levelOf, ['하', '중', '상']),
-      sources: scoreBy(sourceOf, sources()),
-      reasons: reasonCounts()
-    };
-  }
-
-  /* ---------- 성적표 그리기 ---------- */
-
-  function el(tag, cls, text) {
-    var e = document.createElement(tag);
-    if (cls) { e.className = cls; }
-    if (text != null) { e.textContent = text; }
-    return e;
-  }
-
-  var WEEK = ['일', '월', '화', '수', '목', '금', '토'];
-  function md(iso) {
-    if (!iso) { return ''; }
-    var d = new Date(iso + 'T00:00:00');
-    if (isNaN(d.getTime())) { return iso; }
-    return (d.getMonth() + 1) + '/' + d.getDate() + '(' + WEEK[d.getDay()] + ')';
-  }
-
-  function renderResult() {
-    var r = state.result;
-    var exam = state.exam;
-
-    $('result-round').textContent = exam.school + '\n' + exam.grade + ' · ' + exam.term;
-    $('result-name').textContent = state.student.name + ' 학생';
-    $('result-score').textContent = String(r.score);
-    $('result-count').textContent = r.full + '점 만점 · ' + r.total + '문항 중 ' + r.correct + '문항 맞음';
-
-    renderExamInfo(exam);
-    renderBars('area-list', r.areas);
-    renderBars('type-list', r.types);
-    renderLevels(r.levels);
-    renderWeak(r);
-    renderFix(r);
-    renderReflectBox();
-
-    show('result');
-    saveResult(r);
-  }
-
-  /* 학교 시험 분석 — 일정표(과목·시험일·범위) + 세 줄 총평 */
-  function renderExamInfo(exam) {
-    var box = $('exam-info');
-    box.innerHTML = '';
-    var s = scheduleOf(exam);
-
-    var facts = el('dl', 'report-facts');
-    [['과목', s && s.subject], ['국어 시험일', s && md(s.date)], ['교과서', s && s.book]].forEach(function (f) {
-      if (!f[1]) { return; }
-      var d = el('div');
-      d.appendChild(el('dt', null, f[0]));
-      d.appendChild(el('dd', null, f[1]));
-      facts.appendChild(d);
-    });
-    if (facts.children.length) { box.appendChild(facts); }
-
-    if (s && s.range && s.range.length) {
-      box.appendChild(el('p', 'report-sub', '시험 범위'));
-      var ul = el('ul', 'report-bullets is-quiet');
-      s.range.forEach(function (line) { ul.appendChild(el('li', null, line)); });
-      box.appendChild(ul);
-    }
-
-    if (Array.isArray(exam.summary) && exam.summary.length) {
-      box.appendChild(el('p', 'report-sub', '이 시험은 이랬어요'));
-      var ul2 = el('ul', 'report-bullets');
-      exam.summary.forEach(function (line) { ul2.appendChild(el('li', null, line)); });
-      box.appendChild(ul2);
-    }
-
-    /* 출제 구성 한 줄 — 영역별 문항 수 */
-    var mix = scoreBy('area', areas()).map(function (a) { return a.name + ' ' + a.count + '문항(' + a.full + '점)'; });
-    box.appendChild(el('p', 'report-mix', '출제: ' + mix.join(' · ')));
-    /* 어디서 나왔나 — 교과서 · 학교 프린트 · 모의고사 … */
-    var src = scoreBy(sourceOf, sources()).map(function (a) { return a.name + ' ' + a.count; });
-    box.appendChild(el('p', 'report-mix', '출처: ' + src.join(' · ')));
-    var essays = questions().filter(isEssay).length;
-    if (essays) { box.appendChild(el('p', 'report-mix', '서답형 ' + essays + '문항')); }
-    /* 대표 유형 · 고난도 유형 */
-    [['대표 유형', exam.best], ['고난도 유형', exam.hardest]].forEach(function (pair) {
-      var q = questions().filter(function (x) { return pair[1] != null && String(x.no) === String(pair[1]); })[0];
-      if (!q) { return; }
-      box.appendChild(el('p', 'report-mix', pair[0] + ': ' + noLabel(q) + ' ' + q.type + ' (' + q.range + ')'));
-    });
-  }
-
-  function renderBars(boxId, list) {
-    var box = $(boxId);
-    box.innerHTML = '';
-    list.forEach(function (a) {
-      var row = el('div', 'area-row');
-      var head = el('div', 'area-head');
-      head.appendChild(el('span', 'area-name', a.name));
-      head.appendChild(el('span', 'area-score', a.got + ' / ' + a.full + '점'));
-      row.appendChild(head);
-      var track = el('div', 'area-track');
-      var fill = el('div', 'area-fill');
-      fill.style.width = a.percent + '%';
-      track.appendChild(fill);
-      row.appendChild(track);
-      row.appendChild(el('p', 'area-sub', a.count + '문항 중 ' + a.right + '문항 맞음'));
-      box.appendChild(row);
-    });
-  }
-
-  function renderLevels(levels) {
-    var box = $('level-list');
-    box.innerHTML = '';
-    var NAMES = { '하': '쉬운 문항 (하)', '중': '보통 문항 (중)', '상': '어려운 문항 (상)' };
-    levels.forEach(function (a) {
-      var row = el('div', 'area-row');
-      var head = el('div', 'area-head');
-      head.appendChild(el('span', 'area-name', NAMES[a.name] || a.name));
-      head.appendChild(el('span', 'area-score', a.right + ' / ' + a.count + '문항'));
-      row.appendChild(head);
-      var track = el('div', 'area-track');
-      var fill = el('div', 'area-fill');
-      fill.style.width = (a.count ? Math.round((a.right / a.count) * 100) : 0) + '%';
-      track.appendChild(fill);
-      row.appendChild(track);
-      box.appendChild(row);
-    });
-  }
-
-  /* 부족한 점 — 점수를 가장 많이 잃은 유형·영역, 쉬운 문항 실수, 자주 고른 이유 */
-  function renderWeak(r) {
-    var box = $('weak-list');
-    box.innerHTML = '';
-    var ul = el('ul', 'report-bullets');
-
-    if (r.wrong === 0) {
-      ul.appendChild(el('li', null, '틀린 문항이 없습니다. 잘했어요!' +
-        (r.hard ? ' 헤맨 문항 ' + r.hard + '개만 다시 확인하면 됩니다.' : '')));
-    } else {
-      var lostTypes = r.types.filter(function (t) { return t.lost > 0; })
-        .sort(function (a, b) { return b.lost - a.lost || a.percent - b.percent; });
-      if (lostTypes.length) {
-        var top = lostTypes.slice(0, 2).map(function (t) {
-          return t.name + ' −' + t.lost + '점 (' + t.count + '문항 중 ' + (t.count - t.right) + '개 틀림)';
-        });
-        ul.appendChild(el('li', null, '점수를 가장 많이 잃은 유형: ' + top.join(' · ')));
-      }
-      var lostAreas = r.areas.filter(function (a) { return a.lost > 0; }).sort(function (a, b) { return b.lost - a.lost; });
-      if (lostAreas.length > 1) {
-        ul.appendChild(el('li', null, '영역별로 잃은 점수: ' + lostAreas.map(function (a) { return a.name + ' −' + a.lost + '점'; }).join(' · ')));
-      }
-      var easy = r.levels.filter(function (l) { return l.name === '하'; })[0];
-      if (easy && easy.right < easy.count) {
-        ul.appendChild(el('li', 'is-strong', '쉬운 문항(난도 하)을 ' + (easy.count - easy.right) +
-          '개 놓쳤습니다. 실수인지, 기초 개념이 빈 것인지 꼭 점검해야 합니다.'));
-      }
-      var outside = questions().filter(function (q) { return state.wrong[q.no] && sourceOf(q) !== '교과서'; });
-      if (outside.length) {
-        ul.appendChild(el('li', null, '교과서 밖 문항에서 ' + outside.length + '개를 틀렸습니다: ' +
-          outside.map(function (q) { return noLabel(q) + '(' + sourceOf(q) + ')'; }).join(', ') + '.'));
-      }
-    }
-
-    if (r.reasons.length) {
-      ul.appendChild(el('li', null, '내가 고른 이유: ' + r.reasons.slice(0, 3).map(function (x) {
-        return x.label + ' (' + x.n + '문항)';
-      }).join(', ') + '.'));
-    }
-    box.appendChild(ul);
-  }
-
-  /* 보완할 점 — 이유별 공부법 + 문항별 보완 포인트 */
-  function renderFix(r) {
-    var plan = $('fix-plan');
-    plan.innerHTML = '';
-    if (r.reasons.length) {
-      plan.appendChild(el('p', 'report-sub', '이렇게 공부해요'));
-      var ul = el('ul', 'report-bullets');
-      r.reasons.forEach(function (x) {
-        var li = el('li');
-        li.appendChild(el('b', null, x.label + ' → '));
-        li.appendChild(document.createTextNode(x.fix));
-        ul.appendChild(li);
-      });
-      plan.appendChild(ul);
-    } else {
-      plan.appendChild(el('p', 'report-sub', askedQuestions().length
-        ? '틀린 이유를 고르지 않았어요. 아래 문항별 보완 포인트를 보고 다시 공부해요.'
-        : '틀리거나 헤맨 문항이 없습니다.'));
-    }
-    plan.hidden = false;
-
-    var box = $('fix-list');
-    box.innerHTML = '';
-    askedQuestions().forEach(function (q) {
-      var card = el('div', 'wrong-q' + (state.wrong[q.no] ? '' : ' is-blank'));
-      var head = el('div', 'wrong-q-head');
-      head.appendChild(el('span', 'wrong-q-no', noLabel(q)));
-      head.appendChild(el('span', 'wrong-q-area', q.area + ' · ' + q.type + ' · 난도 ' + levelOf(q) + ' · ' + q.point + '점'));
-      head.appendChild(el('span', 'wrong-q-flag', state.wrong[q.no] ? '틀림' : '헤맴'));
-      card.appendChild(head);
-      card.appendChild(el('p', 'fix-range', q.range));
-      var picked = (state.reasons[q.no] || []).map(function (code) {
-        var m = REASONS.filter(function (x) { return x.code === code; })[0];
-        return m ? m.label : code;
-      });
-      if (picked.length) { card.appendChild(el('p', 'fix-why', '내가 고른 이유: ' + picked.join(', '))); }
-      var tip = el('p', 'example');
-      tip.appendChild(el('span', 'example-label', '보완 포인트'));
-      tip.appendChild(el('span', null, q.tip));
-      card.appendChild(tip);
-      box.appendChild(card);
-    });
-  }
-
-  function renderReflectBox() {
-    var box = $('reflect-box');
-    box.innerHTML = '';
-    var any = false;
-    [['돌아본 점', state.reflect], ['수업에 바라는 점', state.wish]].forEach(function (g) {
-      if (!g[1].length) { return; }
-      any = true;
-      box.appendChild(el('p', 'report-sub', g[0]));
-      var wrap = el('div', 'why-chips');
-      g[1].forEach(function (t) { wrap.appendChild(el('span', 'why-chip is-on is-static', t)); });
-      box.appendChild(wrap);
-    });
-    if (state.memo) {
-      any = true;
-      box.appendChild(el('p', 'report-sub', '선생님께'));
-      box.appendChild(el('p', 'report-memo', state.memo));
-    }
-    $('reflect-area').hidden = !any;
-  }
-
-  /* ---------- 기록 저장 ----------
+  /* ---------- 기록 보내기 ----------
      회차 이름 앞에 '[내신]' 을 붙입니다. 선생님 화면에서 다른 과목과 섞이지 않게 하려는 것입니다.
-     점수(100점 만점)는 정답률 자리에, 문항별 체크와 돌아보기는 items 에 넣습니다. */
+     성적표는 바로 보여 주지 않습니다. 선생님이 검토해서 공개하면 그때 볼 수 있습니다. */
   function recordTitle() { return '[내신] ' + examLabel(state.exam); }
 
-  function saveResult(r) {
-    var box = $('save-state');
-    box.hidden = false;
-    box.className = 'save-state';
-    box.textContent = '기록을 저장하는 중…';
-
-    var items = questions().map(function (q) {
-      return {
-        word: noLabel(q),
-        no: q.no,
-        correct: !state.wrong[q.no],
-        hard: !!state.hard[q.no],
-        reasons: state.reasons[q.no] || [],
-        points: q.point,
-        area: q.area,
-        genre: q.genre || '',
-        type: q.type,
-        source: sourceOf(q),
-        form: formOf(q),
-        level: levelOf(q)
-      };
-    });
-    items.push({
-      word: '돌아보기',
-      survey: true,
-      score: r.score,
-      full: r.full,
-      reflect: state.reflect,
-      wish: state.wish,
-      memo: state.memo
-    });
-
+  function sendRecord() {
+    var r = R.compute(state.exam, state.marks);
     var record = {
       name: state.student.name,
       school: state.student.school,
@@ -796,21 +346,61 @@
       total: r.total,
       percent: r.full ? Math.round((r.score / r.full) * 100) : 0,
       savedAt: new Date().toISOString(),
-      items: items
+      items: R.toItems(state.exam, state.marks)
     };
+    state.status[examLabel(state.exam)] = { submitted: true, published: false };
+    renderSent(true, r);
 
+    var box = $('save-state');
+    box.hidden = false;
+    box.className = 'save-state';
+    box.textContent = '기록을 보내는 중…';
     VocabStore.save(record).then(function (res) {
       if (res.sentToServer) {
-        box.textContent = '기록이 저장되었습니다.\n(선생님께 전송 완료)';
+        box.textContent = '선생님께 보냈습니다.';
       } else if (res.savedOnDevice && VocabStore.usingServer && VocabStore.usingServer()) {
-        box.textContent = '기록을 이 기기에 저장했습니다. 인터넷 연결 후 자동으로 전송됩니다.';
+        box.textContent = '기록을 이 기기에 저장했습니다. 인터넷 연결 후 자동으로 선생님께 보내집니다.';
         box.className = 'save-state is-waiting';
       } else if (res.savedOnDevice) {
         box.textContent = '기록이 저장되었습니다.';
       } else {
-        box.textContent = '이 브라우저에서는 기록을 저장할 수 없습니다.';
+        box.textContent = '이 브라우저에서는 기록을 저장할 수 없습니다. 선생님께 알려주세요.';
         box.className = 'save-state is-waiting';
       }
+    });
+  }
+
+  /* 보낸 뒤 화면 — '학생 분석리포트를 준비 중입니다' */
+  function renderSent(justSent, r) {
+    $('sent-round').textContent = examLabel(state.exam);
+    $('sent-title').textContent = justSent ? '기록을 보냈어요' : '이미 기록을 보냈어요';
+    $('sent-score').hidden = !r;
+    if (r) { $('sent-score').textContent = '내가 체크한 점수 ' + r.score + '점 / ' + r.full + '점'; }
+    $('save-state').hidden = !justSent;
+    show('sent');
+  }
+
+  /* 공개된 성적표 열기 */
+  function openReport() {
+    var box = $('report');
+    box.innerHTML = '';
+    box.appendChild(R.el('p', 'rounds-empty is-dark', '성적표를 불러오는 중…'));
+    show('result');
+    VocabStore.schoolReportGet(state.student, examLabel(state.exam)).then(function (res) {
+      if (!res.ok || !res.report) {
+        box.innerHTML = '';
+        box.appendChild(R.el('p', 'rounds-empty is-dark', res.ok
+          ? '아직 공개된 성적표가 없습니다.'
+          : '성적표를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.'));
+        return;
+      }
+      R.render(box, {
+        exam: state.exam,
+        student: state.student,
+        marks: R.marksFrom(res.report.items),
+        edits: res.report.edits || {},
+        comment: res.report.comment || ''
+      });
     });
   }
 
@@ -842,24 +432,18 @@
     } else {
       $('history-summary').textContent = records.length + '번 기록했습니다.';
       records.forEach(function (r) {
-        var item = el('div', 'history-item');
-        var left = el('div', 'history-main');
-        left.appendChild(el('p', 'history-round', String(r.roundTitle || '').replace('[내신] ', '')));
-        left.appendChild(el('p', 'history-when', formatDate(r.savedAt)));
-        var score = el('p', 'history-score', scoreOf(r) + '점');
-        score.appendChild(el('span', 'history-percent', r.correct + '/' + r.total + ' 맞음'));
+        var item = R.el('div', 'history-item');
+        var left = R.el('div', 'history-main');
+        left.appendChild(R.el('p', 'history-round', String(r.roundTitle || '').replace('[내신] ', '')));
+        left.appendChild(R.el('p', 'history-when', formatDate(r.savedAt)));
+        var score = R.el('p', 'history-score', R.recordScore(r) + '점');
+        score.appendChild(R.el('span', 'history-percent', r.correct + '/' + r.total + ' 맞음'));
         item.appendChild(left);
         item.appendChild(score);
         box.appendChild(item);
       });
     }
     show('history');
-  }
-
-  /* 기록의 점수 — 소수점 점수를 담아 둔 '돌아보기' 칸이 있으면 그것을 씁니다 */
-  function scoreOf(r) {
-    var s = (r.items || []).filter(function (it) { return it && it.survey; })[0];
-    return (s && typeof s.score === 'number') ? s.score : r.percent;
   }
 
   /* ---------- 학생 확인 ---------- */
@@ -886,14 +470,31 @@
     btn.hidden = myRecords(student).length === 0;
   }
 
+  /* 열린 시험과 내 기록 상태(보냈는지 · 공개됐는지)를 함께 받아 옵니다 */
   function loadRounds() {
     $('round-list').innerHTML = '';
-    $('rounds-empty').textContent = '열린 시험을 확인하는 중…';
+    $('rounds-empty').textContent = '시험을 확인하는 중…';
     $('rounds-empty').hidden = false;
     show('rounds');
-    VocabStore.homeworkRound(whoFor(), SUBJECT).then(function (h) {
-      homeworkRound = h.round || '';
-      homeworkSet = !!h.set;
+
+    /* 이 기기에 남은 기록도 '보냄' 으로 봅니다 (인터넷이 끊겨 아직 못 보낸 경우) */
+    state.status = {};
+    myRecords(state.student).forEach(function (r) {
+      state.status[String(r.roundTitle).replace('[내신] ', '')] = { submitted: true, published: false };
+    });
+
+    Promise.all([
+      VocabStore.homeworkRound(whoFor(), SUBJECT),
+      VocabStore.schoolReportStatus(state.student)
+    ]).then(function (got) {
+      homeworkRound = got[0].round || '';
+      homeworkSet = !!got[0].set;
+      if (got[1] && got[1].ok) {
+        got[1].list.forEach(function (x) {
+          var old = state.status[x.exam] || {};
+          state.status[x.exam] = { submitted: old.submitted || !!x.submittedAt || x.published, published: x.published };
+        });
+      }
       renderRounds();
     });
   }
@@ -970,7 +571,7 @@
   /* ---------- 첫 실행 ---------- */
 
   function init() {
-    var problems = validateSchoolExams();
+    var problems = R.validate();
     if (problems.length > 0) { showErrors(problems); return; }
 
     if (typeof SCHOOL_EXAM_TITLE === 'string' && SCHOOL_EXAM_TITLE.trim() !== '') {
@@ -1013,41 +614,36 @@
       if (askedQuestions().length === 0) { renderMark(); return; }
       renderWhy();
     });
-    $('memo').addEventListener('input', function () { state.memo = this.value.trim(); });
-    $('btn-report').addEventListener('click', function () {
-      state.memo = $('memo').value.trim();
-      state.result = makeResult();
-      renderResult();
+    $('memo').addEventListener('input', function () { state.marks.memo = this.value.trim(); });
+    $('btn-send').addEventListener('click', function () {
+      state.marks.memo = $('memo').value.trim();
+      sendRecord();
     });
 
+    $('btn-sent-home').addEventListener('click', renderRounds);
+    $('btn-report-home').addEventListener('click', renderRounds);
     $('btn-my-history').addEventListener('click', function () {
       state.student = readStudentForm();
       renderHistory('start');
     });
-    $('btn-history').addEventListener('click', function () { renderHistory('result'); });
     $('btn-back-from-history').addEventListener('click', function () {
-      show(historyBackTo === 'result' ? 'result' : 'start');
-    });
-    $('btn-home').addEventListener('click', function () {
-      $('save-state').hidden = true;
-      renderRounds();
+      if (historyBackTo === 'start') { show('start'); } else { renderRounds(); }
     });
 
-    VocabStore.resend();
+    setupQuit();
 
-    var last = VocabStore.lastStudent();
+    var passed = VocabStore.passedStudent && VocabStore.passedStudent();
+    if (passed && passed.name && passed.phone4) { enterFromHub(passed); return; }
+
+    var last = VocabStore.lastStudent && VocabStore.lastStudent();
     if (last) {
       $('student-name').value = last.name || '';
       $('student-school').value = last.school || '';
       $('student-phone4').value = last.phone4 || '';
+      refreshHistoryButton();
     }
-    refreshHistoryButton();
     show('start');
-
-    setupQuit();
-
-    var passed = VocabStore.passedStudent();
-    if (passed) { enterFromHub(passed); }
+    if (VocabStore.resend) { VocabStore.resend(); }
   }
 
   init();

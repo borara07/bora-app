@@ -16,7 +16,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 내신">
 
-  <link rel="stylesheet" href="style.css?v=20261021b">
+  <link rel="stylesheet" href="style.css?v=20261022b">
 </head>
 <body>
 
@@ -129,64 +129,29 @@
                   placeholder="예) 문법 프린트 문제를 더 풀고 싶어요"></textarea>
       </div>
 
-      <button type="button" id="btn-report" class="btn btn-primary">성적표 보기</button>
+      <button type="button" id="btn-send" class="btn btn-primary">선생님께 보내기</button>
     </section>
 
-    <!-- 6. 성적표 -->
-    <section id="screen-result" class="screen" hidden>
-      <div class="card result-card">
-        <p id="result-round" class="result-round is-stacked"></p>
-        <p id="result-name" class="result-name"></p>
-        <p class="result-score">
-          <span id="result-score">0</span><span class="result-total">점</span>
-        </p>
-        <p id="result-count" class="result-grade"></p>
+    <!-- 6. 보낸 뒤 — 선생님이 검토해서 공개할 때까지 기다립니다 -->
+    <section id="screen-sent" class="screen" hidden>
+      <div class="card sent-card">
+        <p id="sent-round" class="quiz-round"></p>
+        <p id="sent-title" class="sent-title">기록을 보냈어요</p>
+        <p class="sent-text">학생 분석리포트를 준비 중입니다.<br>
+          선생님이 확인하고 한마디를 적어 공개하면<br>시험 목록의 단추가 <b>리포트 보기</b> 로 바뀝니다.</p>
+        <p id="sent-score" class="sent-score" hidden></p>
       </div>
-
-      <section>
-        <h2 class="section-title">이번 시험 분석</h2>
-        <div id="exam-info" class="card report-card"></div>
-      </section>
-
-      <section>
-        <h2 class="section-title">영역별 점수</h2>
-        <div id="area-list" class="area-list"></div>
-      </section>
-
-      <section>
-        <h2 class="section-title">유형별 점수</h2>
-        <p class="report-note">막대 옆 글씨는 '내 점수 / 이 유형에 걸린 점수' 입니다.</p>
-        <div id="type-list" class="area-list"></div>
-      </section>
-
-      <section>
-        <h2 class="section-title">난도별로 보면</h2>
-        <div id="level-list" class="area-list"></div>
-      </section>
-
-      <section>
-        <h2 class="section-title">부족한 점</h2>
-        <div id="weak-list" class="card report-card"></div>
-      </section>
-
-      <section>
-        <h2 class="section-title">보완할 점</h2>
-        <div id="fix-plan" class="card report-card"></div>
-        <div id="fix-list" class="fix-list"></div>
-      </section>
-
-      <section id="reflect-area">
-        <h2 class="section-title">나의 돌아보기</h2>
-        <div id="reflect-box" class="card report-card"></div>
-      </section>
-
       <p id="save-state" class="save-state" hidden></p>
-
-      <button id="btn-history" class="btn btn-quiet">내 기록 보기</button>
-      <button id="btn-home" class="btn btn-quiet">처음으로 돌아가기</button>
+      <button type="button" id="btn-sent-home" class="btn btn-quiet">시험 목록으로</button>
     </section>
 
-    <!-- 7. 내 기록 화면 -->
+    <!-- 7. 성적표 — 선생님이 공개한 것만 보입니다 (school-report.js 가 그립니다) -->
+    <section id="screen-result" class="screen" hidden>
+      <div id="report" class="report-stack"></div>
+      <button type="button" id="btn-report-home" class="btn btn-quiet">시험 목록으로</button>
+    </section>
+
+    <!-- 8. 내 기록 화면 -->
     <section id="screen-history" class="screen" hidden>
       <button type="button" id="btn-back-from-history" class="btn-back">돌아가기</button>
 
@@ -221,9 +186,10 @@
   </main>
 
   <script>var APP_SUBJECT = "내신";</script>
-  <script src="school-exams.js?v=20261022a"></script>
-  <script src="school-schedule.js?v=20261021b"></script>
-  <script src="storage.js?v=20261021a"></script>
-  <script src="school.js?v=20261022a"></script>
+  <script src="school-exams.js?v=20261022b"></script>
+  <script src="school-schedule.js?v=20261022b"></script>
+  <script src="storage.js?v=20261022b"></script>
+  <script src="school-report.js?v=20261022b"></script>
+  <script src="school.js?v=20261022b"></script>
 </body>
 </html>

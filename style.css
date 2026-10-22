@@ -2089,6 +2089,50 @@ select.input {
   color: var(--muted);
 }
 
+/* 내신 — 시험 단추 오른쪽의 상태 (시험지 분석 중 · 기록하기 · 리포트 준비 중 · 리포트 보기) */
+.round-state {
+  margin-left: auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--soft);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--primary-dark);
+  white-space: nowrap;
+}
+.round-state.is-published { background: var(--primary); color: var(--on-primary); }
+.round-btn.is-locked .round-state {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* 내신 — 기록을 보낸 뒤 '학생 분석리포트를 준비 중입니다' */
+.sent-card { text-align: center; }
+.sent-title {
+  margin: 6px 0 10px;
+  font-family: var(--font-title);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--primary);
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+.sent-text { margin: 0; font-size: 16px; line-height: 1.7; color: var(--text); }
+.sent-score { margin: 12px 0 0; font-size: 15px; color: var(--muted); }
+
+/* 내신 — 선생님 한마디와 선생님이 더한 문장 */
+.teacher-comment {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-left: 4px solid var(--primary);
+}
+.report-bullets li.is-teacher { color: var(--primary-dark); }
+.report-bullets li.is-teacher::marker { content: '✎ '; }
+.rounds-empty.is-dark { border-color: var(--line); color: var(--muted); }
+
 .report-memo {
   margin: 0;
   padding: 12px 14px;

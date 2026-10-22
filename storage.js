@@ -214,6 +214,30 @@ var VocabStore = (function () {
     });
   }
 
+  /* 서버 함수를 부르는 공통 부분 → { ok, data } 또는 { ok: false, code } */
+  function callRpc(name, args) {
+    if (!supabaseReady()) return Promise.resolve({ ok: false, code: 'no-server' });
+    var url = SUPABASE.url.replace(/\/+$/, '') + '/rest/v1/rpc/' + name;
+    return fetch(url, {
+      method: 'POST',
+      headers: headersFor(workingWay || 'bearer'),
+      body: JSON.stringify(args)
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        if (res.ok) {
+          var data;
+          try { data = JSON.parse(text); } catch (e) { data = null; }
+          return { ok: true, data: data };
+        }
+        if (/비밀번호|원장/.test(text)) return { ok: false, code: 'wrong-password', detail: text.slice(0, 200) };
+        if (res.status === 404 || /PGRST202/.test(text)) return { ok: false, code: 'not-set-up' };
+        return { ok: false, code: 'error', detail: '[' + res.status + '] ' + text.slice(0, 200) };
+      });
+    }).catch(function () {
+      return { ok: false, code: 'offline' };
+    });
+  }
+
   function fromServerRow(row) {
     return {
       id: 'server-' + row.id,
@@ -425,6 +449,41 @@ var VocabStore = (function () {
        'admin'  = 원장 선생님 (모든 것)
        'viewer' = 다른 선생님 (기록 보기만)
        ''       = 비밀번호가 틀림 */
+    /* ---------- 내신 성적표 (선생님이 검토해서 공개하는 개인 성적표) ---------- */
+
+    /* 학생: 내가 기록한 내신 시험과 공개 여부 → { ok, list: [{ exam, submittedAt, published }] } */
+    schoolReportStatus: function (student) {
+      return callRpc('school_report_status', { student_name: student.name, phone4: student.phone4 })
+        .then(function (r) {
+          if (!r.ok) return r;
+          var rows = Array.isArray(r.data) ? r.data : [];
+          return { ok: true, list: rows.map(function (x) {
+            return { exam: x.exam_label, submittedAt: x.submitted_at, published: !!x.published };
+          }) };
+        });
+    },
+
+    /* 학생: 공개된 내 성적표 하나 → { ok, report: { items, edits, comment, published_at } | null } */
+    schoolReportGet: function (student, examLabel) {
+      return callRpc('school_report_get', { student_name: student.name, phone4: student.phone4, exam_label: examLabel })
+        .then(function (r) { return r.ok ? { ok: true, report: r.data || null } : r; });
+    },
+
+    /* 선생님: 한 시험의 성적표 모두 → { ok, list } */
+    adminSchoolReports: function (password, examLabel) {
+      return callRpc('admin_school_reports', { pass: password, exam_label: examLabel })
+        .then(function (r) { return r.ok ? { ok: true, list: Array.isArray(r.data) ? r.data : [] } : r; });
+    },
+
+    /* 선생님(원장): 성적표 저장 · 공개 · 공개 취소 → { ok, row } */
+    adminSchoolReportSave: function (password, report) {
+      return callRpc('admin_school_report_save', {
+        pass: password, exam_label: report.exam, student_name: report.name, phone4: report.phone4,
+        school: report.school || '', items: report.items || [], edits: report.edits || {},
+        comment: report.comment || '', publish: !!report.publish
+      }).then(function (r) { return r.ok ? { ok: true, row: r.data } : r; });
+    },
+
     teacherRole: function (password) {
       if (!supabaseReady()) return Promise.resolve({ ok: false, role: '' });
 
