@@ -14,7 +14,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 선생님">
-  <link rel="stylesheet" href="style.css?v=20261022b">
+  <link rel="stylesheet" href="style.css?v=20261022c">
 </head>
 <body>
 
@@ -59,8 +59,20 @@
       </div>
       <p id="source-note" class="save-state"></p>
 
+      <!-- 네 묶음 — 고른 묶음의 것만 아래에 보입니다 (teacher.js 의 chooseTab) -->
+      <nav class="teacher-tabs" id="teacher-tabs" aria-label="무엇을 볼까요">
+        <button type="button" class="teacher-tab" data-tab="test" aria-pressed="true">
+          <span class="teacher-tab-name">테스트</span><span class="teacher-tab-sub">어휘·문법·독해</span></button>
+        <button type="button" class="teacher-tab" data-tab="exam" aria-pressed="false">
+          <span class="teacher-tab-name">모의고사</span><span class="teacher-tab-sub">성적 분석</span></button>
+        <button type="button" class="teacher-tab" data-tab="school" aria-pressed="false">
+          <span class="teacher-tab-name">정기고사</span><span class="teacher-tab-sub">분석·성적표</span></button>
+        <button type="button" class="teacher-tab" data-tab="admin" aria-pressed="false">
+          <span class="teacher-tab-name">학원 관리</span><span class="teacher-tab-sub">명단·전체 기록</span></button>
+      </nav>
+
       <div class="card" id="admin-homework">
-        <div class="field">
+        <div class="field" id="homework-subject-field">
           <label class="label" for="homework-subject">과목</label>
           <select id="homework-subject" class="input">
             <option value="어휘">어휘</option>
@@ -96,7 +108,7 @@
       <!-- 내신 성적표 검토 (원장 선생님) — 학생이 보낸 기록을 검토·보완하고 한마디를 적어 공개합니다.
            school-review.js 가 채웁니다. -->
       <section id="school-review" hidden>
-        <h2 class="section-title">내신 성적표 검토</h2>
+        <h2 class="section-title">정기고사 성적표 검토</h2>
         <div class="card">
           <div class="field">
             <label class="label" for="review-exam">시험</label>
@@ -148,15 +160,14 @@
 
       <!-- 과목 고르개: 어휘·문법·모의고사·독해 기록이 한 표에 섞이지 않게 합니다.
            여기서 고른 과목만 아래 모든 표와 CSV 에 나옵니다. -->
-      <div class="card">
+      <div id="stats-area">
+      <div class="card" id="stat-subject-card">
         <p class="eyebrow">통계에서 볼 과목</p>
         <select id="stat-subject" class="input">
-          <option value="">전체</option>
+          <option value="테스트">어휘·문법·독해 모두</option>
           <option value="어휘">어휘</option>
           <option value="문법">문법</option>
-          <option value="모의고사">모의고사</option>
           <option value="독해">독해</option>
-          <option value="내신">내신</option>
         </select>
       </div>
 
@@ -256,6 +267,7 @@
 
       <button type="button" id="btn-export" class="btn btn-primary">엑셀(CSV)로 내려받기</button>
       <p id="export-state" class="field-hint" hidden></p>
+      </div>
 
       <div id="admin-tools">
         <h2 class="section-title">재원생 명단 맞추기</h2>
@@ -301,7 +313,7 @@
   <script src="school-exams.js?v=20261022b"></script>
   <script src="school-schedule.js?v=20261022b"></script>
   <script src="storage.js?v=20261022b"></script>
-  <script src="teacher.js?v=20261022b"></script>
+  <script src="teacher.js?v=20261022c"></script>
   <script src="school-report.js?v=20261022b"></script>
   <script src="school-review.js?v=20261022b"></script>
 </body>

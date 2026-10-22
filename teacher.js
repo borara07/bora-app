@@ -56,13 +56,11 @@
 
           if (myRole !== 'admin') {
             allRoster = null;
-            applyGroup();
-            render();
+            chooseTab(savedTab());
             return;
           }
 
-          fillGroupPicker();
-          loadHomework();
+          chooseTab(savedTab());
 
           /* 내신 성적표 검토 (school-review.js) */
           if (typeof SchoolReview !== 'undefined') { SchoolReview.start(password, allRows); }
@@ -246,12 +244,17 @@
 
   /* 표에 적을 회차 이름. 과목을 골라 보고 있으면 앞머리를 떼어 짧게 씁니다 */
   function roundName(title) {
-    if (!statSubject) { return title; }
+    /* 여러 과목을 함께 볼 때는 앞머리([문법] 등)를 남겨 둡니다 */
+    if (!statSubject || statSubject === '테스트') { return title; }
     return String(title || '').replace(/^\[[^\]]+\]\s*/, '');
   }
 
+  /* '테스트' 는 어휘·문법·독해 세 과목을 함께 봅니다 */
+  var TEST_SUBJECTS = ['어휘', '문법', '독해'];
   function inSubject(r) {
-    return !statSubject || subjectOf(r) === statSubject;
+    if (!statSubject) { return true; }
+    if (statSubject === '테스트') { return TEST_SUBJECTS.indexOf(subjectOf(r)) >= 0; }
+    return subjectOf(r) === statSubject;
   }
 
   /* 고른 기간의 기록인지 봅니다 */
@@ -490,7 +493,7 @@
 
     /* 한 주만 보고 있을 때, 한 과목만 보고 있을 때 제목도 그렇게 바꿔 줍니다 */
     var when = statPeriod ? periodName() : '';
-    var what = statSubject || '';
+    var what = statSubject === '테스트' ? '어휘·문법·독해' : (statSubject || '모든 과목');
     var tag = [what, when].filter(function (t) { return t; }).join(' · ');
 
     $('summary-title').textContent = tag ? tag + ' 요약' : '전체 요약';
@@ -1217,7 +1220,7 @@
 
     note.textContent = '내려받는 중…';
     /* 파일 이름에 고른 과목과 기간을 적어 둡니다 */
-    var what = statSubject || '전체과목';
+    var what = statSubject === '테스트' ? '어휘문법독해' : (statSubject || '전체과목');
     var name = statPeriod ? (what + '_' + statPeriod + '_주간기록.csv')
                           : (what + '_전체기록.csv');
     downloadFile(name, '﻿' + VocabStore.toCsv(rows)).then(function (ok) {
@@ -1313,6 +1316,71 @@
     statPeriod = this.value;
     applyGroup();
     render();
+  });
+
+  /* ---------- 네 묶음 (테스트 · 모의고사 · 정기고사 · 학원 관리) ----------
+     묶음마다 '이번 주 시험' 에서 고를 수 있는 과목과, 통계에서 볼 과목이 정해져 있습니다. */
+  var TABS = {
+    test:   { homework: ['어휘', '문법', '독해'], stat: '테스트', pickSubject: true },
+    exam:   { homework: ['모의고사'], stat: '모의고사' },
+    school: { homework: ['내신'], stat: '내신', review: true },
+    admin:  { homework: [], stat: '', tools: true }
+  };
+  var HOMEWORK_LABEL = { '어휘': '어휘', '문법': '문법', '독해': '독해', '모의고사': '모의고사', '내신': '정기고사 (내신 성적표)' };
+  var currentTab = 'test';
+
+  /* 지난번에 보던 묶음부터 엽니다 */
+  function savedTab() {
+    try { return localStorage.getItem('bora.teacherTab') || 'test'; } catch (e) { return 'test'; }
+  }
+
+  function chooseTab(name) {
+    var tab = TABS[name] || TABS.test;
+    currentTab = TABS[name] ? name : 'test';
+    try { localStorage.setItem('bora.teacherTab', currentTab); } catch (e) { /* 저장 못 해도 괜찮습니다 */ }
+    Array.prototype.forEach.call(document.querySelectorAll('.teacher-tab'), function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-tab') === currentTab ? 'true' : 'false');
+    });
+
+    var admin = (myRole === 'admin');
+    /* 이번 주 시험 — 이 묶음의 과목만 고를 수 있게 */
+    var hs = $('homework-subject');
+    var before = hs.value;
+    hs.innerHTML = '';
+    tab.homework.forEach(function (sub) {
+      var op = document.createElement('option');
+      op.value = sub;
+      op.textContent = HOMEWORK_LABEL[sub] || sub;
+      hs.appendChild(op);
+    });
+    if (tab.homework.indexOf(before) >= 0) { hs.value = before; }
+    $('homework-subject-field').hidden = tab.homework.length < 2;
+    $('admin-homework').hidden = !admin || tab.homework.length === 0;
+    if (admin && tab.homework.length) {
+      $('homework-state').hidden = true;
+      fillGroupPicker();
+      loadHomework();
+    }
+
+    /* 정기고사 성적표 검토 · 학원 관리 도구 */
+    if ($('school-review')) { $('school-review').hidden = !tab.review || !admin; }
+    $('admin-tools').hidden = !admin || !tab.tools;
+
+    /* 통계 — 테스트 묶음만 과목을 고를 수 있습니다 */
+    $('stat-subject-card').hidden = !tab.pickSubject;
+    if (tab.pickSubject) {
+      if (['테스트', '어휘', '문법', '독해'].indexOf(statSubject) < 0) { statSubject = '테스트'; }
+      $('stat-subject').value = statSubject;
+    } else {
+      statSubject = tab.stat;
+    }
+    refreshPeriodCounts();
+    applyGroup();
+    render();
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.teacher-tab'), function (b) {
+    b.addEventListener('click', function () { chooseTab(b.getAttribute('data-tab')); });
   });
 
   showBankNote();
