@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>보라! 등급컷</title>
+  <meta name="theme-color" content="#ece6fb">
+  <link rel="icon" href="exam-favicon.png?v=20261024">
+  <!-- 휴대폰 홈 화면에 놓을 때 쓰는 아이콘과 이름입니다 -->
+  <link rel="apple-touch-icon" href="exam-apple-touch-icon.png?v=20261024">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="보라! 등급컷">
+  <link rel="stylesheet" href="style.css?v=20261024">
+  <style>
+    /* 이 화면에서만 쓰는 모양입니다. 색과 글씨는 style.css 의 :root 에서 가져다 씁니다. */
+    body { background: var(--bg); }
+
+    .cut-wrap { max-width: 560px; margin: 0 auto; padding: 18px 16px 48px; }
+
+    .cut-head { text-align: center; margin-bottom: 14px; }
+    .cut-head h1 {
+      font-family: var(--font-title); font-size: 30px; font-weight: 400;
+      color: var(--brand-ink); margin: 0 0 4px;
+      -webkit-text-stroke: var(--title-bold) currentColor;
+    }
+    .cut-head p { font-size: 15px; color: var(--muted); margin: 0; line-height: 1.5; }
+
+    /* 학년 고르기 — 세 칸 */
+    .grade-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0 10px; }
+    .grade-tab {
+      min-height: 48px; border: 1.5px solid var(--line); border-radius: 14px;
+      background: var(--card); color: var(--text-2);
+      font-family: var(--font-title); font-size: 19px; font-weight: 400; cursor: pointer;
+    }
+    .grade-tab.is-on {
+      background: var(--primary); border-color: var(--primary); color: var(--on-primary);
+    }
+
+    .cut-filter { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+    .cut-filter select {
+      flex: 1; min-height: 48px; padding: 0 12px;
+      border: 1.5px solid var(--line); border-radius: 14px;
+      background: var(--card); color: var(--text); font-family: var(--font-body); font-size: 17px;
+    }
+    .cut-count { font-size: 14px; color: var(--muted); white-space: nowrap; }
+
+    /* 시험 하나 */
+    .exam-card {
+      background: var(--card); border-radius: 18px; padding: 14px 16px;
+      box-shadow: 0 2px 10px var(--shadow); margin-bottom: 10px;
+    }
+    .exam-when { font-family: var(--font-title); font-size: 19px; color: var(--text); margin: 0 0 2px; }
+    .exam-sub { font-size: 14px; color: var(--muted); margin: 0 0 10px; }
+
+    .cut-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .cut-cell {
+      background: var(--soft); border: 1px solid var(--line); border-radius: 12px;
+      padding: 7px 4px; text-align: center;
+    }
+    .cut-cell b {
+      display: block; font-family: var(--font-title); font-size: 20px; font-weight: 400;
+      color: var(--primary); line-height: 1.1;
+    }
+    .cut-cell span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .pick-name { font-size: 15px; color: var(--text-2); margin: 12px 0 6px; }
+    .pick-name:first-of-type { margin-top: 4px; }
+
+    .more { margin-top: 10px; }
+    .more summary {
+      list-style: none; cursor: pointer; min-height: 32px; display: flex; align-items: center;
+      font-size: 15px; color: var(--primary);
+    }
+    .more summary::-webkit-details-marker { display: none; }
+    .more[open] summary { margin-bottom: 8px; }
+    .more table { width: 100%; border-collapse: collapse; font-size: 14px; color: var(--text-2); }
+    .more th, .more td { padding: 5px 2px; text-align: center; border-bottom: 1px solid var(--line); }
+    .more th { color: var(--muted); font-weight: 400; }
+    .keystring {
+      background: var(--soft); border: 1px solid var(--line); border-radius: 12px;
+      padding: 8px 10px; font-size: 14px; color: var(--text-2); line-height: 1.7;
+      word-break: break-all; margin: 6px 0 0;
+    }
+    .keystring b { color: var(--muted); font-weight: 400; }
+    .hard { font-size: 14px; color: var(--text-2); margin: 8px 0 0; line-height: 1.6; }
+    .cut-empty { text-align: center; color: var(--muted); font-size: 15px; padding: 24px 0; }
+    .cut-note { font-size: 13px; color: var(--muted); line-height: 1.6; margin-top: 18px; text-align: center; }
+  </style>
+</head>
+<body>
+  <main class="cut-wrap">
+    <div class="cut-head">
+      <h1>보라! 등급컷</h1>
+      <p>교육청 학력평가 · 평가원 모의평가 · 수능<br>등급컷과 문항별 정답률</p>
+    </div>
+
+    <div class="grade-tabs" id="grade-tabs"></div>
+
+    <div class="cut-filter">
+      <select id="year" aria-label="연도 고르기"></select>
+      <span class="cut-count" id="count"></span>
+    </div>
+
+    <div id="list"></div>
+
+    <p class="cut-note" id="note"></p>
+  </main>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var 등급컷 = [], 정답률 = [], 학년 = '고3';
+
+    function $(id) { return document.getElementById(id); }
+
+    /* 2026-06-04 → 2026년 6월 4일 (토) */
+    var 요일이름 = ['일', '월', '화', '수', '목', '금', '토'];
+    function 날짜글(iso) {
+      var p = String(iso).split('-');
+      if (p.length < 3) { return iso; }
+      var d = new Date(+p[0], +p[1] - 1, +p[2]);
+      return p[0] + '년 ' + (+p[1]) + '월 ' + (+p[2]) + '일 (' + 요일이름[d.getDay()] + ')';
+    }
+
+    /* 한 시험의 정답률 자료 (선택과목까지 맞는 것) */
+    function 정답률찾기(시행일, 과목) {
+      for (var i = 0; i < 정답률.length; i++) {
+        var r = 정답률[i];
+        if (r.시행일 !== 시행일) { continue; }
+        if (r.선택과목 === 과목) { return r; }
+        /* 선택과목이 없던 때(2021년까지)는 이름이 '국어통합' 입니다 */
+        if (r.선택과목 === '국어통합' && (과목 === '국어통합' || 과목 === '공통')) { return r; }
+      }
+      return null;
+    }
+
+    function 글자이어붙이기(문항, 무엇) {
+      return 문항.map(function (x) { return x[무엇]; }).join('');
+    }
+
+    function 정답률상자(r) {
+      var 정답 = 글자이어붙이기(r.문항, '정답'), 배점 = 글자이어붙이기(r.문항, '배점');
+      var 어려움 = r.문항.filter(function (x) { return x.정답률 < 50; });
+      var html = '<details class="more"><summary>정답 · 배점 보기</summary>' +
+        '<p class="keystring"><b>정답  1~34</b> ' + 정답.slice(0, 34) + '<br>' +
+        '<b>정답 35~45</b> ' + 정답.slice(34) + '<br>' +
+        '<b>배점  1~34</b> ' + 배점.slice(0, 34) + '<br>' +
+        '<b>배점 35~45</b> ' + 배점.slice(34) + '</p>';
+      if (어려움.length) {
+        html += '<p class="hard">어려웠던 문항 (정답률 50% 미만)<br>' +
+          어려움.map(function (x) { return x.번호 + '번 ' + x.정답률 + '%'; }).join(' · ') + '</p>';
+      }
+      return html + '</details>';
+    }
+
+    function 표준상자(exam) {
+      var html = '<details class="more"><summary>표준점수 · 백분위 보기</summary><table><tr>' +
+        '<th>등급</th><th>표준점수</th><th>백분위</th></tr>';
+      exam.등급.forEach(function (g) {
+        html += '<tr><td>' + g.등급 + '등급</td><td>' + g.표준점수 + '</td><td>' + g.백분위 + '</td></tr>';
+      });
+      return html + '</table></details>';
+    }
+
+    function 시험카드(exam) {
+      var html = '<article class="exam-card">' +
+        '<p class="exam-when">' + 날짜글(exam.시행일) + '</p>' +
+        '<p class="exam-sub">' + exam.학년 + ' · 등급컷 원점수</p>';
+
+      exam.선택과목.forEach(function (과목, n) {
+        if (exam.선택과목.length > 1 || 과목 !== '공통') {
+          html += '<p class="pick-name">' + 과목 + '</p>';
+        }
+        html += '<div class="cut-row">';
+        exam.등급.forEach(function (g) {
+          html += '<div class="cut-cell"><b>' + g.원점수[n] + '</b><span>' + g.등급 + '등급</span></div>';
+        });
+        html += '</div>';
+
+        var r = 정답률찾기(exam.시행일, 과목);
+        if (r) { html += 정답률상자(r); }
+      });
+
+      return html + 표준상자(exam) + '</article>';
+    }
+
+    function 그리기() {
+      var 해 = $('year').value;
+      var mine = 등급컷.filter(function (e) {
+        return e.학년 === 학년 && (해 === '전체' || e.시행일.slice(0, 4) === 해);
+      }).sort(function (a, b) { return a.시행일 < b.시행일 ? 1 : -1; });
+
+      $('count').textContent = mine.length + '개';
+      $('list').innerHTML = mine.length
+        ? mine.map(시험카드).join('')
+        : '<p class="cut-empty">그 해에는 저장된 시험이 없습니다.</p>';
+    }
+
+    function 연도채우기() {
+      var 해들 = {};
+      등급컷.forEach(function (e) { if (e.학년 === 학년) { 해들[e.시행일.slice(0, 4)] = true; } });
+      var 목록 = Object.keys(해들).sort().reverse();
+      var 고른것 = $('year').value;
+      $('year').innerHTML = '<option>전체</option>' +
+        목록.map(function (y) { return '<option>' + y + '년</option>'; }).join('');
+      /* 연도 칸의 값은 '2026년' 처럼 보이지만 거를 때는 숫자만 씁니다 */
+      Array.prototype.forEach.call($('year').options, function (op) {
+        op.value = op.textContent === '전체' ? '전체' : op.textContent.replace('년', '');
+      });
+      if (고른것 && 목록.indexOf(고른것) >= 0) { $('year').value = 고른것; }
+    }
+
+    function 학년단추() {
+      var box = $('grade-tabs');
+      box.innerHTML = '';
+      ['고3', '고2', '고1'].forEach(function (g) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'grade-tab' + (g === 학년 ? ' is-on' : '');
+        b.textContent = g;
+        b.addEventListener('click', function () {
+          학년 = g;
+          학년단추();
+          연도채우기();
+          그리기();
+        });
+        box.appendChild(b);
+      });
+    }
+
+    function 받기(주소) {
+      return fetch(encodeURI(주소)).then(function (r) {
+        if (!r.ok) { throw new Error(주소); }
+        return r.json();
+      });
+    }
+
+    Promise.all([
+      받기('모의고사/등급컷/등급컷.json'),
+      받기('모의고사/정답률/정답률.json').catch(function () { return []; })
+    ]).then(function (둘) {
+      등급컷 = 둘[0] || [];
+      정답률 = 둘[1] || [];
+      $('note').textContent = '시험 ' + 등급컷.length + '개 · 문항별 정답률 ' + 정답률.length + '개' +
+        '\n새 자료를 받으면 여기에 쌓입니다.';
+      학년단추();
+      연도채우기();
+      그리기();
+      $('year').addEventListener('change', 그리기);
+    }).catch(function () {
+      $('list').innerHTML = '<p class="cut-empty">등급컷 자료를 읽지 못했습니다.\n잠시 뒤 새로고침해 주세요.</p>';
+    });
+  })();
+  </script>
+</body>
+</html>
