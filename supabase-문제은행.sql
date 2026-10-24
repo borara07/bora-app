@@ -210,8 +210,10 @@ as $$
 declare
   a int := 0; u int := 0; s int := 0;
 begin
-  if not exists (select 1 from public.admin_secret where password = pass) then
-    raise exception '비밀번호가 올바르지 않습니다';
+  -- 문제 은행에 올리는 것은 원장 선생님만 합니다.
+  -- 전에는 비밀번호가 맞기만 하면 통과해서, 다른 선생님 비밀번호로도 올릴 수 있었습니다.
+  if public.teacher_role(pass) <> 'admin' then
+    raise exception '문제 은행에 올리는 것은 원장 선생님만 할 수 있습니다';
   end if;
 
   if payload is null or jsonb_typeof(payload) <> 'array' or jsonb_array_length(payload) = 0 then
