@@ -2885,3 +2885,21 @@ var SCHOOL_RANGES = {
 function findSchoolRange(school, grade, term) {
   return (typeof SCHOOL_RANGES !== 'undefined' && SCHOOL_RANGES[grade + '|' + school + '|' + term]) || null;
 }
+
+/* 성적표·블로그에 보여 줄 '시험 범위' 한 묶음.
+   선생님이 검수판에서 고른 줄(exam.range)이 있으면 그것만,
+   없으면 일정표 범위 + 교과서 단원 풀이를 모두 보여 줍니다. */
+function schoolRangeLines(exam) {
+  if (exam && Array.isArray(exam.range) && exam.range.length) { return exam.range.slice(); }
+  var lines = [];
+  var s = (typeof findSchoolSchedule === 'function') ? findSchoolSchedule(exam.school, exam.grade, exam.term) : null;
+  if (s && s.range) { lines = lines.concat(s.range); }
+  var rg = findSchoolRange(exam.school, exam.grade, exam.term);
+  if (rg) {
+    rg.pieces.forEach(function (pc) {
+      var names = pc.units.map(function (u) { return u.unit + (u.works ? ' (' + u.works + ')' : '') + (u.part ? ' 일부' : ''); });
+      lines.push((pc.label ? '[' + pc.label + '] ' : '') + pc.book + ' ' + pc.where + ' — ' + names.join(' · '));
+    });
+  }
+  return lines;
+}

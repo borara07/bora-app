@@ -10,7 +10,6 @@ const exam = EXAMS.find(e => `${e.grade} · ${e.school} ${e.term}` === label);
 if (!exam) { console.error('시험을 찾지 못했습니다:', label); process.exit(1); }
 const sched = vm.runInContext(`findSchoolSchedule(${JSON.stringify(exam.school)}, ${JSON.stringify(exam.grade)}, ${JSON.stringify(exam.term)})`, ctx) || {};
 const levels = vm.runInContext('schoolLevels', ctx)(exam);
-const rg = vm.runInContext(`findSchoolRange(${JSON.stringify(exam.school)}, ${JSON.stringify(exam.grade)}, ${JSON.stringify(exam.term)})`, ctx);
 
 const r1 = n => Math.round(n * 10) / 10;
 const qs = exam.questions;
@@ -41,9 +40,8 @@ const facts = [
   [`${half}`, esc(compo)],
 ];
 const factHtml = facts.map(([k, v]) => `<div class="fact"><dt>${k}</dt><dd>${v}</dd></div>`).join('');
-const rangeHtml = (sched.range || []).map(l => `<li>${esc(l)}</li>`).join('');
+const rangeHtml = vm.runInContext('schoolRangeLines', ctx)(exam).map(l => `<li>${esc(l)}</li>`).join('');
 // 교과서 쪽수를 차례와 맞춰 본 단원·작품 (school-range.js)
-const unitHtml = rg && rg.pieces.length ? rg.pieces.map(pc => `<li>${pc.label ? '[' + esc(pc.label) + '] ' : ''}${esc(pc.book)} ${esc(pc.where)} — ${pc.units.map(u => esc(u.unit) + (u.works ? ' <span class="w">' + esc(u.works) + '</span>' : '') + (u.part ? ' (일부)' : '')).join(' · ')}</li>`).join('') : '';
 const pointHtml = B.points.map(([t, d], i) => `<li><span class="n">${i + 1}</span><div><h4>${esc(t)}</h4><p>${esc(d)}</p></div></li>`).join('');
 const tipHtml = B.tips.map(([t, d], i) => `<li><div class="tip-k"><span class="n">${i + 1}</span>${esc(t)}</div><p class="tip-v">${esc(d)}</p></li>`).join('');
 const cutLine = (exam.cut || exam.average)
@@ -147,7 +145,6 @@ h1 small { display: block; font-family: var(--body); font-size: 15px; color: #d9
     <h1>${esc(exam.school)} ${esc(exam.grade.replace('고', ''))}학년 '${esc(subject)}'<small>${year} ${half}고사</small></h1>
     <dl class="facts">${factHtml}</dl>
     <div><p class="range-k">시험 범위</p><ul class="range">${rangeHtml}</ul></div>
-    ${unitHtml ? `<div><p class="range-k">교과서로 보면</p><ul class="range units">${unitHtml}</ul></div>` : ''}
     <div class="box">
       <div class="box-h"><span class="badge">1</span><h2>${esc(exam.school)} 국어 시험은</h2></div>
       <div class="box-b">
