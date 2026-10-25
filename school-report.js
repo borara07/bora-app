@@ -375,6 +375,20 @@ var SchoolReport = (function () {
       box.appendChild(ul);
     }
 
+    /* 교과서 쪽수를 차례와 맞춰 본 단원·작품 (school-range.js) */
+    var rg = (typeof findSchoolRange === 'function') ? findSchoolRange(exam.school, exam.grade, exam.term) : null;
+    if (rg && rg.pieces && rg.pieces.length) {
+      box.appendChild(el('p', 'report-sub', '교과서로 보면'));
+      var ul3 = el('ul', 'report-bullets is-quiet');
+      rg.pieces.forEach(function (pc) {
+        var names = pc.units.map(function (u) {
+          return u.unit + (u.works ? ' (' + u.works + ')' : '') + (u.part ? ' 일부' : '');
+        });
+        ul3.appendChild(el('li', null, (pc.label ? '[' + pc.label + '] ' : '') + pc.book + ' ' + pc.where + ' — ' + names.join(' · ')));
+      });
+      box.appendChild(ul3);
+    }
+
     if (Array.isArray(exam.summary) && exam.summary.length) {
       box.appendChild(el('p', 'report-sub', '이 시험은 이랬어요'));
       var ul2 = el('ul', 'report-bullets');

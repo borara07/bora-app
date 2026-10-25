@@ -3,13 +3,14 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const REPO = '/home/user/bora-app';
 const ctx = { window: {} }; ctx.window = ctx; vm.createContext(ctx);
-for (const f of ['school-exams.js', 'school-schedule.js']) vm.runInContext(fs.readFileSync(path.join(REPO, f), 'utf8'), ctx);
+for (const f of ['school-exams.js', 'school-schedule.js', 'school-range.js']) vm.runInContext(fs.readFileSync(path.join(REPO, f), 'utf8'), ctx);
 const EXAMS = vm.runInContext('SCHOOL_EXAMS', ctx);
 const label = process.argv[2] || '고1 · 경동고 26-1 중간';
 const exam = EXAMS.find(e => `${e.grade} · ${e.school} ${e.term}` === label);
 if (!exam) { console.error('시험을 찾지 못했습니다:', label); process.exit(1); }
 const sched = vm.runInContext(`findSchoolSchedule(${JSON.stringify(exam.school)}, ${JSON.stringify(exam.grade)}, ${JSON.stringify(exam.term)})`, ctx) || {};
 const levels = vm.runInContext('schoolLevels', ctx)(exam);
+const rg = vm.runInContext(`findSchoolRange(${JSON.stringify(exam.school)}, ${JSON.stringify(exam.grade)}, ${JSON.stringify(exam.term)})`, ctx);
 
 const r1 = n => Math.round(n * 10) / 10;
 const qs = exam.questions;
@@ -41,6 +42,8 @@ const facts = [
 ];
 const factHtml = facts.map(([k, v]) => `<div class="fact"><dt>${k}</dt><dd>${v}</dd></div>`).join('');
 const rangeHtml = (sched.range || []).map(l => `<li>${esc(l)}</li>`).join('');
+// 교과서 쪽수를 차례와 맞춰 본 단원·작품 (school-range.js)
+const unitHtml = rg && rg.pieces.length ? rg.pieces.map(pc => `<li>${pc.label ? '[' + esc(pc.label) + '] ' : ''}${esc(pc.book)} ${esc(pc.where)} — ${pc.units.map(u => esc(u.unit) + (u.works ? ' <span class="w">' + esc(u.works) + '</span>' : '') + (u.part ? ' (일부)' : '')).join(' · ')}</li>`).join('') : '';
 const pointHtml = B.points.map(([t, d], i) => `<li><span class="n">${i + 1}</span><div><h4>${esc(t)}</h4><p>${esc(d)}</p></div></li>`).join('');
 const tipHtml = B.tips.map(([t, d], i) => `<li><div class="tip-k"><span class="n">${i + 1}</span>${esc(t)}</div><p class="tip-v">${esc(d)}</p></li>`).join('');
 const cutLine = (exam.cut || exam.average)
@@ -99,6 +102,7 @@ h1 small { display: block; font-family: var(--body); font-size: 15px; color: #d9
 .fact dt { background: var(--paper); color: var(--deep); font-weight: 800; font-size: 13px; text-align: center; border-radius: 999px; padding: 3px 0; }
 .fact dd { margin: 0; font-size: 15px; min-width: 0; overflow-wrap: anywhere; }
 .range { font-size: 14px; color: #e7defb; margin: 0; padding-left: 18px; display: grid; gap: 2px; }
+.range.units .w { color: #c9b8f2; }
 .range-k { font-size: 13px; font-weight: 800; letter-spacing: .06em; color: #d9ccf5; margin: 0 0 4px; }
 .box { background: var(--paper); color: var(--ink); border-radius: 18px; overflow: hidden; }
 .box-h { background: var(--lav); padding: 14px 22px; display: flex; align-items: center; gap: 10px; }
@@ -143,6 +147,7 @@ h1 small { display: block; font-family: var(--body); font-size: 15px; color: #d9
     <h1>${esc(exam.school)} ${esc(exam.grade.replace('고', ''))}학년 '${esc(subject)}'<small>${year} ${half}고사</small></h1>
     <dl class="facts">${factHtml}</dl>
     <div><p class="range-k">시험 범위</p><ul class="range">${rangeHtml}</ul></div>
+    ${unitHtml ? `<div><p class="range-k">교과서로 보면</p><ul class="range units">${unitHtml}</ul></div>` : ''}
     <div class="box">
       <div class="box-h"><span class="badge">1</span><h2>${esc(exam.school)} 국어 시험은</h2></div>
       <div class="box-b">
