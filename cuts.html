@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 등급컷">
-  <link rel="stylesheet" href="style.css?v=20261024">
+  <link rel="stylesheet" href="style.css?v=20261025">
   <style>
     /* 이 화면에서만 쓰는 모양입니다. 색과 글씨는 style.css 의 :root 에서 가져다 씁니다. */
     body { background: var(--bg); }
@@ -25,6 +25,12 @@
       -webkit-text-stroke: var(--title-bold) currentColor;
     }
     .cut-head p { font-size: 15px; color: var(--muted); margin: 0; line-height: 1.5; }
+    .cut-tip {
+      margin-top: 10px !important; padding: 10px 12px;
+      background: var(--chip); border-radius: 14px;
+      font-size: 14px !important; color: var(--text-2) !important; text-align: left;
+    }
+    .cut-tip b { font-weight: 400; color: var(--primary); }
 
     /* 학년 고르기 — 세 칸 */
     .grade-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0 10px; }
@@ -93,6 +99,9 @@
     <div class="cut-head">
       <h1>보라! 등급컷</h1>
       <p>교육청 학력평가 · 평가원 모의평가 · 수능<br>등급컷과 문항별 정답률</p>
+      <p class="cut-tip">날짜는 <b>시험 본 날</b>입니다.
+        교육청 학력평가는 표지에 시험 본 해를 적고(<b>2024학년도 7월 → 2024년 7월</b>),
+        평가원 모의평가·수능은 다음 해를 적습니다(<b>2027학년도 6월 → 2026년 6월</b>).</p>
     </div>
 
     <div class="grade-tabs" id="grade-tabs"></div>
