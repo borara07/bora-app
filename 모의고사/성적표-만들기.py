@@ -10,7 +10,7 @@
        python3 성적표-만들기.py "34차 심화모의고사" 학생답안.json 성적표.xlsx
 
    학생답안.json 은 이런 모양입니다.
-       [ {"name":"정예원", "school":"배화여고", "choice":"화법과 작문",
+       [ {"name":"홍길동", "school":"보라여고", "choice":"화법과 작문",
           "ans":[4,4,5, ... 45개]}, ... ]
    선택과목이 없는 회차는 choice 를 적지 않아도 됩니다."""
 import datetime, os, sys, json, subprocess
