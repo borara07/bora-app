@@ -266,13 +266,19 @@
     if (statGroup && allRoster) {
       roster = allRoster.filter(function (r) { return (r.group || '고등부') === statGroup; });
 
-      /* 그 반 학생만 남기려면 누가 그 반인지 알아야 합니다 */
+      /* 그 반 학생만 남기려면 누가 그 반인지 알아야 합니다
+         (내려간 학생의 지난 기록도 그 반 기록이므로 여기서는 함께 봅니다) */
       var mine = {};
       roster.forEach(function (r) { mine[identityOf(r.name, r.parentPhone)] = true; });
       rows = rows.filter(function (r) { return mine[identityOf(r.name, r.phone4)]; });
     }
 
-    if (roster) { roster = rosterForPeriod(roster); }
+    /* 재원생 응시 현황 · 아직 안 본 학생은 지금 다니는 학생만 셉니다.
+       명단에서 내려간(퇴원) 학생은 줄이 남아 있지만 재원생이 아니므로 뺍니다.
+       그 학생이 전에 본 시험은 아래 기록 표에 그대로 나옵니다 */
+    if (roster) {
+      roster = rosterForPeriod(roster.filter(function (r) { return r.active !== false; }));
+    }
   }
 
   /* 명단에 붙어 오는 응시 수·평균은 '지금까지 전부' 입니다.
