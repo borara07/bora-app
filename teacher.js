@@ -856,8 +856,9 @@
   /* ---------- 문제 은행 올리기 ---------- */
 
   /* 앱에 들어 있는 문제를 수파베이스가 받을 모양으로 바꿉니다 */
-  /* 문제 은행에 올릴 목록을 만듭니다 (어휘 + 문법).
-     문법 기록은 회차 이름 앞에 '[문법] ' 이 붙어 저장되므로 여기서도 똑같이 붙입니다. */
+  /* 문제 은행에 올릴 목록을 만듭니다 (어휘 + 문법 + 독해).
+     문법·독해 기록은 회차 이름 앞에 '[문법] '·'[독해] ' 가 붙어 저장되므로
+     여기서도 똑같이 붙입니다. */
   function allQuestions() {
     var out = [];
 
@@ -883,9 +884,36 @@
       });
     }
 
+    /* 독해는 문제 모양이 달라서 따로 모읍니다.
+       학생 기록과 이름이 같아야 통계가 맞습니다
+       (reading.js 의 recordTitle 과 items 를 그대로 따릅니다).
+         회차 이름 = [독해] [인문예술1] 지문 이름
+         문제 이름 = 1문단 · 2문단 …
+         보기      = 정답 + 오답 (reading.js 가 학생마다 순서를 섞습니다) */
+    function addReadings(list) {
+      if (!Array.isArray(list)) return;
+      list.forEach(function (r) {
+        (r.paragraphs || []).forEach(function (p, k) {
+          if (!p.answer) return;
+          var choices = [p.answer].concat((p.wrong || []).map(function (w) {
+            return Array.isArray(w) ? w[0] : w;        /* 오답은 [보기 문장, 왜 틀렸나] 모양입니다 */
+          }));
+          out.push({
+            round_title: '[독해] [' + r.area + r.no + '] ' + r.title,
+            word: (k + 1) + '문단',
+            hanja: '',
+            correct_answer: p.answer,
+            choices: choices,
+            explanation: p.why || ''
+          });
+        });
+      });
+    }
+
     add(typeof ROUNDS !== 'undefined' ? ROUNDS : null, '');
     add(typeof CONTEXT_ROUNDS !== 'undefined' ? CONTEXT_ROUNDS : null, '');
     add(typeof GRAMMAR_ROUNDS !== 'undefined' ? GRAMMAR_ROUNDS : null, '[문법] ');
+    addReadings(typeof READINGS !== 'undefined' ? READINGS : null);
     return out;
   }
 
