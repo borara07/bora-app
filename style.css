@@ -1079,8 +1079,13 @@ select.input {
 .corner {
   display: flex;
   justify-content: flex-end;
+  gap: 4px;
   margin-bottom: -6px;
 }
+
+/* 선생님 화면 맨 위 '새로 불러오기' · '나가기' — 누르기 쉽게 세로 48px */
+.corner .btn-corner { min-height: 48px; }
+.btn-corner:disabled { opacity: 0.6; cursor: default; }
 
 .btn-corner {
   padding: 8px 12px;

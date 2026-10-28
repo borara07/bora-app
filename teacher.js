@@ -107,7 +107,54 @@
     render();
     $('screen-login').hidden = true;
     $('screen-board').hidden = false;
+    /* 서버에서 받아 온 경우에만 '새로 불러오기' 를 보여 줍니다 (이 기기 기록만 볼 때는 숨김) */
+    $('btn-reload').hidden = !myPassword;
     window.scrollTo(0, 0);
+  }
+
+  /* ---------- 새로 불러오기 ----------
+     비밀번호를 다시 넣지 않고 최신 시험 기록과 재원생 명단을 다시 받아 옵니다.
+     월요일 아침 명단이 바뀌었거나, 학생들이 방금 본 시험을 확인할 때 씁니다.
+     보던 기간 · 과목 · 반은 그대로 둡니다.
+     '이번 주 시험' 칸은 다시 그리지 않습니다 (고르다 만 회차가 지워지지 않게) */
+  function reload() {
+    var btn = $('btn-reload');
+    if (!myPassword || btn.disabled) { return; }
+    btn.disabled = true;
+    btn.textContent = '불러오는 중…';
+
+    function done(note) {
+      btn.disabled = false;
+      btn.textContent = '새로 불러오기';
+      $('source-note').textContent = note;
+    }
+
+    VocabStore.fetchAll(myPassword).then(function (r) {
+      if (!r.ok) {
+        done(r.code === 'wrong-password'
+          ? '비밀번호가 바뀌었습니다. 나가기를 누르고 새 비밀번호로 다시 들어와 주세요.'
+          : '새로 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.\n보던 기록은 그대로 있습니다.');
+        return;
+      }
+
+      allRows = r.rows || [];
+      fillPeriodPicker(statPeriod);   // 보던 주를 그대로 둡니다
+
+      function finish() {
+        applyGroup();
+        render();
+        var now = new Date().toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
+        done('전체 학생 기록입니다.\n' + now + '에 새로 불러왔습니다.');
+      }
+
+      /* 다른 선생님은 명단을 받지 않습니다 (원장 전용) */
+      if (myRole !== 'admin') { finish(); return; }
+
+      VocabStore.fetchStudents(myPassword).then(function (sr) {
+        if (sr.ok) { allRoster = sr.rows; }
+        finish();
+      });
+    });
   }
 
   function logout() {
@@ -1246,6 +1293,7 @@
   });
 
   $('btn-logout').addEventListener('click', logout);
+  $('btn-reload').addEventListener('click', reload);
   $('btn-export').addEventListener('click', exportCsv);
   $('btn-upload').addEventListener('click', uploadQuestions);
   $('roster-file').addEventListener('change', function (e) {
