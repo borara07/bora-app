@@ -16,7 +16,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 어휘">
 
-  <link rel="stylesheet" href="style.css?v=20261028a">
+  <link rel="stylesheet" href="style.css?v=20261030a">
 </head>
 <body>
 
@@ -125,12 +125,56 @@
         <div id="wrong-list" class="wrong-list"></div>
       </section>
 
+      <!-- 표제어 점검 — 이 회차에 표제어(words)가 적혀 있을 때만 보입니다 (app.js 의 표제어 점검) -->
+      <div id="review-offer" class="card review-offer" hidden>
+        <p class="review-offer-title">마지막으로 표제어를 점검해 볼까요?</p>
+        <p class="review-offer-text">정답을 맞혀도 뜻이 흐릿할 수 있어요.
+          낱말만 보고 뜻을 떠올린 뒤, 카드를 눌러 확인해 보세요.</p>
+        <button type="button" id="btn-review" class="btn btn-primary">표제어 점검하기 · <span id="review-count">17</span>개</button>
+      </div>
+
       <p id="save-state" class="save-state" hidden></p>
 
       <button id="btn-retry" class="btn btn-primary">다시 보기</button>
       <button id="btn-history" class="btn btn-quiet">내 기록 보기</button>
       <!-- 시험을 마친 학생이 앱을 닫지 않고 회차 화면으로 돌아갑니다 -->
       <button id="btn-home" class="btn btn-quiet">처음으로 돌아가기</button>
+    </section>
+
+    <!-- 4-1. 표제어 점검 — 낱말만 보고 뜻을 떠올린 뒤 카드를 눌러 확인합니다 -->
+    <section id="screen-review" class="screen" hidden>
+      <button type="button" id="btn-review-back" class="btn-back">결과로</button>
+
+      <div id="review-play">
+        <p id="review-progress" class="review-progress"></p>
+
+        <button type="button" id="review-card" class="review-card" aria-describedby="review-hint">
+          <span id="review-tag" class="review-tag" hidden>이번 시험에서 틀린 낱말</span>
+          <span class="review-head">
+            <span id="review-word" class="review-word"></span>
+            <span id="review-hanja" class="review-hanja"></span>
+          </span>
+          <span id="review-hint" class="review-hint">뜻을 떠올려 본 뒤 눌러 보세요</span>
+          <span id="review-meaning" class="review-meaning" hidden></span>
+          <span id="review-example" class="example review-example" hidden>
+            <span class="example-label">예문</span>
+            <span id="review-example-text"></span>
+          </span>
+        </button>
+
+        <div id="review-judge" hidden>
+          <button type="button" id="review-sure" class="btn btn-primary">확실히 알아요</button>
+          <button type="button" id="review-unsure" class="btn btn-quiet">헷갈려요</button>
+        </div>
+      </div>
+
+      <div id="review-end" class="card review-end" hidden>
+        <p id="review-end-title" class="review-end-title"></p>
+        <p id="review-end-text" class="review-end-text"></p>
+        <div id="review-end-list" class="review-end-list"></div>
+        <button type="button" id="review-again" class="btn btn-primary" hidden>헷갈린 낱말 다시 보기</button>
+        <button type="button" id="review-done" class="btn btn-quiet">결과로 돌아가기</button>
+      </div>
     </section>
 
     <!-- 5. 내 기록 화면 -->
@@ -171,8 +215,8 @@
   <!-- 이 페이지는 어휘 문제를 씁니다 -->
   <script>var APP_SUBJECT = "어휘";</script>
   <script src="questions.js?v=20261019a"></script>
-  <script src="questions-context.js?v=20261030c"></script>
+  <script src="questions-context.js?v=20261030d"></script>
   <script src="storage.js?v=20261021a"></script>
-  <script src="app.js?v=20261021a"></script>
+  <script src="app.js?v=20261030a"></script>
 </body>
 </html>
