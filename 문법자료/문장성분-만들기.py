@@ -1347,6 +1347,19 @@ SKIP = {
 for k in R:
     R[k] = [q for q in R[k] if q.get("name") not in SKIP]
 
+# 선생님 검토(2026-10-30)에서 뺀 문제 — 검토판의 갈래별 번호(1번부터)입니다
+CUT = {
+    "11": {"성분갈래": [1, 2, 3, 4, 6, 9, 11], "목적어보어": [1, 4], "서술어": [1],
+           "자릿수": [1, 2], "종합객관식": [2, 8, 9, 19, 21, 24, 26]},
+}
+for k, cuts in CUT.items():
+    seen, keep = {}, []
+    for q in R[k]:
+        seen[q["kind"]] = seen.get(q["kind"], 0) + 1
+        if seen[q["kind"]] not in cuts.get(q["kind"], []):
+            keep.append(q)
+    R[k] = keep
+
 if __name__ == "__main__":
     json.dump(R, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     for k, v in R.items():
