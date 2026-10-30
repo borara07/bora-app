@@ -629,7 +629,6 @@
     var words = roundWords();
     box.hidden = words.length === 0;
     if (!words.length) { return; }
-    $('review-count').textContent = words.length;
 
     /* 이번 시험에서 틀린 문제의 정답 낱말 — 카드 맨 앞에 놓고 표시를 붙입니다 */
     review.wrongWords = {};
@@ -773,8 +772,14 @@
 
   function showRetestNote(correct) {
     var box = $('retest-note');
+    var retry = $('btn-retry');
+    var must = correct <= retestMax();
 
-    if (correct > retestMax()) {
+    /* 재시험을 봐야 하면 '다시 보기' 를 진한 '재시험 보기' 로 바꿔 먼저 눈에 띄게 합니다 */
+    retry.textContent = must ? '재시험 보기' : '다시 보기';
+    retry.className = 'btn ' + (must ? 'btn-primary' : 'btn-quiet');
+
+    if (!must) {
       box.hidden = true;
       return;
     }
@@ -849,9 +854,10 @@
     };
   }
 
-  /* ① ② ③ 처럼 뜻이 여러 개면 줄을 나눠 줍니다 */
+  /* ① ② ③ 처럼 뜻이 여러 개면 줄을 나눠 줍니다.
+     '①과 가장 가깝다' '①·④는' 처럼 보기 번호를 가리키는 말(번호 뒤에 과·는·은 … 이 붙음)은 나누지 않습니다 */
   function breakSenses(text) {
-    return text.replace(/ (?=[①②③④⑤])/g, '\n').trim();
+    return text.replace(/ (?=[①②③④⑤](?![과와은는이가을를의에도만·,]))/g, '\n').trim();
   }
 
   function answerRow(tagText, value, valueClass) {
@@ -905,7 +911,7 @@
   function saveResult(correct, total, percent) {
     var box = $('save-state');
     box.hidden = false;
-    box.className = 'save-state';
+    box.className = 'save-line';
     box.textContent = '기록을 저장하는 중…';
 
     var record = {
@@ -930,10 +936,11 @@
 
     VocabStore.save(record).then(function (r) {
       if (r.sentToServer) {
-        box.textContent = '기록이 저장되었습니다.\n(선생님께 전송 완료)';
+        box.textContent = '기록 저장됨 · 선생님께 전송 완료';
+        box.className = 'save-line is-done';
       } else if (r.savedOnDevice && VocabStore.usingServer()) {
-        box.textContent = '기록을 이 기기에 저장했습니다. 인터넷 연결 후 자동으로 전송됩니다.';
-        box.className = 'save-state is-waiting';
+        box.textContent = '이 기기에 저장됨 · 인터넷이 연결되면 자동으로 전송됩니다';
+        box.className = 'save-line is-waiting';
         if (r.reason) {
           var why = document.createElement('span');
           why.className = 'check-detail';
@@ -941,10 +948,11 @@
           box.appendChild(why);
         }
       } else if (r.savedOnDevice) {
-        box.textContent = '기록이 저장되었습니다.';
+        box.textContent = '기록 저장됨';
+        box.className = 'save-line is-done';
       } else {
         box.textContent = '이 브라우저에서는 기록을 저장할 수 없습니다.';
-        box.className = 'save-state is-waiting';
+        box.className = 'save-line is-waiting';
       }
     });
   }

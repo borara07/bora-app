@@ -962,6 +962,43 @@ html.on-rounds .btn-back::before { border-color: rgba(255, 255, 255, 0.9); }
   color: var(--wrong);
 }
 
+/* 결과 화면 맨 아래 — 단추 세 개를 한 줄에 */
+.result-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.result-actions .btn {
+  margin-top: 0;
+  padding: 8px 4px;
+  font-size: 15px;
+  word-break: keep-all;
+}
+
+/* 기록 저장 안내 — 단추 아래 작은 글씨 한 줄 */
+.save-line {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+}
+
+.save-line.is-done::before {
+  content: "✓";
+  margin-right: 6px;
+  font-weight: 700;
+}
+
+.save-line.is-waiting {
+  color: var(--wrong);
+  font-weight: 700;
+}
+
+.save-line .check-detail { display: block; font-weight: 400; }
+
 /* ---------- 내 기록 ---------- */
 
 .history-list {

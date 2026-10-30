@@ -16,7 +16,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 어휘">
 
-  <link rel="stylesheet" href="style.css?v=20261030b">
+  <link rel="stylesheet" href="style.css?v=20261030c">
 </head>
 <body>
 
@@ -130,15 +130,19 @@
         <p class="review-offer-title">마지막으로 표제어를 점검해 볼까요?</p>
         <p class="review-offer-text">정답을 맞혀도 뜻이 흐릿할 수 있어요.
           낱말만 보고 뜻을 떠올린 뒤, 카드를 눌러 확인해 보세요.</p>
-        <button type="button" id="btn-review" class="btn btn-primary">표제어 점검하기 · <span id="review-count">17</span>개</button>
+        <button type="button" id="btn-review" class="btn btn-primary">표제어 점검하기</button>
       </div>
 
-      <p id="save-state" class="save-state" hidden></p>
+      <!-- 단추 세 개를 한 줄에 나란히 둡니다. 재시험을 봐야 하면 '다시 보기' 가 진한 '재시험 보기' 로 바뀝니다 (app.js 의 showRetestNote)
+           '처음으로' 는 앱을 닫지 않고 회차 고르기로 돌아갑니다 -->
+      <div class="result-actions">
+        <button type="button" id="btn-retry" class="btn btn-quiet">다시 보기</button>
+        <button type="button" id="btn-history" class="btn btn-quiet">내 기록</button>
+        <button type="button" id="btn-home" class="btn btn-quiet">처음으로</button>
+      </div>
 
-      <button id="btn-retry" class="btn btn-primary">다시 보기</button>
-      <button id="btn-history" class="btn btn-quiet">내 기록 보기</button>
-      <!-- 시험을 마친 학생이 앱을 닫지 않고 회차 화면으로 돌아갑니다 -->
-      <button id="btn-home" class="btn btn-quiet">처음으로 돌아가기</button>
+      <!-- 기록 저장 안내 — 작은 글씨 한 줄 -->
+      <p id="save-state" class="save-line" hidden></p>
     </section>
 
     <!-- 4-1. 표제어 점검 — 낱말만 보고 뜻을 떠올린 뒤 카드를 눌러 확인합니다 -->
@@ -217,6 +221,6 @@
   <script src="questions.js?v=20261019a"></script>
   <script src="questions-context.js?v=20261030d"></script>
   <script src="storage.js?v=20261021a"></script>
-  <script src="app.js?v=20261030a"></script>
+  <script src="app.js?v=20261030c"></script>
 </body>
 </html>
