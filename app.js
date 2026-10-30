@@ -457,8 +457,10 @@
            한 회차 안에서 이름이 겹치면 문제에 name 을 적어 따로 지어 줄 수 있습니다. */
         name: q.name || q.word || q.sentence || choices[q.answer - 1] || q.ask || '',
         hanja: q.hanja || '',
-        /* OX 는 O·X 순서가 정해져 있으니 섞지 않습니다 */
-        choices: q.ox ? choices.slice() : shuffle(choices),
+        /* OX 는 O·X 순서가 정해져 있으니 섞지 않습니다.
+           문제에 keepOrder: true 를 적으면 보기 순서를 그대로 둡니다
+           (해설이 '①은 …, ③은 …' 처럼 보기 번호를 가리키는 기출 문제) */
+        choices: (q.ox || q.keepOrder) ? choices.slice() : shuffle(choices),
         correctText: choices[q.answer - 1],
         explanation: q.explanation || '',
         myAnswer: null
