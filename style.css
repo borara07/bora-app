@@ -962,6 +962,43 @@ html.on-rounds .btn-back::before { border-color: rgba(255, 255, 255, 0.9); }
   color: var(--wrong);
 }
 
+/* 결과 화면 맨 아래 — 단추 세 개를 한 줄에 */
+.result-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.result-actions .btn {
+  margin-top: 0;
+  padding: 8px 4px;
+  font-size: 15px;
+  word-break: keep-all;
+}
+
+/* 기록 저장 안내 — 단추 아래 작은 글씨 한 줄 */
+.save-line {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+}
+
+.save-line.is-done::before {
+  content: "✓";
+  margin-right: 6px;
+  font-weight: 700;
+}
+
+.save-line.is-waiting {
+  color: var(--wrong);
+  font-weight: 700;
+}
+
+.save-line .check-detail { display: block; font-weight: 400; }
+
 /* ---------- 내 기록 ---------- */
 
 .history-list {
@@ -1079,8 +1116,13 @@ select.input {
 .corner {
   display: flex;
   justify-content: flex-end;
+  gap: 4px;
   margin-bottom: -6px;
 }
+
+/* 선생님 화면 맨 위 '새로 불러오기' · '나가기' — 누르기 쉽게 세로 48px */
+.corner .btn-corner { min-height: 48px; }
+.btn-corner:disabled { opacity: 0.6; cursor: default; }
 
 .btn-corner {
   padding: 8px 12px;
@@ -1896,10 +1938,181 @@ select.input {
 .quit-box .btn { margin-top: 18px; }
 .quit-box .btn + .btn { margin-top: 10px; }
 
+/* ---------- 표제어 점검 (어휘2 결과 화면 다음) ---------- */
+
+.review-offer { margin-top: 18px; }
+
+/* 위 '재시험을 봐야 합니다' (.retest-title) 와 같은 글씨 — 한 화면에 나란히 보이기 때문입니다 */
+.review-offer-title {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--primary-dark);
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+.review-offer-text {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.review-progress {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* 카드 전체가 누르는 곳입니다. 뜻을 펼치기 전에는 낱말만 보입니다 */
+.review-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 220px;
+  padding: 26px 20px;
+  font-family: inherit;
+  text-align: center;
+  color: var(--text);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px var(--shadow);
+  cursor: pointer;
+  justify-content: center;
+}
+
+.review-card.is-open {
+  cursor: default;
+  border-color: var(--primary);
+  justify-content: flex-start;
+}
+
+.review-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.review-tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--primary-dark);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.review-head {
+  display: block;
+  word-break: keep-all;
+}
+
+.review-word {
+  font-family: var(--font-title);
+  font-size: 32px;
+  font-weight: 400;
+  color: var(--text);
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+/* 한자는 덧그리지 않습니다 (.wrong-hanja 와 같은 까닭) */
+.review-hanja {
+  margin-left: 10px;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  -webkit-text-stroke: 0;
+}
+
+.review-hint {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.review-meaning {
+  display: block;
+  width: 100%;
+  padding-top: 14px;
+  border-top: 1px solid var(--track);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  text-align: left;
+}
+
+.review-example {
+  display: block;
+  width: 100%;
+  margin: 0;
+  text-align: left;
+}
+
+.review-end-title {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--primary);
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+.review-end-text {
+  margin: 8px 0 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.review-end-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.review-end-list:empty { display: none; }
+
+/* 낱말 중간에서 줄이 바뀌지 않게 합니다 */
+.review-meaning,
+.review-example,
+.review-note { word-break: keep-all; overflow-wrap: anywhere; }
+
+.review-note {
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.review-note-word {
+  margin: 0 0 8px;
+  font-family: var(--font-title);
+  font-size: 21px;
+  font-weight: 400;
+  color: var(--primary);
+  -webkit-text-stroke: var(--title-bold) currentColor;
+}
+
+.review-note-meaning {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
 /* ---------- 작은 화면(휴대폰) ---------- */
 
 @media (max-width: 380px) {
   .question-word { font-size: 28px; }
+  .review-word { font-size: 28px; }
   .result-score { font-size: 50px; }
   .choice { padding: 15px 13px; }
   .history-round { font-size: 17px; }

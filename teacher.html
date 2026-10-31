@@ -14,7 +14,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="보라! 선생님">
-  <link rel="stylesheet" href="style.css?v=20261019b">
+  <link rel="stylesheet" href="style.css?v=20261030c">
 </head>
 <body>
 
@@ -46,6 +46,8 @@
     <!-- 2. 결과 화면 -->
     <section id="screen-board" class="screen" hidden>
       <div class="corner">
+        <!-- 비밀번호를 다시 넣지 않고 최신 기록 · 명단을 받아 옵니다 (teacher.js 의 reload) -->
+        <button type="button" id="btn-reload" class="btn-corner" hidden>새로 불러오기</button>
         <button type="button" id="btn-logout" class="btn-corner">나가기</button>
       </div>
 
@@ -249,11 +251,11 @@
   </main>
 
   <script src="questions.js?v=20261019a"></script>
-  <script src="questions-context.js?v=20261019e"></script>
-  <script src="questions-grammar.js?v=20261018b"></script>
+  <script src="questions-context.js?v=20261030d"></script>
+  <script src="questions-grammar.js?v=20261030c"></script>
   <script src="exams.js?v=20261031a"></script>
   <script src="readings.js?v=20261018h"></script>
   <script src="storage.js?v=20261021a"></script>
-  <script src="teacher.js?v=20261021a"></script>
+  <script src="teacher.js?v=20261028b"></script>
 </body>
 </html>

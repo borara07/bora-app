@@ -35,7 +35,8 @@
     quiz: $('screen-quiz'),
     result: $('screen-result'),
     history: $('screen-history'),
-    error: $('screen-error')
+    error: $('screen-error'),
+    review: $('screen-review')   /* 표제어 점검 — vocab.html 에만 있습니다 (문법에는 없음) */
   };
 
   /* ---------- 시험 진행 상태 ---------- */
@@ -63,7 +64,7 @@
 
   function show(name) {
     Object.keys(screens).forEach(function (key) {
-      screens[key].hidden = (key !== name);
+      if (screens[key]) { screens[key].hidden = (key !== name); }
     });
     paintBackground(name === 'start' || name === 'rounds');
     window.scrollTo(0, 0);
@@ -456,8 +457,10 @@
            한 회차 안에서 이름이 겹치면 문제에 name 을 적어 따로 지어 줄 수 있습니다. */
         name: q.name || q.word || q.sentence || choices[q.answer - 1] || q.ask || '',
         hanja: q.hanja || '',
-        /* OX 는 O·X 순서가 정해져 있으니 섞지 않습니다 */
-        choices: q.ox ? choices.slice() : shuffle(choices),
+        /* OX 는 O·X 순서가 정해져 있으니 섞지 않습니다.
+           문제에 keepOrder: true 를 적으면 보기 순서를 그대로 둡니다
+           (해설이 '①은 …, ③은 …' 처럼 보기 번호를 가리키는 기출 문제) */
+        choices: (q.ox || q.keepOrder) ? choices.slice() : shuffle(choices),
         correctText: choices[q.answer - 1],
         explanation: q.explanation || '',
         myAnswer: null
@@ -598,7 +601,165 @@
 
     saveResult(correct, total, percent);
 
+    offerReview(wrong);
+
     show('result');
+  }
+
+  /* ---------- 표제어 점검 (어휘2) ----------
+     시험을 마친 뒤 그 회차의 표제어(words)를 카드로 한 장씩 봅니다.
+     낱말만 보고 뜻을 떠올린 뒤 카드를 누르면 뜻과 예문이 펼쳐지고,
+     '확실히 알아요' / '헷갈려요' 를 고릅니다. 다 보면 헷갈린 낱말만 한 번 더 봅니다.
+     하고 싶은 학생만 합니다. 점수·기록과는 상관없습니다. */
+  var review = { deck: [], at: 0, unsure: [], wrongWords: {}, pass: 1 };
+
+  function roundWords() {
+    var r = state.round;
+    return (r && Array.isArray(r.words)) ? r.words.filter(function (w) {
+      return w && w.word && w.meaning;
+    }) : [];
+  }
+
+  /* '생소하다' 와 문제의 정답 '생소' 를 같은 낱말로 봅니다 */
+  function bareWord(s) {
+    return String(s || '').replace(/\s/g, '').replace(/(하다|되다|시키다)$/, '');
+  }
+
+  function offerReview(wrong) {
+    var box = $('review-offer');
+    if (!box) { return; }
+    var words = roundWords();
+    box.hidden = words.length === 0;
+    if (!words.length) { return; }
+
+    /* 이번 시험에서 틀린 문제의 정답 낱말 — 카드 맨 앞에 놓고 표시를 붙입니다 */
+    review.wrongWords = {};
+    wrong.forEach(function (q) { review.wrongWords[bareWord(q.correctText)] = true; });
+  }
+
+  function startReview(deck, pass) {
+    review.deck = deck;
+    review.at = 0;
+    review.unsure = [];
+    review.pass = pass;
+    $('review-play').hidden = false;
+    $('review-end').hidden = true;
+    drawReviewCard();
+    show('review');
+  }
+
+  function isWrongWord(w) { return !!review.wrongWords[bareWord(w.word)]; }
+
+  function drawReviewCard() {
+    var w = review.deck[review.at];
+    $('review-progress').textContent =
+      (review.pass === 2 ? '다시 보기 · ' : '') + (review.at + 1) + ' / ' + review.deck.length;
+    $('review-tag').hidden = !isWrongWord(w);
+    $('review-word').textContent = w.word;
+    $('review-hanja').textContent = w.hanja || '';
+    $('review-hanja').hidden = !w.hanja;
+    $('review-meaning').textContent = w.meaning;
+    $('review-example-text').textContent = w.example || '';
+    showMeaning(false);
+  }
+
+  function showMeaning(open) {
+    var w = review.deck[review.at];
+    $('review-hint').hidden = open;
+    $('review-meaning').hidden = !open;
+    $('review-example').hidden = !open || !w.example;
+    $('review-judge').hidden = !open;
+    $('review-card').classList.toggle('is-open', open);
+    $('review-card').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  function judgeReview(sure) {
+    if (!sure) { review.unsure.push(review.deck[review.at]); }
+    if (review.at < review.deck.length - 1) {
+      review.at += 1;
+      drawReviewCard();
+      window.scrollTo(0, 0);
+    } else {
+      drawReviewEnd();
+    }
+  }
+
+  function drawReviewEnd() {
+    var n = review.unsure.length;
+    $('review-play').hidden = true;
+    $('review-end').hidden = false;
+    $('review-again').hidden = !(review.pass === 1 && n > 0);
+
+    var list = $('review-end-list');
+    list.innerHTML = '';
+
+    if (n === 0) {
+      $('review-end-title').textContent = review.pass === 1
+        ? review.deck.length + '개 모두 확실히 알아요!'
+        : '이제 모두 확실히 알아요!';
+      $('review-end-text').textContent = '수고했어요. 표제어 점검을 마쳤습니다.';
+    } else if (review.pass === 1) {
+      $('review-end-title').textContent = '헷갈린 낱말이 ' + n + '개 있어요.';
+      $('review-end-text').textContent = '헷갈린 낱말만 모아 한 번 더 볼까요?';
+    } else {
+      $('review-end-title').textContent = '아직 헷갈리는 낱말 ' + n + '개';
+      $('review-end-text').textContent = '아래 낱말은 뜻과 예문을 한 번 더 읽고 외워 두세요.';
+      review.unsure.forEach(function (w) { list.appendChild(reviewNote(w)); });
+    }
+    window.scrollTo(0, 0);
+  }
+
+  /* 끝까지 헷갈린 낱말 — 낱말·뜻·예문을 한꺼번에 보여 줍니다 */
+  function reviewNote(w) {
+    var item = document.createElement('div');
+    item.className = 'review-note';
+    var head = document.createElement('p');
+    head.className = 'review-note-word';
+    head.textContent = w.word;
+    if (w.hanja) {
+      var h = document.createElement('span');
+      h.className = 'wrong-hanja';
+      h.textContent = w.hanja;
+      head.appendChild(h);
+    }
+    item.appendChild(head);
+    var m = document.createElement('p');
+    m.className = 'review-note-meaning';
+    m.textContent = w.meaning;
+    item.appendChild(m);
+    if (w.example) {
+      var ex = document.createElement('p');
+      ex.className = 'example';
+      var tag = document.createElement('span');
+      tag.className = 'example-label';
+      tag.textContent = '예문';
+      ex.appendChild(tag);
+      ex.appendChild(document.createTextNode(w.example));
+      item.appendChild(ex);
+    }
+    return item;
+  }
+
+  function setupReview() {
+    if (!$('btn-review')) { return; }   /* 문법 화면에는 없습니다 */
+
+    $('btn-review').addEventListener('click', function () {
+      /* 틀린 낱말을 앞에, 나머지는 표 순서대로 */
+      var words = roundWords();
+      var first = words.filter(isWrongWord);
+      var rest = words.filter(function (w) { return !isWrongWord(w); });
+      startReview(first.concat(rest), 1);
+    });
+    $('review-card').addEventListener('click', function () {
+      if (!$('review-card').classList.contains('is-open')) { showMeaning(true); }
+    });
+    $('review-sure').addEventListener('click', function () { judgeReview(true); });
+    $('review-unsure').addEventListener('click', function () { judgeReview(false); });
+    $('review-again').addEventListener('click', function () {
+      startReview(review.unsure.slice(), 2);
+    });
+    $('review-done').addEventListener('click', function () { show('result'); });
+    $('btn-review-back').addEventListener('click', function () { show('result'); });
   }
 
   /* 맞힌 개수가 기준(RETEST_MAX) 이하이면 재시험을 보라고 안내합니다.
@@ -613,8 +774,14 @@
 
   function showRetestNote(correct) {
     var box = $('retest-note');
+    var retry = $('btn-retry');
+    var must = correct <= retestMax();
 
-    if (correct > retestMax()) {
+    /* 재시험을 봐야 하면 '다시 보기' 를 진한 '재시험 보기' 로 바꿔 먼저 눈에 띄게 합니다 */
+    retry.textContent = must ? '재시험 보기' : '다시 보기';
+    retry.className = 'btn ' + (must ? 'btn-primary' : 'btn-quiet');
+
+    if (!must) {
       box.hidden = true;
       return;
     }
@@ -689,9 +856,10 @@
     };
   }
 
-  /* ① ② ③ 처럼 뜻이 여러 개면 줄을 나눠 줍니다 */
+  /* ① ② ③ 처럼 뜻이 여러 개면 줄을 나눠 줍니다.
+     '①과 가장 가깝다' '①·④는' 처럼 보기 번호를 가리키는 말(번호 뒤에 과·는·은 … 이 붙음)은 나누지 않습니다 */
   function breakSenses(text) {
-    return text.replace(/ (?=[①②③④⑤])/g, '\n').trim();
+    return text.replace(/ (?=[①②③④⑤](?![과와은는이가을를의에도만·,]))/g, '\n').trim();
   }
 
   function answerRow(tagText, value, valueClass) {
@@ -745,7 +913,7 @@
   function saveResult(correct, total, percent) {
     var box = $('save-state');
     box.hidden = false;
-    box.className = 'save-state';
+    box.className = 'save-line';
     box.textContent = '기록을 저장하는 중…';
 
     var record = {
@@ -770,10 +938,11 @@
 
     VocabStore.save(record).then(function (r) {
       if (r.sentToServer) {
-        box.textContent = '기록이 저장되었습니다.\n(선생님께 전송 완료)';
+        box.textContent = '기록 저장됨 · 선생님께 전송 완료';
+        box.className = 'save-line is-done';
       } else if (r.savedOnDevice && VocabStore.usingServer()) {
-        box.textContent = '기록을 이 기기에 저장했습니다. 인터넷 연결 후 자동으로 전송됩니다.';
-        box.className = 'save-state is-waiting';
+        box.textContent = '이 기기에 저장됨 · 인터넷이 연결되면 자동으로 전송됩니다';
+        box.className = 'save-line is-waiting';
         if (r.reason) {
           var why = document.createElement('span');
           why.className = 'check-detail';
@@ -781,10 +950,11 @@
           box.appendChild(why);
         }
       } else if (r.savedOnDevice) {
-        box.textContent = '기록이 저장되었습니다.';
+        box.textContent = '기록 저장됨';
+        box.className = 'save-line is-done';
       } else {
         box.textContent = '이 브라우저에서는 기록을 저장할 수 없습니다.';
-        box.className = 'save-state is-waiting';
+        box.className = 'save-line is-waiting';
       }
     });
   }
@@ -1016,6 +1186,8 @@
     $('btn-next').addEventListener('click', goNext);
 
     $('btn-retry').addEventListener('click', startQuiz);
+
+    setupReview();
 
     /* 지난번에 시험 본 학생이면 입력칸을 미리 채워 줍니다 */
     var last = VocabStore.lastStudent();
