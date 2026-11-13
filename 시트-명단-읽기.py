@@ -8,7 +8,7 @@
 
 시트 모양 (2026년 10월 기준)
     1줄          머리줄 (이름 · 학부모 연락처 · 학생 연락처 · 학교 · 학년 · …)
-    반 이름 줄   이름 칸에만 '고1 토' 처럼 반 이름이 있고 나머지는 빈 줄
+    반 이름 줄   이름 칸에 '고1 토' 처럼 반 이름이 있는 줄 (둘째 칸에 수업 시각이 있어도 됩니다)
     학생 줄      그 아래로 학생이 이어집니다. 다음 반 이름 줄이 나올 때까지 같은 반
 
 읽는 규칙
@@ -19,6 +19,7 @@
     - 동명이인을 가르려고 붙여 둔 꼬리표(김도윤A · 김도윤B)는 뗍니다.
       학생은 로그인할 때 본명을 치고, 둘은 학부모 연락처 뒷 4자리로 갈립니다.
     - 학부모 연락처가 빈 학생은 넣지 않고 화면에 알려 줍니다 (뒷 4자리가 학생을 가리는 기준입니다).
+      연락처를 시트에 적으면 다음 맞추기 때 저절로 들어갑니다.
 
 이 파일은 명단을 만들기만 합니다. 앱 명단을 고치는 것은 수파베이스 함수가 합니다.
 """
@@ -40,6 +41,15 @@ def digits(s):
     return re.sub(r'\D', '', s or '')
 
 
+def is_class_row(name, student, school):
+    """반 이름 줄인지 봅니다.
+    반 이름은 '고1 토' · '중3 토 저녁' 처럼 학년으로 시작하고, 학교·학생 연락처가 비어 있습니다.
+    (2026년 11월부터 반 이름 줄의 둘째 칸에 수업 시각이 적혀 있어서 그 칸은 보지 않습니다)
+    연락처가 아직 없는 학생 줄을 반 이름으로 잘못 읽지 않으려고 이름 모양까지 봅니다."""
+    return (not student and not school
+            and re.match(r'^(고|중|초|예비)\s*\d', name) is not None)
+
+
 def cohort(cell):
     """학년 칸의 '26' · '26.0' 을 26 으로 읽습니다. 못 읽으면 None"""
     m = re.match(r'^\s*(\d{2})(?:\.0+)?\s*$', text(cell))
@@ -59,7 +69,7 @@ def read(path):
                                          text(row[2]), text(row[3]))
         if i == 1 or not name or name == '이름':
             continue
-        if not parent and not student and not school:
+        if is_class_row(name, student, school):
             klass = re.sub(r'\s+', ' ', name)        # 반 이름 줄
             continue
         if len(digits(parent)) < 4:
