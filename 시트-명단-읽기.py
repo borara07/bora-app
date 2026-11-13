@@ -9,6 +9,7 @@
 시트 모양 (2026년 10월 기준)
     1줄          머리줄 (이름 · 학부모 연락처 · 학생 연락처 · 학교 · 학년 · …)
     반 이름 줄   이름 칸에 '고1 토' 처럼 반 이름이 있는 줄 (둘째 칸에 수업 시각이 있어도 됩니다)
+                 반 이름이 같은 반이 둘이면 수업 시각을 붙여 '고1 수 3:30' · '고1 수 7:00' 으로 가릅니다
     학생 줄      그 아래로 학생이 이어집니다. 다음 반 이름 줄이 나올 때까지 같은 반
 
 읽는 규칙
@@ -62,6 +63,13 @@ def read(path):
         raise SystemExit("'%s' 탭이 없습니다. 시트 이름: %s" % (SHEET, wb.sheetnames))
     ws = wb[SHEET]
 
+    # 이름이 같은 반이 둘 이상이면(고1 수 오후·저녁) 둘째 칸의 수업 시각을 붙여 가릅니다
+    seen = Counter()
+    for i, row in enumerate(ws.iter_rows(values_only=True), 1):
+        row = list(row) + [None] * 6
+        if i > 1 and is_class_row(text(row[0]), text(row[2]), text(row[3])):
+            seen[re.sub(r'\s+', ' ', text(row[0]))] += 1
+
     rows, klass, skipped, untagged = [], '', [], []
     for i, row in enumerate(ws.iter_rows(values_only=True), 1):
         row = list(row) + [None] * 6
@@ -71,6 +79,8 @@ def read(path):
             continue
         if is_class_row(name, student, school):
             klass = re.sub(r'\s+', ' ', name)        # 반 이름 줄
+            if seen[klass] > 1 and hasattr(row[1], 'hour'):
+                klass += ' %d:%02d' % (row[1].hour, row[1].minute)   # 고1 수 3:30
             continue
         if len(digits(parent)) < 4:
             skipped.append('%d줄 %s (%s) — 학부모 연락처 없음' % (i, name, klass))
