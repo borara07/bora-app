@@ -677,6 +677,15 @@
     return String(grade || '').charAt(0) === '중' ? '중등부' : '고등부';
   }
 
+  /* 어휘 회차를 고를 반. 중등부 회차가 아직 하나도 없으면 중학생도 고등부 회차를 씁니다
+     (app.js 의 roundsForGroup 과 같은 규칙입니다) */
+  function vocabGroupOf(grade) {
+    var want = groupOfGrade(grade);
+    if (want === '고등부') { return want; }
+    var has = roundsOf('어휘').some(function (r) { return (r.group || '고등부') === want; });
+    return has ? want : '고등부';
+  }
+
   function homeworkGroup() {
     return $('homework-group').value || (byGrade(homeworkSubject()) ? '고3' : '고등부');
   }
@@ -801,7 +810,7 @@
     var rows = [];
     var count = 0;
     roundsOf(subject).forEach(function (r) {
-      if (subject === '어휘' && (r.group || '고등부') !== groupOfGrade(group)) { return; }
+      if (subject === '어휘' && (r.group || '고등부') !== vocabGroupOf(group)) { return; }
       /* 모의고사는 회차에 학년이 적혀 있으므로 고른 학년 것만 보여 줍니다.
          학년 칸에 없는 이름(예: 예비고(중3))은 어느 학년에서도 못 고르게 되므로 그대로 둡니다. */
       if (subject === '모의고사' && r.grade && knownGrade(r.grade) && r.grade !== group) { return; }

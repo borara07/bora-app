@@ -249,9 +249,15 @@
   function roundsForGroup(group) {
     if (SUBJECT === '문법') { return (allRounds() || []).slice(); }
     var want = group || '고등부';
-    return (allRounds() || []).filter(function (r) {
+    var mine = (allRounds() || []).filter(function (r) {
       return (r.group || '고등부') === want;
     });
+    /* 중등부 회차가 아직 하나도 없으면 중학생도 고등부 회차를 함께 씁니다.
+       (선생님 화면의 vocabGroupOf 와 같은 규칙입니다. 중등부 회차를 만들면 그것만 보입니다) */
+    if (!mine.length && want !== '고등부') {
+      mine = (allRounds() || []).filter(function (r) { return (r.group || '고등부') === '고등부'; });
+    }
+    return mine;
   }
 
   /* 지금 풀 수 있는 회차인지
